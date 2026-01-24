@@ -1,0 +1,108 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="handleInfo">
+	<typeAlias alias="handleInfo" type="com.szrj.business.model.event.HandleInfo"/>
+	
+	<select id="search_count" parameterClass="handleInfo" resultClass="Integer">
+		select count(*)
+		from e_handleinfo_t
+		where validflag>0 and cdtid=$cdtid$ and htype=$htype$
+	</select>
+	<select id="search" parameterClass="handleInfo" resultClass="handleInfo">
+		select A.*,GROUP_CONCAT(sf.id order by sf.id SEPARATOR ',') as fileids,GROUP_CONCAT(sf.fileName order by sf.id SEPARATOR ',') as filenames FROM
+		(select *
+		from e_handleinfo_t
+		where validflag>0 and cdtid=$cdtid$ and htype=$htype$)A
+		LEFT JOIN sys_file_t sf
+		on FIND_IN_SET(sf.id,A.attachments)
+		GROUP BY A.id
+		order by A.hdate desc
+	</select>
+	
+	<select id="searchSynthetic_count" parameterClass="handleInfo" resultClass="Integer">
+		select count(*)
+		from e_handleinfo_t hi  
+		LEFT JOIN e_contradictioninfo_t ct
+		on ct.id=hi.cdtid
+		where hi.validflag>0 and ct.validflag>0
+		<isNotEqual prepend="AND" property="htype" compareValue="0">
+			hi.htype = $htype$
+        </isNotEqual>
+          <isNotEmpty prepend="AND" property="cdtname">
+			ct.cdtname like '%$cdtname$%'
+		</isNotEmpty>
+        <isNotEmpty prepend="AND" property="htitle">
+			hi.htitle like '%$htitle$%'
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="hcontent">
+			hi.hcontent like '%$hcontent$%'
+		</isNotEmpty>
+	</select>
+	<select id="searchSynthetic" parameterClass="handleInfo" resultClass="handleInfo">
+		select A.*,GROUP_CONCAT(sf.id order by sf.id SEPARATOR ',') as fileids,GROUP_CONCAT(sf.fileName order by sf.id SEPARATOR ',') as filenames FROM
+		(select hi.*,ct.cdtname,ct.cdtlevel 
+		 from e_handleinfo_t hi  
+		LEFT JOIN e_contradictioninfo_t ct
+		on ct.id=hi.cdtid
+		where hi.validflag>0 and ct.validflag>0
+		<isNotEqual prepend="AND" property="htype" compareValue="0">
+			hi.htype = $htype$
+        </isNotEqual>
+          <isNotEmpty prepend="AND" property="cdtname">
+			ct.cdtname like '%$cdtname$%'
+		</isNotEmpty>
+        <isNotEmpty prepend="AND" property="htitle">
+			hi.htitle like '%$htitle$%'
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="hcontent">
+			hi.hcontent like '%$hcontent$%'
+		</isNotEmpty>)A
+		LEFT JOIN sys_file_t sf
+		on FIND_IN_SET(sf.id,A.attachments)
+		GROUP BY A.id
+	</select>
+	
+	<!-- 新增 -->
+	<insert id="add" parameterClass="handleInfo">
+		INSERT INTO e_handleinfo_t
+		(cdtid,htype,hdate,htitle,hcontent,attachments,receivedept,receiver,hsituation,hresult,leaderlevel,approveperson,validflag,addoperatorid,addoperator,addtime,memo)
+		VALUES
+		($cdtid$,$htype$,'$hdate$','$htitle$','$hcontent$','$attachments$','$receivedept$','$receiver$','$hsituation$','$hresult$','$leaderlevel$','$approveperson$',$validflag$,
+		$addoperatorid$,'$addoperator$','$addtime$','$memo$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+	<!-- 删除 -->
+	<update id="cancel" parameterClass="handleInfo">
+		UPDATE e_handleinfo_t
+		SET validflag = 0,updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	<!-- 修改 -->
+	<update id="update" parameterClass="handleInfo">
+		UPDATE e_handleinfo_t
+		SET hdate='$hdate$',htitle='$htitle$',hcontent='$hcontent$',attachments='$attachments$',receivedept='$receivedept$',receiver='$receiver$',hsituation='$hsituation$',
+		hresult='$hresult$',leaderlevel='$leaderlevel$',approveperson='$approveperson$',updateoperator='$updateoperator$',updatetime='$updatetime$',memo='$memo$'
+		WHERE id = $id$
+	</update>
+	<!-- 根据ID获取 -->
+	<select id="getById" parameterClass="int" resultClass="handleInfo">
+		select A.*,GROUP_CONCAT(sf.id order by sf.id SEPARATOR ',') as fileids,GROUP_CONCAT(sf.fileName order by sf.id SEPARATOR ',') as filenames FROM
+		(SELECT *
+		FROM e_handleinfo_t
+		WHERE validflag > 0 AND id = $id$)A
+		LEFT JOIN sys_file_t sf
+		on FIND_IN_SET(sf.id,A.attachments)
+		GROUP BY A.id
+	</select>
+	
+	<!-- 计算数量 -->
+	<select id="getHandleInfoNum" parameterClass="handleInfo" resultClass="handleInfo">
+		SELECT count(*) as nums,htype
+		from e_handleinfo_t
+		where validflag>0 and cdtid=$cdtid$
+		GROUP BY htype
+		ORDER BY htype
+	</select>
+</sqlMap>

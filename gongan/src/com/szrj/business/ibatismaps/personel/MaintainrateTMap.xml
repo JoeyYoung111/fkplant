@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+        
+<sqlMap namespace="maintainrate">
+	<typeAlias alias="maintainrate" type="com.szrj.business.model.personel.Maintainrate"/>
+	<parameterMap id="thismap"  class="java.util.HashMap">
+       <parameter property="in_personnelid"  jdbcType="int"  javaType="java.lang.Integer" mode="IN"/>
+  	</parameterMap>
+	<select id="getMaintainrate" parameterClass="maintainrate" resultClass="maintainrate">
+		SELECT mt.*
+		FROM p_maintainrate_t mt
+		WHERE mt.personnelid = $personnelid$ AND mt.personlabel = $personlabel$
+		LIMIT 1;
+	</select>
+	
+	<!-- 新增 -->
+	<insert id="add" parameterClass="maintainrate">
+		INSERT INTO p_maintainrate_t
+		(personnelid,personlabel)
+		VALUES
+		($personnelid$,$personlabel$)
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+	<!-- 修改 -->
+	<update id="update" parameterClass="maintainrate">
+		UPDATE p_maintainrate_t
+		SET parameter1=$parameter1$,
+		parameter2=$parameter2$,
+		parameter3=$parameter3$,
+		parameter4=$parameter4$,
+		parameter5=$parameter5$,
+		parameter6=$parameter6$,
+		parameter7=$parameter7$,
+		parameter8=$parameter8$,
+		parameter9=$parameter9$,
+		parameter10=$parameter10$
+		WHERE id = $id$
+	</update>
+	<procedure id="updateMaintainrateByPersonnelid" parameterMap="thismap" resultClass="Integer">
+          {call update_maintainrate_by_personnelid(?)};
+     </procedure>
+</sqlMap>

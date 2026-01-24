@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="check">
+	<typeAlias alias="check" type="com.szrj.business.model.company.YzdCheck"/>
+
+	<!-- 新增 -->
+	<insert id="add" parameterClass="check">
+		Insert into c_yzd_check_t
+		(companyid,checkdate,resultsummary,attachments,validflag,addoperator,addtime,memo)
+		values
+		($companyid$,'$checkdate$','$resultsummary$','$attachments$',1,'$addoperator$','$addtime$','$memo$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+
+	<!-- 查询 -->
+	<select id="searchCheck_count" parameterClass="check" resultClass="Integer">
+		select count(id) from c_yzd_check_t
+		where validflag > 0 
+		<dynamic>
+			<isNotEmpty prepend="AND" property="checkdate">
+				checkdate = '$checkdate$'
+			</isNotEmpty>
+			<isNotEqual prepend="AND" property="companyid" compareValue="0">
+    			companyid = $companyid$
+    		</isNotEqual>
+		</dynamic>
+	</select>
+	<!-- 模糊查询 -->
+	<select id="searchCheck" parameterClass="check" resultClass="check">
+		select a.*,group_concat(sf.id order by sf.id separator ',') as fileids,GROUP_CONCAT(sf.fileName order by sf.id SEPARATOR ',') as filenames FROM
+		(select * from c_yzd_check_t where validflag > 0 
+		<dynamic>
+			<isNotEmpty prepend="AND" property="checkdate">
+				checkdate = '$checkdate$'
+			</isNotEmpty>
+			<isNotEqual prepend="AND" property="companyid" compareValue="0">
+    			companyid = $companyid$
+    		</isNotEqual>
+		</dynamic>
+		) a
+		left join sys_file_t sf on find_in_set(sf.id,a.attachments)
+		group by a.id
+	</select>
+
+	<!-- 根据id查询 -->
+	<select id="getById" parameterClass="int" resultClass="check">
+		select a.*,b.companyname from c_yzd_check_t a
+		left join c_company_t b on a.companyid = b.id
+		where a.validflag > 0 and a.id = $id$
+	</select>
+	
+	<!-- 修改 -->
+	<update id="update" parameterClass="check">
+		update c_yzd_check_t set checkdate='$checkdate$',
+		resultsummary='$resultsummary$',attachments='$attachments$',
+		updateoperator='$updateoperator$',updatetime='$updatetime$',memo='$memo$'
+		where id = $id$
+	</update>
+	
+	<!-- 删除 -->
+	<update id="cancel" parameterClass="check">
+		UPDATE C_YZD_CHECK_T SET VALIDFLAG = 0,updateoperator='$updateoperator$',updatetime='$updatetime$' WHERE ID = $id$
+	</update>
+
+</sqlMap>

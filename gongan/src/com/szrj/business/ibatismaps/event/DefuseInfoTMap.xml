@@ -1,0 +1,141 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="defuseInfo">
+	<typeAlias alias="defuseInfo" type="com.szrj.business.model.event.DefuseInfo"/>
+	
+	<select id="search_count" parameterClass="defuseInfo" resultClass="Integer">
+		select count(*)
+		from e_defuseinfo_t di
+		LEFT JOIN e_contradictioninfo_t ct
+		on di.cdtid=ct.id
+		where di.validflag>0 and ct.validflag>0
+		<isNotEqual prepend="AND" property="workinfoid" compareValue="0">
+			di.workinfoid = #workinfoid#
+		</isNotEqual>
+		<isNotEqual prepend="AND" property="cdtid" compareValue="0">
+			di.cdtid = #cdtid#
+		</isNotEqual>
+		<isNotEmpty prepend="AND" property="cdtname">
+			ct.cdtname like '%$cdtname$%'
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="csgs">
+			di.csgs like '%$csgs$%'
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="lsqkks">
+			di.lsqkks like '%$lsqkks$%'
+		</isNotEmpty>
+	</select>
+	<select id="search" parameterClass="defuseInfo" resultClass="defuseInfo">
+		select di.*,ct.cdtname,ct.cdtlevel 
+		from e_defuseinfo_t di
+		LEFT JOIN e_contradictioninfo_t ct
+		on di.cdtid=ct.id
+		where di.validflag>0 and ct.validflag>0
+		<isNotEqual prepend="AND" property="workinfoid" compareValue="0">
+			di.workinfoid = #workinfoid#
+		</isNotEqual>
+		<isNotEqual prepend="AND" property="cdtid" compareValue="0">
+			di.cdtid = #cdtid#
+		</isNotEqual>
+		<isNotEmpty prepend="AND" property="cdtname">
+			ct.cdtname like '%$cdtname$%'
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="csgs">
+			di.csgs like '%$csgs$%'
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="lsqkks">
+			di.lsqkks like '%$lsqkks$%'
+		</isNotEmpty>
+		order by lsdate desc
+	</select>
+	
+	<!-- 新增 -->
+	<insert id="add" parameterClass="defuseInfo">
+		INSERT INTO e_defuseinfo_t
+		(cdtid,lsdate,csgs,sflsqk,lsqkks,validflag,addoperatorid,addoperator,addtime,memo,workinfoid,attachments)
+		VALUES
+		($cdtid$,'$lsdate$','$csgs$','$sflsqk$','$lsqkks$',$validflag$,$addoperatorid$,'$addoperator$','$addtime$','$memo$',$workinfoid$,'$attachments$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+	<!-- 删除 -->
+	<update id="cancel" parameterClass="defuseInfo">
+		UPDATE e_defuseinfo_t
+		SET validflag = 0,updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	<!-- 修改 -->
+	<update id="update" parameterClass="defuseInfo">
+		UPDATE e_defuseinfo_t
+		SET lsdate='$lsdate$',csgs='$csgs$',sflsqk='$sflsqk$',lsqkks='$lsqkks$',updateoperator='$updateoperator$',updatetime='$updatetime$',
+		memo='$memo$',attachments='$attachments$'
+		WHERE id = $id$
+	</update>
+	<!-- 根据ID获取 -->
+	<select id="getById" parameterClass="int" resultClass="defuseInfo">
+		select A.*,GROUP_CONCAT(sf.fileName order by sf.id) as filenames,GROUP_CONCAT(sf.id order by sf.id) as fileids
+		from(SELECT * FROM e_defuseinfo_t WHERE validflag > 0 AND id = $id$)A
+		LEFT JOIN sys_file_t sf on FIND_IN_SET(sf.id,A.attachments)
+		GROUP BY A.id
+	</select>
+	
+	<!-- 政法委 -->
+	<select id="search_count_zfw" parameterClass="defuseInfo" resultClass="Integer">
+		select count(*)
+		from zfw_e_defuseinfo_t di
+		LEFT JOIN e_contradictioninfo_t ct
+		on di.cdtid=ct.id
+		where di.validflag>0 and ct.validflag>0
+		<isNotEqual prepend="AND" property="workinfoid" compareValue="0">
+			di.workinfoid = #workinfoid#
+		</isNotEqual>
+		<isNotEqual prepend="AND" property="cdtid" compareValue="0">
+			di.cdtid = #cdtid#
+		</isNotEqual>
+		<isNotEmpty prepend="AND" property="cdtname">
+			ct.cdtname like '%$cdtname$%'
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="csgs">
+			di.csgs like '%$csgs$%'
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="lsqkks">
+			di.lsqkks like '%$lsqkks$%'
+		</isNotEmpty>
+	</select>
+	<select id="search_zfw" parameterClass="defuseInfo" resultClass="defuseInfo">
+		select di.*,ct.cdtname,ct.cdtlevel 
+		from zfw_e_defuseinfo_t di
+		LEFT JOIN e_contradictioninfo_t ct
+		on di.cdtid=ct.id
+		where di.validflag>0 and ct.validflag>0
+		<isNotEqual prepend="AND" property="workinfoid" compareValue="0">
+			di.workinfoid = #workinfoid#
+		</isNotEqual>
+		<isNotEqual prepend="AND" property="cdtid" compareValue="0">
+			di.cdtid = #cdtid#
+		</isNotEqual>
+		<isNotEmpty prepend="AND" property="cdtname">
+			ct.cdtname like '%$cdtname$%'
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="csgs">
+			di.csgs like '%$csgs$%'
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="lsqkks">
+			di.lsqkks like '%$lsqkks$%'
+		</isNotEmpty>
+		order by lsdate desc
+	</select>
+	
+	<update id="update_zfw" parameterClass="int">
+		UPDATE zfw_e_defuseinfo_t
+		SET validflag='$validflag$'
+		WHERE id = $id$
+	</update>
+	<select id="getById_zfw" parameterClass="int" resultClass="defuseInfo">
+		select A.*,GROUP_CONCAT(sf.fileName order by sf.id) as filenames,GROUP_CONCAT(sf.id order by sf.id) as fileids
+		from(SELECT * FROM zfw_e_defuseinfo_t WHERE validflag > 0 AND id = $id$)A
+		LEFT JOIN zfw_sys_file_t sf on FIND_IN_SET(sf.id,A.attachments)
+		GROUP BY A.id
+	</select>
+</sqlMap>

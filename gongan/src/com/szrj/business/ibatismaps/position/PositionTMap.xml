@@ -1,0 +1,377 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+        
+<sqlMap namespace="position">
+	<typeAlias alias="position" type="com.szrj.business.model.position.Position"/>
+	<typeAlias alias="positionCard" type="com.szrj.business.model.position.PositionCard"/>
+	<typeAlias alias="positionPersonnel" type="com.szrj.business.model.position.PositionPersonnel"/>
+	<typeAlias alias="positionEvent" type="com.szrj.business.model.position.PositionEvent"/>
+	<typeAlias alias="positionWorkRecord" type="com.szrj.business.model.position.PositionWorkRecord"/>
+	
+	<!-- ******** 政保阵地主表 ********* -->
+	<select id="searchPosition_count" parameterClass="position" resultClass="Integer">
+		SELECT COUNT(ap.id)
+		FROM a_position_t ap
+		WHERE ap.validflag >0
+		<dynamic prepend="">
+			<isNotEqual prepend="AND" property="personnelid" compareValue="0">
+				ifnull((select count(app.id) from a_position_personnel_t app where app.positionid=ap.id and app.validflag>0 and app.personnelid=#personnelid#),0)>0
+	        </isNotEqual>
+			<isNotEmpty prepend="AND" property="positionname">
+				ap.positionname like concat('%',#positionname#,'%')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="positiontype">
+				ap.positiontype like concat('%',#positiontype#,'%')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="positioncharacter">
+				ap.positioncharacter like concat('%',#positioncharacter#,'%')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="jdunit">
+				FIND_IN_SET(ap.jdunit,#jdunit#)
+	        </isNotEmpty>
+			<isNotEqual prepend="AND" property="unitFilter" compareValue="0">
+				ap.jdunit = #unitFilter#
+	        </isNotEqual>
+			<isNotEqual prepend="AND" property="personFilter" compareValue="0">
+				ap.jdpolice = #personFilter#
+	        </isNotEqual>
+		</dynamic>
+	</select>
+	<select id="searchPosition" parameterClass="position" resultClass="position">
+		SELECT ap.*,dt.departname AS unitname,ut.staffName AS policename
+		FROM a_position_t ap
+		LEFT JOIN sys_department_t dt ON ap.jdunit = dt.id
+		LEFT JOIN sys_user_t ut ON ap.jdpolice = ut.id
+		WHERE ap.validflag >0
+		<dynamic prepend="">
+			<isNotEqual prepend="AND" property="personnelid" compareValue="0">
+				ifnull((select count(app.id) from a_position_personnel_t app where app.positionid=ap.id and app.validflag>0 and app.personnelid=#personnelid#),0)>0
+	        </isNotEqual>
+			<isNotEmpty prepend="AND" property="positionname">
+				ap.positionname like concat('%',#positionname#,'%')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="positiontype">
+				ap.positiontype like concat('%',#positiontype#,'%')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="positioncharacter">
+				ap.positioncharacter like concat('%',#positioncharacter#,'%')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="jdunit">
+				FIND_IN_SET(ap.jdunit,#jdunit#)
+	        </isNotEmpty>
+			<isNotEqual prepend="AND" property="unitFilter" compareValue="0">
+				ap.jdunit = #unitFilter#
+	        </isNotEqual>
+			<isNotEqual prepend="AND" property="personFilter" compareValue="0">
+				ap.jdpolice = #personFilter#
+	        </isNotEqual>
+		</dynamic>
+		order by ap.addtime desc
+	</select>
+	<select id="getById" parameterClass="int" resultClass="position">
+		SELECT ap.*,dt.departname AS unitname,ut.staffName AS policename
+		FROM a_position_t ap
+		LEFT JOIN sys_department_t dt ON ap.jdunit = dt.id
+		LEFT JOIN sys_user_t ut ON ap.jdpolice = ut.id
+		WHERE ap.id=#id#
+	</select>
+	<!-- 新增 -->
+	<insert id="add" parameterClass="position">
+		INSERT INTO a_position_t
+		(positionname,positiontype,positioncharacter,foreignname,
+		setuptime,setupplace,address,placearea,
+		personnum,chargeunit,positionsurvey,jdunit,
+		jdpolice,jdphone,
+		validflag,addoperator,addtime,memo)
+		VALUES
+		('$positionname$','$positiontype$','$positioncharacter$','$foreignname$',
+		'$setuptime$','$setupplace$','$address$','$placearea$',
+		'$personnum$','$chargeunit$','$positionsurvey$','$jdunit$',
+		'$jdpolice$','$jdphone$',
+		$validflag$,'$addoperator$','$addtime$','$memo$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+	<!-- 修改 -->
+	<update id="update" parameterClass="position">
+		UPDATE a_position_t
+		SET positionname=#positionname#,positiontype=#positiontype#,positioncharacter=#positioncharacter#,foreignname=#foreignname#,
+		setuptime=#setuptime#,setupplace=#setupplace#,address=#address#,placearea=#placearea#,
+		personnum=#personnum#,chargeunit=#chargeunit#,positionsurvey=#positionsurvey#,jdunit=#jdunit#,
+		jdpolice=#jdpolice#,jdphone=#jdphone#,
+		updateoperator=#updateoperator#,updatetime=#updatetime#
+		WHERE id = #id#
+	</update>
+	<!-- 删除 -->
+	<update id="cancel" parameterClass="position">
+		UPDATE a_position_t
+		SET validflag = 0,
+		updateoperator=#updateoperator#,updatetime=#updatetime#
+		WHERE id = #id#
+	</update>
+	
+	<!-- ******** 政保阵地——登记证书 ********* -->
+	<select id="searchPositionCard_count" parameterClass="positionCard" resultClass="Integer">
+		SELECT COUNT(ap.id)
+		FROM a_position_card_t ap
+		WHERE ap.validflag >0 and ap.positionid=#positionid#
+		<dynamic prepend="">
+			<isNotEmpty prepend="AND" property="cardname">
+				ap.cardname like concat('%',#cardname#,'%')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="cardno">
+				ap.cardno like concat('%',#cardno#,'%')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="cardunit">
+				ap.cardunit like concat('%',#cardunit#,'%')
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	<select id="searchPositionCard" parameterClass="positionCard" resultClass="positionCard">
+		SELECT ap.*
+		FROM a_position_card_t ap
+		WHERE ap.validflag >0 and ap.positionid=#positionid#
+		<dynamic prepend="">
+			<isNotEmpty prepend="AND" property="cardname">
+				ap.cardname like concat('%',#cardname#,'%')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="cardno">
+				ap.cardno like concat('%',#cardno#,'%')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="cardunit">
+				ap.cardunit like concat('%',#cardunit#,'%')
+			</isNotEmpty>
+		</dynamic>
+		order by ap.addtime desc
+	</select>
+	<select id="getPositionCardById" parameterClass="int" resultClass="positionCard">
+		SELECT ap.*
+		FROM a_position_card_t ap
+		WHERE ap.id=#id#
+	</select>
+	<!-- 新增 -->
+	<insert id="addPositionCard" parameterClass="positionCard">
+		INSERT INTO a_position_card_t
+		(positionid,
+		cardname,cardno,validdate,cardunit,
+		validflag,addoperator,addtime,memo)
+		VALUES
+		(#positionid#,
+		#cardname#,#cardno#,#validdate#,#cardunit#,
+		#validflag#,#addoperator#,#addtime#,#memo#)
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+	<!-- 修改 -->
+	<update id="updatePositionCard" parameterClass="positionCard">
+		UPDATE a_position_card_t
+		SET cardname=#cardname#,cardno=#cardno#,validdate=#validdate#,cardunit=#cardunit#,
+		updateoperator=#updateoperator#,updatetime=#updatetime#
+		WHERE id = #id#
+	</update>
+	<!-- 删除 -->
+	<update id="cancelPositionCard" parameterClass="positionCard">
+		UPDATE a_position_card_t
+		SET validflag = 0,
+		updateoperator=#updateoperator#,updatetime=#updatetime#
+		WHERE id = #id#
+	</update>
+	<select id="getPositionCardListByPositionid" parameterClass="int" resultClass="positionCard">
+		SELECT ap.*
+		FROM a_position_card_t ap
+		WHERE ap.positionid=#positionid# and ap.validflag>0
+		order by ap.addtime
+	</select>
+	
+	<!-- ******** 政保阵地——人员情况（风险人员） ********* -->
+	<select id="searchPositionPersonnel_count" parameterClass="positionPersonnel" resultClass="Integer">
+		SELECT COUNT(ap.id)
+		FROM a_position_personnel_t ap
+		WHERE ap.validflag >0 
+		<dynamic prepend="">
+			<isNotEqual prepend="AND" property="positionid" compareValue="0">
+				ap.positionid=#positionid#
+	        </isNotEqual>
+			<isNotEqual prepend="AND" property="personnelid" compareValue="0">
+				ap.personnelid=#personnelid#
+	        </isNotEqual>
+			<isNotEmpty prepend="AND" property="identity">
+				ap.identity like concat('%',#identity#,'%')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="personname">
+				ap.personname like concat('%',#personname#,'%')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="cardnumber">
+				ap.cardnumber like concat('%',#cardnumber#,'%')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="homeplace">
+				ap.homeplace like concat('%',#homeplace#,'%')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="telnumber">
+				ap.telnumber like concat('%',#telnumber#,'%')
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	<select id="searchPositionPersonnel" parameterClass="positionPersonnel" resultClass="positionPersonnel">
+		SELECT ap.*
+		FROM a_position_personnel_t ap
+		WHERE ap.validflag >0
+		<dynamic prepend="">
+			<isNotEqual prepend="AND" property="positionid" compareValue="0">
+				ap.positionid=#positionid#
+	        </isNotEqual>
+			<isNotEqual prepend="AND" property="personnelid" compareValue="0">
+				ap.personnelid=#personnelid#
+	        </isNotEqual>
+			<isNotEmpty prepend="AND" property="identity">
+				ap.identity like concat('%',#identity#,'%')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="personname">
+				ap.personname like concat('%',#personname#,'%')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="cardnumber">
+				ap.cardnumber like concat('%',#cardnumber#,'%')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="homeplace">
+				ap.homeplace like concat('%',#homeplace#,'%')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="telnumber">
+				ap.telnumber like concat('%',#telnumber#,'%')
+			</isNotEmpty>
+		</dynamic>
+		order by ap.addtime desc
+	</select>
+	<select id="getPositionPersonnelById" parameterClass="int" resultClass="positionPersonnel">
+		SELECT ap.*
+		FROM a_position_personnel_t ap
+		WHERE ap.id=#id#
+	</select>
+	<!-- 新增 -->
+	<insert id="addPositionPersonnel" parameterClass="positionPersonnel">
+		INSERT INTO a_position_personnel_t
+		(positionid,personnelid,
+		identity,personname,cardnumber,homeplace,telnumber,
+		validflag,addoperator,addtime,memo)
+		VALUES
+		(#positionid#,#personnelid#,
+		#identity#,#personname#,#cardnumber#,#homeplace#,#telnumber#,
+		#validflag#,#addoperator#,#addtime#,#memo#)
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+	<!-- 修改 -->
+	<update id="updatePositionPersonnel" parameterClass="positionPersonnel">
+		UPDATE a_position_personnel_t
+		SET identity=#identity#,personname=#personname#,cardnumber=#cardnumber#,homeplace=#homeplace#,telnumber=#telnumber#,
+		updateoperator=#updateoperator#,updatetime=#updatetime#
+		WHERE id = #id#
+	</update>
+	<!-- 删除 -->
+	<update id="cancelPositionPersonnel" parameterClass="positionPersonnel">
+		UPDATE a_position_personnel_t
+		SET validflag = 0,
+		updateoperator=#updateoperator#,updatetime=#updatetime#
+		WHERE id = #id#
+	</update>
+	<select id="getPositionPersonnelListByPositionid" parameterClass="int" resultClass="positionPersonnel">
+		SELECT ap.*
+		FROM a_position_personnel_t ap
+		WHERE ap.positionid=#positionid# and ap.validflag>0
+		order by ap.addtime
+	</select>
+	
+	<!-- ******** 政保阵地——主要活动 ********* -->
+	<select id="searchPositionEvent_count" parameterClass="positionEvent" resultClass="Integer">
+		SELECT COUNT(ape.id)
+		FROM a_position_event_t ape
+		WHERE ape.validflag >0 and ape.positionid=#positionid#
+	</select>
+	<select id="searchPositionEvent" parameterClass="positionEvent" resultClass="positionEvent">
+		SELECT ape.*
+		FROM a_position_event_t ape
+		WHERE ape.validflag >0 and ape.positionid=#positionid#
+		order by ape.addtime desc
+	</select>
+	<select id="getPositionEventById" parameterClass="int" resultClass="positionEvent">
+		SELECT ape.*
+		FROM a_position_event_t ape
+		WHERE ape.id=#id#
+	</select>
+	<!-- 新增 -->
+	<insert id="addPositionEvent" parameterClass="positionEvent">
+		INSERT INTO a_position_event_t
+		(positionid,eventTime,eventInfo,
+		validflag,addoperator,addtime,memo)
+		VALUES
+		(#positionid#,#eventTime#,#eventInfo#,
+		#validflag#,#addoperator#,#addtime#,#memo#)
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+	<!-- 修改 -->
+	<update id="updatePositionEvent" parameterClass="positionEvent">
+		UPDATE a_position_event_t
+		SET eventTime=#eventTime#,eventInfo=#eventInfo#,
+		updateoperator=#updateoperator#,updatetime=#updatetime#
+		WHERE id = #id#
+	</update>
+	<!-- 删除 -->
+	<update id="cancelPositionEvent" parameterClass="positionEvent">
+		UPDATE a_position_event_t
+		SET validflag = 0,
+		updateoperator=#updateoperator#,updatetime=#updatetime#
+		WHERE id = #id#
+	</update>
+	<select id="getPositionEventListByPositionid" parameterClass="int" resultClass="positionEvent">
+		SELECT ape.*
+		FROM a_position_event_t ape
+		WHERE ape.positionid=#positionid# and ape.validflag>0
+		order by ape.addtime
+	</select>
+	
+	<!-- ******** 政保阵地——工作记录 ********* -->
+	<select id="searchPositionWorkRecord_count" parameterClass="positionWorkRecord" resultClass="Integer">
+		SELECT COUNT(apw.id)
+		FROM a_position_workrecord_t apw
+		WHERE apw.validflag >0 and apw.positionid=#positionid#
+	</select>
+	<select id="searchPositionWorkRecord" parameterClass="positionWorkRecord" resultClass="positionWorkRecord">
+		SELECT apw.*
+		FROM a_position_workrecord_t apw
+		WHERE apw.validflag >0 and apw.positionid=#positionid#
+		order by apw.addtime desc
+	</select>
+	<select id="getPositionWorkRecordById" parameterClass="int" resultClass="positionWorkRecord">
+		SELECT apw.*
+		FROM a_position_workrecord_t apw
+		WHERE apw.id=#id#
+	</select>
+	<!-- 新增 -->
+	<insert id="addPositionWorkRecord" parameterClass="positionWorkRecord">
+		INSERT INTO a_position_workrecord_t
+		(positionid,workTime,workInfo,
+		validflag,addoperator,addtime,memo)
+		VALUES
+		(#positionid#,#workTime#,#workInfo#,
+		#validflag#,#addoperator#,#addtime#,#memo#)
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+	<!-- 修改 -->
+	<update id="updatePositionWorkRecord" parameterClass="positionWorkRecord">
+		UPDATE a_position_workrecord_t
+		SET workTime=#workTime#,workInfo=#workInfo#,
+		updateoperator=#updateoperator#,updatetime=#updatetime#
+		WHERE id = #id#
+	</update>
+	<!-- 删除 -->
+	<update id="cancelPositionWorkRecord" parameterClass="positionWorkRecord">
+		UPDATE a_position_workrecord_t
+		SET validflag = 0,
+		updateoperator=#updateoperator#,updatetime=#updatetime#
+		WHERE id = #id#
+	</update>
+	<select id="getPositionWorkRecordListByPositionid" parameterClass="int" resultClass="positionWorkRecord">
+		SELECT apw.*
+		FROM a_position_workrecord_t apw
+		WHERE apw.positionid=#positionid# and apw.validflag>0
+		order by apw.addtime
+	</select>
+	
+</sqlMap>

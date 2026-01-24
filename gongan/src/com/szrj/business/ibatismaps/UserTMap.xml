@@ -1,0 +1,172 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="user">
+	<typeAlias alias="user" type="com.szrj.business.model.User"/>
+	
+	<select id="searchUser_count" parameterClass="user" resultClass="Integer">
+		SELECT COUNT(u1.id)
+		FROM sys_user_t u1
+		LEFT OUTER JOIN sys_basic_msg_t b2 on u1.departmentid=b2.id
+		WHERE u1.validflag > 0 
+		<dynamic prepend="" >
+			<isNotEmpty prepend="AND" property="staffName">
+				(u1.staffName like '%$staffName$%' or u1.usercode like '%$staffName$%')
+			</isNotEmpty>
+			<isNotEqual prepend="AND" property="departmentid" compareValue="0">
+				u1.departmentid = $departmentid$
+            </isNotEqual>
+             <isNotEqual prepend="AND" property="roleid" compareValue="0">
+				u1.roleid = $roleid$
+            </isNotEqual>
+		</dynamic>
+	</select>
+	<select id="searchUser" parameterClass="user" resultClass="user">
+		SELECT
+			u1.*,
+			IFNULL( r.msgFilter, 0 ) AS msgFilter,
+			IFNULL( r.fieldFilter, 0 ) AS fieldFilter,
+			d.departname as departname,
+			o.roleName as rolename
+		FROM
+			sys_user_t u1
+			LEFT JOIN sys_role_t r ON u1.roleid = r.id
+			LEFT JOIN sys_department_t d on u1.departmentid=d.id
+			LEFT JOIN  sys_role_t o on u1.roleid=o.id
+			where u1.validflag>0
+		<dynamic prepend="" >			
+			<isNotEmpty prepend="AND" property="staffName">
+				(u1.staffName like '%$staffName$%' or u1.usercode like '%$staffName$%')
+			</isNotEmpty>
+			<isNotEqual prepend="AND" property="departmentid" compareValue="0">
+				u1.departmentid = $departmentid$
+            </isNotEqual>
+            <isNotEqual prepend="AND" property="roleid" compareValue="0">
+				u1.roleid = $roleid$
+            </isNotEqual>
+        </dynamic>
+		ORDER BY u1.departmentid
+	</select>
+
+	
+	<!-- 新增 -->
+	<insert id="add" parameterClass="user">
+		INSERT INTO sys_user_t
+		(usercode,userpassword,staffName,sexes,cardnumber,alarmsignal,contactnumber,roleid,departmentid,dpName,validflag,addoperator,addtime,memo)
+		VALUES
+		('$usercode$','$userpassword$','$staffName$','$sexes$','$cardnumber$','$alarmsignal$','$contactnumber$',$roleid$,$departmentid$,'$dpName$',1,'$addoperator$','$addtime$','$memo$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+	<!-- 删除 -->
+	<update id="cancel" parameterClass="int">
+		UPDATE sys_user_t
+		SET validflag = 0
+		WHERE id = $id$
+	</update>
+	<!-- 修改状态 -->
+	<update id="revStop" parameterClass="user">
+		UPDATE sys_user_t
+		SET validflag =$validflag$
+		WHERE id = $id$
+	</update>
+	<!-- 修改 -->
+	<update id="update" parameterClass="user">
+		UPDATE sys_user_t
+		SET usercode = '$usercode$',staffName = '$staffName$',	sexes = '$sexes$',
+		cardnumber = '$cardnumber$',	alarmsignal = '$alarmsignal$',	contactnumber = '$contactnumber$',
+		roleid=$roleid$,dpName='$dpName$',departmentid=$departmentid$,before_departmentid=$before_departmentid$
+		WHERE id = $id$
+	</update>
+	<!-- 检查该用户名是否正在被使用中 -->
+	<select id="getUserInUse" parameterClass="String" resultClass="int">
+		SELECT IFNULL(id,COUNT(id)) 
+		FROM sys_user_t
+		WHERE validflag > 0 AND usercode = '$usercode$' 
+	</select>
+	
+	<!-- 检查登录的用户名和密码是否正确 -->
+	<select id="checkUserMsg" parameterClass="user" resultClass="int">
+		SELECT COUNT(id)
+		FROM sys_user_t
+		WHERE  validflag > 0 AND usercode = '$usercode$' AND userpassword = '$userpassword$'
+	</select>
+	
+	<!-- 根据登录账号和密码查询用户信息 -->
+	<select id="getUserByCodeAndPwd" parameterClass="user" resultClass="user">
+		SELECT
+			u1.*,
+			IFNULL( r.msgFilter, 0 ) AS msgFilter,
+			IFNULL( r.fieldFilter, 0 ) AS fieldFilter,
+			IFNULL( r.eventFilter, 0 ) AS eventFilter,
+			d.departname as departname,d.departcode
+		FROM
+			sys_user_t u1
+			LEFT JOIN sys_role_t r ON u1.roleid = r.id
+			LEFT JOIN sys_department_t d on u1.departmentid=d.id
+			where u1.validflag>0
+		    AND u1.usercode = '$usercode$' AND u1.userpassword = '$userpassword$'
+	</select>
+	
+	<!-- 根据ID查询 -->
+	<select id="getById" parameterClass="int" resultClass="user">
+		SELECT u.*
+		FROM sys_user_t u
+		WHERE u.validflag > 0 AND u.id = $id$
+	</select>
+	<select id="getByCardnumber" parameterClass="String" resultClass="user">
+		SELECT u.*
+		FROM sys_user_t u
+		WHERE u.validflag > 0 AND u.cardnumber = '$cardnumber$'
+	</select>
+	<!-- 根据部门ID查询 -->
+	<select id="getByDepartmentid" parameterClass="int" resultClass="user">
+		SELECT u.*
+		FROM sys_user_t u
+		WHERE u.validflag > 0 AND u.departmentid = $departmentid$
+	</select>
+	<!-- 根据部门ID查询人员除去部分人员 -->
+	<select id="getByDepartmentidNotin" parameterClass="user" resultClass="user">
+		SELECT u.*
+		FROM sys_user_t u
+		WHERE u.validflag > 0 AND u.departmentid = $departmentid$
+		<isNotEmpty prepend="AND" property="departname">
+		 u.id NOT IN ($departname$)
+		</isNotEmpty>
+	</select>
+	<!-- 根据部门ID查询人员除去部分人员 -->
+	<select id="getUserByIds" parameterClass="String" resultClass="user">
+		SELECT u.*
+		FROM sys_user_t u
+		WHERE u.validflag > 0 
+		AND u.id  IN ($departname$)
+	</select>
+	<!-- 修改密码 -->
+	<update id="changePWD" parameterClass="user">
+		UPDATE sys_user_t
+		SET userpassword = '$userpassword$'
+		WHERE id = $id$
+	</update>
+	
+	<!-- 根据roleid查询 -->
+	<select id="getRoleUser" parameterClass="int" resultClass="User">
+		SELECT a.*,b.ID AS roleuserId
+		FROM sys_user_t a
+		RIGHT JOIN 
+		( SELECT userId,ID
+		  FROM sys_role_user_t
+		  WHERE validflag > 0 AND roleId =  $roleid$
+		) b
+		ON a.id = b.userId
+		WHERE a.validflag > 0  
+	</select>
+	
+	<!-- 查询部门下所有人员 -->
+	<select id="getUsersByDepartids" parameterClass="String" resultClass="User">
+		SELECT u.*
+		FROM sys_user_t u
+		left join sys_department_t d on u.departmentid=d.id
+		WHERE u.validflag > 0  and d.validflag>0
+		AND d.id  IN ($departname$)
+	</select>
+</sqlMap>

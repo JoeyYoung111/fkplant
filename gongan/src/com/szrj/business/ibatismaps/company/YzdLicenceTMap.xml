@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+        
+<sqlMap namespace="licence">
+	<typeAlias alias="licence" type="com.szrj.business.model.company.YzdLicence"/>
+
+      <!-- 新增 -->
+      <insert id="add" parameterClass="licence">
+      	INSERT INTO C_YZD_LICENCE_T
+      	(companyid,credentialstype,companyname,licenceno,chargeperson,allowrange,allowtype,jyfs,
+      	validitystart,validityend,allowunit,allowdate,direction,varietyyield,attachments,
+      	validflag,addoperator,addtime,memo)
+      	VALUES
+      	($companyid$,$credentialstype$,'$companyname$','$licenceno$','$chargeperson$','$allowrange$','$allowtype$','$jyfs$',
+      	'$validitystart$','$validityend$','$allowunit$','$allowdate$','$direction$','$varietyyield$','$attachments$',
+      	1,'$addoperator$','$addtime$','$memo$')
+      	<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+      </insert>
+      
+      <!-- 查询 -->
+      <select id="searchLicence_count" parameterClass="licence" resultClass="Integer">
+      	select count(id) from c_yzd_licence_t where validflag > 0 
+      	<dynamic>
+      		<isNotEqual prepend="AND" property="companyid" compareValue="0">
+      			companyid = $companyid$
+      		</isNotEqual>
+      		<isNotEmpty prepend="AND" property="allowdate">
+      			allowdate = '$allowdate$'
+      		</isNotEmpty>
+      		<isNotEmpty prepend="AND" property="validityend">
+      			'$validityend$' >= validitystart and validityend >= '$validityend$'
+      		</isNotEmpty>
+      	</dynamic>
+      </select>
+      
+      <select id="searchLicence" parameterClass="licence" resultClass="licence">
+      	SELECT a.*,b.basicName FROM C_YZD_LICENCE_T a 
+      	LEFT JOIN SYS_BASIC_MSG_T b
+      	ON a.credentialstype = b.id
+      	WHERE a.VALIDFLAG > 0 
+      	<dynamic>
+      		<isNotEqual prepend="AND" property="companyid" compareValue="0">
+      			a.companyid = $companyid$
+      		</isNotEqual>
+      		<isNotEmpty prepend="AND" property="allowdate">
+      			a.allowdate = '$allowdate$'
+      		</isNotEmpty>
+      		<isNotEmpty prepend="AND" property="validityend">
+      			'$validityend$' >= a.validitystart and a.validityend >= '$validityend$'
+      		</isNotEmpty>
+      	</dynamic>
+      	ORDER BY a.id
+      </select>
+      
+      <!-- 根据id查询 -->
+      <select id="getById" parameterClass="int" resultClass="licence">
+      	select A.*,group_concat(f.id order by f.id) as fileids,group_concat(f.fileallName order by f.id) as fileallnames from(
+		SELECT a.*,b.basicName,group_concat(c.basicName separator ',') as allowtypeMs
+      	FROM (SELECT * FROM C_YZD_LICENCE_T WHERE VALIDFLAG > 0 AND id = 1)a 
+      	LEFT JOIN SYS_BASIC_MSG_T b ON a.credentialstype = b.id
+      	left join SYS_BASIC_MSG_T c on find_in_set(c.id,a.allowtype)
+      	group BY a.id)A
+		left join sys_file_t f on FIND_IN_SET(f.id,A.attachments)
+      </select>
+      
+      <!-- 删除 -->
+      <update id="cancel" parameterClass="int">
+      	UPDATE C_YZD_LICENCE_T SET VALIDFLAG = 0 WHERE id = $id$
+      </update>
+      
+      <!-- 级联删除 -->
+      <update id="cancelValidFlag" parameterClass="int">
+      	UPDATE C_YZD_LICENCE_T SET VALIDFLAG = 0 WHERE companyid = $companyid$
+      </update>
+      
+      <!-- 级联修改 -->
+      <update id="updateCompanyName" parameterClass="licence">
+      	update c_yzd_licence_t set companyname = '$companyname$' where companyid = $companyid$
+      </update>
+      
+      <!-- 修改许可证信息 -->
+      <update id="update" parameterClass="licence">
+      	update c_yzd_licence_t set licenceno='$licenceno$',credentialstype=$credentialstype$,chargeperson='$chargeperson$',
+      	allowrange='$allowrange$',allowtype='$allowtype$',validitystart='$validitystart$',validityend='$validityend$',jyfs='$jyfs$',
+      	allowunit='$allowunit$',allowdate='$allowdate$',direction='$direction$',varietyyield='$varietyyield$',attachments='$attachments$',
+      	updateoperator='$updateoperator$',updatetime='$updatetime$',memo='$memo$'
+      	where id = $id$
+      </update>
+        
+</sqlMap>       

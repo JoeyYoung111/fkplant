@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	Application context definition for PetClinic on JDBC.
+-->
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:p="http://www.springframework.org/schema/p" xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:jee="http://www.springframework.org/schema/jee"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="
+			http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+			http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+			http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+			http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-3.0.xsd
+			http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd">
+
+    <!-- ========================= RESOURCE DEFINITIONS ========================= -->
+
+    <!-- Configurer that replaces ${...} placeholders with values from a properties file -->
+    <!-- (in this case, JDBC-related settings for the dataSource definition below) -->
+
+    <!--  <jee:jndi-lookup id="dataSource" jndi-name="java:lesds"/>  org.apache.commons.dbcp.BasicDataSource  -->
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource" destroy-method="close">
+        <property name="driverClass" value="${jdbc.driverClassName}"/>
+        <property name="jdbcUrl" value="${jdbc.url}"/>
+        <property name="user" value="${jdbc.username}"/>
+        <property name="password" value="${jdbc.password}"/>
+        <property name="maxPoolSize" value="60"/>
+        <property name="testConnectionOnCheckout" value="true"/>
+        <property name="idleConnectionTestPeriod" value="120"/>
+        <!--<property name="automaticTestTable" value="test"/>-->
+    </bean>
+    <!--  oracle 链接配置  -->
+    <bean id="dataSource1" class="com.mchange.v2.c3p0.ComboPooledDataSource" destroy-method="close">
+        <property name="driverClass" value="${jdbc.driverClassName1}"/>
+        <property name="jdbcUrl" value="${jdbc.url1}"/>
+        <property name="user" value="${jdbc.username1}"/>
+        <property name="password" value="${jdbc.password1}"/>
+        <property name="maxPoolSize" value="60"/>
+        <property name="testConnectionOnCheckout" value="true"/>
+        <property name="idleConnectionTestPeriod" value="120"/>
+        <!--<property name="automaticTestTable" value="test"/>-->
+
+    </bean>
+    <!--  oracle 链接配置 预警  -->
+    <bean id="dataSource2" class="com.mchange.v2.c3p0.ComboPooledDataSource" destroy-method="close">
+        <property name="driverClass" value="${jdbc.driverClassName2}"/>
+        <property name="jdbcUrl" value="${jdbc.url2}"/>
+        <property name="user" value="${jdbc.username2}"/>
+        <property name="password" value="${jdbc.password2}"/>
+        <property name="maxPoolSize" value="60"/>
+        <property name="testConnectionOnCheckout" value="true"/>
+        <property name="idleConnectionTestPeriod" value="120"/>
+    </bean>
+    
+    <!-- Transaction manager for a single JDBC DataSource -->
+    <!-- (see dataAccessContext-jta.xml for an alternative) 
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+    -->
+
+    <!-- SqlMap setup for iBATIS Database Layer -->
+    <bean id="sqlMapClient" class="org.springframework.orm.ibatis.SqlMapClientFactoryBean">
+        <property name="configLocation" value="WEB-INF/sql-map-config.xml"/>
+        <property name="dataSource" ref="dataSource"/>
+		<property name="mapperLocations" value="classpath:com/szrj/business/ibatismaps/*.xml"></property>
+    </bean>
+    <!--  oracle 链接配置  -->
+    <bean id="sqlMapClient1" class="org.springframework.orm.ibatis.SqlMapClientFactoryBean">
+        <property name="configLocation" value="WEB-INF/sqloracle-map-config.xml"/>
+        <property name="dataSource" ref="dataSource1"/>
+    </bean> 
+    <!--  oracle 链接配置 预警 -->
+    <bean id="sqlMapClient2" class="org.springframework.orm.ibatis.SqlMapClientFactoryBean">
+        <property name="configLocation" value="WEB-INF/sqloracle-map-config-yujing.xml"/>
+        <property name="dataSource" ref="dataSource2"/>
+    </bean> 
+    
+    
+    
+    <bean id="sqlExecutor" class="com.aladdin.dao.ibatis.ext.LimitSqlExecutor">
+        <property name="dialect">
+            <bean class="com.aladdin.dao.dialect.MySQLDialect"/> 
+        </property>
+    </bean>
+     <!--  oracle 链接配置  -->
+     <bean id="sqlExecutor1" class="com.aladdin.dao.ibatis.ext.LimitSqlExecutor">
+        <property name="dialect">
+            <bean class="com.aladdin.dao.dialect.OracleDialect"/> 
+            <!--  <bean class="com.aladdin.dao.dialect.MSSQL2005Dialect"/>-->
+        </property>
+    </bean>
+     <!--  oracle 链接配置 预警 -->
+     <bean id="sqlExecutor2" class="com.aladdin.dao.ibatis.ext.LimitSqlExecutor">
+        <property name="dialect">
+            <bean class="com.aladdin.dao.dialect.OracleDialect"/> 
+        </property>
+    </bean>
+    
+    
+    
+    <bean id="baseDao" abstract="true" class="com.aladdin.dao.ibatis.BaseDaoiBatis" init-method="initialize">
+        <property name="dataSource">
+            <ref bean="dataSource"/>
+        </property>
+        <property name="sqlMapClient">
+            <ref bean="sqlMapClient"/>
+        </property>
+        <property name="sqlExecutor">
+            <ref bean="sqlExecutor"/>
+        </property>
+  
+    </bean>
+    
+     <bean id="baseDao1" abstract="true" class="com.aladdin.dao.ibatis.BaseDaoiBatis" init-method="initialize">
+        <property name="dataSource">
+            <ref bean="dataSource1"/>
+        </property>
+        <property name="sqlMapClient">
+            <ref bean="sqlMapClient1"/>
+        </property>
+        <property name="sqlExecutor">
+            <ref bean="sqlExecutor1"/>
+        </property>
+    </bean>
+     <bean id="baseDao2" abstract="true" class="com.aladdin.dao.ibatis.BaseDaoiBatis" init-method="initialize">
+        <property name="dataSource">
+            <ref bean="dataSource2"/>
+        </property>
+        <property name="sqlMapClient">
+            <ref bean="sqlMapClient2"/>
+        </property>
+        <property name="sqlExecutor">
+            <ref bean="sqlExecutor2"/>
+        </property>
+    </bean>
+    
+    
+    <!-- ========================= DAO DEFINITIONS: IBATIS IMPLEMENTATIONS ========================= -->
+    <!-- 基础信息_开始（勿删） -->
+	<bean id="userDao" class="com.szrj.business.impl.UserDaoImpl" parent="baseDao"></bean><!-- 用户 -->
+	<bean id="menuDao" class="com.szrj.business.impl.MenuDaoImpl" parent="baseDao"></bean><!-- 菜单表 -->
+	<bean id="logDao" class="com.szrj.business.impl.LogDaoImpl" parent="baseDao"></bean><!-- 日志 -->
+	<bean id="roleDao" class="com.szrj.business.impl.RoleDaoImpl" parent="baseDao"></bean><!-- 角色 -->
+    <bean id="roleMenuDao" class="com.szrj.business.impl.RoleMenuDaoImpl" parent="baseDao"></bean>	<!-- 角色菜单 -->
+	<bean id="roleUserDao" class="com.szrj.business.impl.RoleUserDaoImpl" parent="baseDao"></bean><!-- 角色用户 -->
+	<bean id="basicMsgDao" class="com.szrj.business.impl.BasicMsgDaoImpl" parent="baseDao"></bean><!-- 数据字典 -->
+	<bean id="basicTypeDao" class="com.szrj.business.impl.BasicTypeDaoImpl" parent="baseDao"></bean><!-- 数据字典 -->
+    <bean id="fileDao" class="com.szrj.business.impl.FileDaoImpl" parent="baseDao"></bean><!-- 文件表 -->
+    <bean id="departmentDao" class="com.szrj.business.impl.DepartmentDaoImpl" parent="baseDao"></bean><!-- 部门表 -->
+    <bean id="appButtonDao" class="com.szrj.business.impl.AppButtonDaoImpl" parent="baseDao"></bean><!-- APP按钮表 -->
+    <bean id="roleAppbuttonDao" class="com.szrj.business.impl.RoleAppbuttonDaoImpl" parent="baseDao"></bean><!-- 角色应用按钮权限 -->
+    <bean id="zdRoleDaoImpl" class="com.szrj.business.impl.ZdRoleDaoImpl" parent="baseDao"></bean><!-- 中队角色 -->
+	<!-- 风险人员 -->
+    <bean id="personnelDao" class="com.szrj.business.impl.personel.PersonnelDaoImpl" parent="baseDao"></bean><!-- 风险人员主表 -->
+    <bean id="personnelPhotoDao" class="com.szrj.business.impl.personel.PersonnelPhotoDaoImpl" parent="baseDao"></bean><!-- 风险人员主表-照片 -->
+    <bean id="maintainrateDao" class="com.szrj.business.impl.personel.MaintainrateDaoImpl" parent="baseDao"></bean><!-- 风险人员维护率表 -->
+    <bean id="wenGradeDao" class="com.szrj.business.impl.personel.WenGradeDaoImpl" parent="baseDao"></bean><!-- 涉稳人员 -->
+    <bean id="wenRiskDao" class="com.szrj.business.impl.personel.WenRiskDaoImpl" parent="baseDao"></bean><!-- 涉稳人员-风险背景 -->
+    <bean id="wenVisitDao" class="com.szrj.business.impl.personel.WenVisitDaoImpl" parent="baseDao"></bean><!-- 涉稳人员-涉访涉诉经历 -->
+    <bean id="relationDao" class="com.szrj.business.impl.personel.RelationDaoImpl" parent="baseDao"></bean><!-- 风险人员  关联信息 -->
+    <bean id="heiEditorDao" class="com.szrj.business.impl.personel.HeiEditorDaoImpl" parent="baseDao"></bean><!-- 涉黑表 -->
+    <bean id="kongExtendDao" class="com.szrj.business.impl.personel.KongExtendDaoImpl" parent="baseDao"></bean><!-- 涉恐表 -->
+    <bean id="kongControlPowerDao" class="com.szrj.business.impl.personel.KongControlPowerDaoImpl" parent="baseDao"></bean><!-- 涉恐公共/秘密管控力量 个人简历 家庭关系、社会关系 -->
+    <bean id="controlPowerDao" class="com.szrj.business.impl.personel.ControlPowerDaoImpl" parent="baseDao"></bean><!-- 管控力量 -->
+	<bean id="jointControlRecordDao" class="com.szrj.business.impl.personel.JointControlRecordDaoImpl" parent="baseDao"></bean><!-- 风险人员  联控记录 -->
+	<bean id="realityShowDao" class="com.szrj.business.impl.personel.RealityShowDaoImpl" parent="baseDao"></bean><!-- 风险人员  现实表现 -->
+	<bean id="duextendDao" class="com.szrj.business.impl.personel.DuExtendDaoImpl" parent="baseDao"></bean><!-- 风险人员  涉毒  扩展信息 -->
+	<bean id="personnelExtendDao" class="com.szrj.business.impl.personel.PersonnelExtendDaoImpl" parent="baseDao"></bean><!-- 风险人员 通用扩展信息 -->
+	<bean id="applylabelDao" class="com.szrj.business.impl.personel.ApplylabelDaoImpl" parent="baseDao"></bean><!-- 风险人员 标签审核 -->
+	<bean id="zaExtendDao" class="com.szrj.business.impl.personel.ZaExtendDaoImpl" parent="baseDao"></bean><!-- 风险人员 标签审核 -->
+	<!-- 风险事件 -->
+    <bean id="contradictionInfoDao" class="com.szrj.business.impl.event.ContradictionInfoDaoImpl" parent="baseDao"></bean><!-- 风险矛盾信息 -->
+    <bean id="eventsInfoDao" class="com.szrj.business.impl.event.EventsInfoDaoImpl" parent="baseDao"></bean><!-- 引发涉稳事件 -->
+    <bean id="leadsInfoDao" class="com.szrj.business.impl.event.LeadsInfoDaoImpl" parent="baseDao"></bean><!-- 情报线索信息 -->
+    <bean id="keypersonnelDao" class="com.szrj.business.impl.event.KeypersonnelDaoImpl" parent="baseDao"></bean><!-- 矛盾主要组织人员 -->
+    <bean id="defuseInfoDao" class="com.szrj.business.impl.event.DefuseInfoDaoImpl" parent="baseDao"></bean><!-- 稳控化解情况 -->
+    <bean id="workInfoDao" class="com.szrj.business.impl.event.WorkInfoDaoImpl" parent="baseDao"></bean><!-- 工作交办管理 -->
+    <bean id="handleInfoDao" class="com.szrj.business.impl.event.HandleInfoDaoImpl" parent="baseDao"></bean><!-- 领导交办情况 -->
+    <bean id="auditRecordDao" class="com.szrj.business.impl.event.AuditRecordDaoImpl" parent="baseDao"></bean><!-- 审核记录 -->
+    <!-- 风险单位 -->
+    <bean id="companyDao" class="com.szrj.business.impl.company.CompanyDaoImpl" parent="baseDao"></bean><!-- 易制毒化学品 -->
+    <bean id="licenceDao" class="com.szrj.business.impl.company.YzdLicenceDaoImpl" parent="baseDao"></bean><!-- 许可证信息 -->
+    <bean id="chemicalDao" class="com.szrj.business.impl.company.YzdChemicalDaoImpl" parent="baseDao"></bean><!-- 化学品种类 -->
+    <bean id="messengerDao" class="com.szrj.business.impl.company.YzdMessengerDaoImpl" parent="baseDao"></bean><!-- 办证人员信息 -->
+	<bean id="chemistryDao" class="com.szrj.business.impl.company.YzdChemistryDaoImpl" parent="baseDao"></bean><!-- 懂化学技术人员 -->
+	<bean id="equipmentDao" class="com.szrj.business.impl.company.YzdEquipmentDaoImpl" parent="baseDao"></bean><!-- 设备信息 -->
+	<bean id="checkDao" class="com.szrj.business.impl.company.YzdCheckDaoImpl" parent="baseDao"></bean><!-- 检查表 -->
+	<bean id="vehicleDao" class="com.szrj.business.impl.company.VehicleDaoImpl" parent="baseDao"></bean><!-- 风险车辆 -->
+	<!-- 全国轨迹信息 -->
+	<bean id="trailInformationDao" class="com.szrj.business.impl.TrailInformationDaoImpl" parent="baseDao"></bean><!-- 全国轨迹信息 -->
+	<!-- 情报管理 -->
+	<bean id="informationDao" class="com.szrj.business.impl.information.InformationDaoImpl" parent="baseDao"></bean><!-- 情报信息 -->
+	<bean id="infoJointPersonDao" class="com.szrj.business.impl.information.InfoJointPersonDaoImpl" parent="baseDao"></bean><!-- 涉及人员 -->
+	<bean id="informationSendDao" class="com.szrj.business.impl.information.InformationSendDaoImpl" parent="baseDao"></bean><!-- 上报 -->
+	<bean id="informationReceiveDao" class="com.szrj.business.impl.information.InformationReceiveDaoImpl" parent="baseDao"></bean><!-- 转阅 -->
+	<bean id="infoTimeLineDao" class="com.szrj.business.impl.information.InfoTimeLineDaoImpl" parent="baseDao"></bean><!-- 时光轴 -->
+	<bean id="infoAnnotationDao" class="com.szrj.business.impl.information.InfoAnnotationDaoImpl" parent="baseDao"></bean><!-- 批注 -->
+	<bean id="informationSpecialDao" class="com.szrj.business.impl.information.InformationSpecialDaoImpl" parent="baseDao"></bean><!-- 专项标签 -->
+	<bean id="controlFilesDao" class="com.szrj.business.impl.personel.ControlFilesDaoImpl" parent="baseDao"></bean><!-- 管控文件 -->
+	<bean id="infoAssignDao" class="com.szrj.business.impl.information.InfoAssignDaoImpl" parent="baseDao"></bean><!-- 情报交办信息 -->
+	<bean id="assignSignforDao" class="com.szrj.business.impl.information.AssignSignforDaoImpl" parent="baseDao"></bean><!-- 交办签收反馈 -->
+	<!-- 政保阵地 -->
+	<bean id="positionDao" class="com.szrj.business.impl.position.PositionDaoImpl" parent="baseDao"></bean><!-- 政保阵地 -->
+	<bean id="organizationDao" class="com.szrj.business.impl.position.OrganizationDaoImpl" parent="baseDao"></bean><!-- 组织 -->
+	<!-- 系统功能 -->
+	<bean id="noticeDao" class="com.szrj.business.impl.sysapp.NoticeDaoImpl" parent="baseDao"></bean><!-- 通知公告 -->
+	<bean id="sendMessageDao" class="com.szrj.business.impl.sysapp.SendMessageDaoImpl" parent="baseDao"></bean><!-- 发送短信 -->
+	<bean id="sendMessageLogDao" class="com.szrj.business.impl.sysapp.SendMessageLogDaoImpl" parent="baseDao"></bean><!-- 发送短信日志 -->
+	<!-- 日常管理 -->
+	<bean id="dutyDao" class="com.szrj.business.impl.daily.DutyDaoImpl" parent="baseDao"></bean><!-- 值班管理 -->
+	<!-- 接口 -->
+	<bean id="lwuserDao" class="com.szrj.business.impl.interfaces.LwUserDaoImpl" parent="baseDao1"></bean><!-- lingwu用户 --> 
+	<bean id="kaKouDao" class="com.szrj.business.impl.interfaces.KaKouDaoImpl" parent="baseDao"></bean><!-- 卡口 -->
+	<bean id="yujingDao" class="com.szrj.business.impl.interfaces.YujingDaoImpl" parent="baseDao2"></bean><!-- 预警 -->
+	<!-- 风险物品 -->
+	<bean id="dangerousItemDao" class="com.szrj.business.impl.goods.DangerousItemDaoImpl" parent="baseDao"></bean><!-- 风险物品 -->
+</beans>

@@ -1,0 +1,637 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+  <sqlMap namespace="duextend">      
+   <typeAlias alias="basicMsg" type="com.szrj.business.model.BasicMsg"/>
+	<typeAlias alias="personnel" type="com.szrj.business.model.personel.Personnel"/>
+	<typeAlias alias="duextend" type="com.szrj.business.model.personel.DuExtend"/> 
+	<typeAlias alias="ducheckrecord" type="com.szrj.business.model.personel.DuCheckRecord"/>   
+	<typeAlias alias="pieModel" type="com.aladdin.model.PieModel"/>
+	<typeAlias alias="duModel" type="com.aladdin.model.DuModel"/>
+	<resultMap id="exportPersonnel" class="personnel">
+		<result property="persontype" column="persontype"/>
+		<result property="personname" column="personname"/>
+		<result property="cardnumber" column="cardnumber"/>
+		<result property="sexes" column="sexes"/>
+		<result property="usedname" column="usedname"/>
+		<result property="nickname" column="nickname"/>
+		<result property="marrystatus" column="marrystatus"/>
+		<result property="nation" column="nation"/>
+		<result property="soldierstatus" column="soldierstatus"/>
+		<result property="heathstatus" column="heathstatus"/>
+		<result property="politicalposition" column="politicalposition"/>
+		<result property="faith" column="faith"/>
+		<result property="education" column="education"/>
+		<result property="persontype" column="persontype"/>
+		<result property="houseplace" column="houseplace"/>
+		<result property="housepolice" column="housepolice"/>
+		<result property="homeplace" column="homeplace"/>
+		<result property="homepolice" column="homepolice"/>
+		<result property="workplace" column="workplace"/>
+		<result property="workpolice" column="workpolice"/>
+		<result property="feature" column="feature"/>
+		<result property="speciality" column="speciality"/>
+		<result property="records" column="records"/>
+		<result property="personheight" column="personheight"/>
+		<result property="netskillhabit" column="netskillhabit"/>
+	</resultMap>
+	<resultMap id="exportRelation" class="relation">
+		<result property="telnumber" column="telnumber"/>
+		<result property="telephone" column="telephone"/>
+		<result property="relatedwifi" column="relatedwifi"/>
+		<result property="relatedvehicle" column="relatedvehicle"/>
+		<result property="bankaccount" column="bankaccount"/>
+		<result property="netidentity" column="netidentity"/>
+		<result property="netpayment" column="netpayment"/>
+		<result property="relatedhouse" column="relatedhouse"/>
+		<result property="relatedlegal" column="relatedlegal"/>
+		<result property="relateddriver" column="relateddriver"/>
+		<result property="relatedpassport" column="relatedpassport"/>
+	</resultMap>
+	<resultMap class="duextend" id="exportdu" groupBy="personnelid">
+		<result property="addtime" column="addtime" />
+		<result property="addoperator" column="addoperator" />
+		<result property="jointcontrollevel" column="jointcontrollevel" />
+		<result property="incontrollevel" column="incontrollevel" />
+		<result property="narcoticstype" column="narcoticstype" />
+		<result property="firsttime" column="firsttime" />
+		<result property="lasttime" column="lasttime" />
+		<result property="controlstatus" column="controlstatus" />
+		<result property="controlstatusmemo" column="controlstatusmemo" />
+		<result property="caredperson" column="caredperson" />
+		<result property="safetyaction" column="safetyaction" />
+		<result property="actualstate" column="actualstate" />
+		<result property="memo" column="memo" />
+		<result property="unitname1" column="unitname1" />
+		<result property="policename1" column="policename1" />
+		<result property="unitname2" column="unitname2" />
+		<result property="policename2" column="policename2" />
+		<result property="ptype" column="ptype" />
+		<result property="yesorno" column="yesorno" />
+		
+		<result property="exportPersonnel" resultMap="duextend.exportPersonnel"/>
+		<result property="exportRelation" resultMap="duextend.exportRelation"/>
+		
+	</resultMap>     
+	
+	<resultMap id="dayinPersonnel" class="personnel">
+		<result property="nickname" column="nickname"/>
+		<result property="education" column="education"/>
+		<result property="marrystatus" column="marrystatus"/>
+		<result property="personheight" column="personheight"/>
+		<result property="politicalposition" column="politicalposition"/>
+		<result property="faith" column="faith"/>
+		<result property="soldierstatus" column="soldierstatus"/>
+		<result property="houseplace" column="houseplace"/>
+		<result property="housepolice" column="housepolice"/>
+		<result property="homeplace" column="homeplace"/>
+		<result property="homewifi" column="homewifi"/>
+		<result property="homewide" column="homewide"/>
+		<result property="homepolice" column="homepolice"/>
+		<result property="workplace" column="workplace"/>
+		<result property="workwifi" column="workwifi"/>
+		<result property="workwide" column="workwide"/>
+		<result property="workpolice" column="workpolice"/>
+		<result property="feature" column="feature"/>
+		<result property="speciality" column="speciality"/>
+		<result property="checkmethod" column="checkmethod"/>
+		<result property="records" column="records"/>
+		<result property="heathstatus" column="heathstatus"/>
+	</resultMap>
+	
+	<resultMap class="duextend" id="dayindu">
+		<result property="ptype" column="ptype"/>
+		<result property="personname" column="personname"/>
+		<result property="sexes" column="sexes"/>
+		<result property="cardnumber" column="cardnumber"/>
+		<result property="nation" column="nation"/>
+		<result property="narcoticstype" column="narcoticstype"/>
+		<result property="firsttime" column="firsttime"/>
+		<result property="lasttime" column="lasttime"/>
+		<result property="jointcontrollevel" column="jointcontrollevel"/>
+		<result property="incontrollevel" column="incontrollevel"/>
+		<result property="controlstatus" column="controlstatus"/>
+		<result property="controlstatusmemo" column="controlstatusmemo"/>
+		<result property="caredperson" column="caredperson"/>
+		<result property="safetyaction" column="safetyaction"/>
+		<result property="unitname1" column="unitname1"/>
+		<result property="policename1" column="policename1"/>
+		<result property="policephone1" column="policephone1"/>
+		<result property="unitname2" column="unitname2"/>
+		<result property="policename2" column="policename2"/>
+		<result property="policephone2" column="policephone2"/>
+		<result property="actualstate" column="actualstate"/>
+		<result property="memo" column="memo"/>
+		<result property="personnelid" column="personnelid"/>
+		<result property="exportPersonnel" resultMap="duextend.dayinPersonnel"/>
+	</resultMap>
+	
+   <!-- 新增 -->
+	<insert id="add" parameterClass="duextend">
+		INSERT INTO p_du_extend_t
+		(personnelid,incontrollevel,jointcontrollevel,jurisdictunit1,jurisdictpolice1,policephone1,jurisdictunit2,jurisdictpolice2,policephone2,
+		personneltype,narcoticstype,firsttime,lasttime,controlstatus,caredperson,safetyaction,actualstate,attachments,
+		validflag,addoperator,addtime,memo,ptype)
+		VALUES
+		($personnelid$,'$incontrollevel$','$jointcontrollevel$','$jurisdictunit1$','$jurisdictpolice1$','$policephone1$','$jurisdictunit2$','$jurisdictpolice2$','$policephone2$',
+		$personneltype$,'$narcoticstype$','$firsttime$','$lasttime$','$controlstatus$',$caredperson$,'$safetyaction$','$actualstate$','$attachments$',
+		1,'$addoperator$','$addtime$','$memo$','$ptype$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+	<select id="searchDuExtend" parameterClass="duextend" resultClass="duextend">
+	     SELECT
+				gt.*,
+				pt.cardnumber,
+				pt.personname,
+				pt.homeplace,
+				pt.persontype,
+				pt.sexes,
+				pt.maintainrate1,
+				dt.departname AS unitname1,
+				ut.staffName AS policename1 
+			FROM
+				p_du_extend_t gt
+				INNER JOIN p_personnel_t pt ON gt.personnelid = pt.id
+				LEFT JOIN sys_department_t dt ON pt.jdunit1 = dt.id
+				LEFT JOIN sys_user_t ut ON pt.jdpolice1 = ut.id 
+			WHERE
+				gt.validflag > 0 AND pt.validflag > 0 
+			<dynamic prepend="" >
+			 <isNotEmpty prepend="AND" property="cardnumber">
+				pt.cardnumber like '%$cardnumber$%'
+			</isNotEmpty>
+			  <isNotEmpty prepend="AND" property="personname">
+				pt.personname like '%$personname$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="sexes">
+				pt.sexes like '%$sexes$%'
+			</isNotEmpty>
+		    <isNotEmpty prepend="AND" property="nation">
+				pt.nation = '$nation$'
+			</isNotEmpty>
+			 <isNotEmpty prepend="AND" property="ptype">
+				gt.ptype = '$ptype$'
+			</isNotEmpty>
+			 <isNotEmpty prepend="AND" property="homeplace">
+				pt.homeplace like '%$homeplace$%'
+			</isNotEmpty>
+		   <isNotEmpty prepend="AND" property="incontrollevel">
+				gt.incontrollevel = '$incontrollevel$'
+			</isNotEmpty>
+			 <isNotEmpty prepend="AND" property="jointcontrollevel">
+				gt.jointcontrollevel = '$jointcontrollevel$'
+			</isNotEmpty>
+			 <isNotEmpty prepend="AND" property="narcoticstype">
+				gt.narcoticstype like '%$narcoticstype$%'
+			</isNotEmpty>
+			<isNotEqual prepend="AND" property="personneltype" compareValue="0">
+				gt.personneltype in ($personneltype$,3)
+	        </isNotEqual>
+	        <isNotEmpty prepend="AND" property="unitname1">
+				dt.departname like '%$unitname1$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="controlstatus">
+				gt.controlstatus like '%$controlstatus$%'
+			</isNotEmpty>
+			<isNotEqual prepend="AND" property="unitFilter" compareValue="0">
+				(pt.jdunit1 = $unitFilter$  or pt.jdunit2 = $unitFilter$)
+	        </isNotEqual>
+			<isNotEqual prepend="AND" property="personFilter" compareValue="0">
+				(pt.jdpolice1 = $personFilter$ or pt.jdpolice2 = $personFilter$)
+	        </isNotEqual>
+	        <isNotEmpty prepend="AND" property="checkRecord">
+	        	<isNotEqual prepend="" property="checkRecord" compareValue=">0">
+		        	<isNotEqual prepend="" property="checkRecord" compareValue="=0">
+			        	IFNULL( (select count(1) from p_du_checkrecord_t where personnelid = gt.personnelid
+			        		and concat($checkRecord$,'-12-31 24:00:00') >= checktime  
+			        		and checktime >= concat($checkRecord$,'-01-01 00:00:00')
+			        	 ) ,0) >0
+			        </isNotEqual>
+		        </isNotEqual>
+	        	<isEqual prepend="" property="checkRecord" compareValue=">0">
+		        	IFNULL( (select count(1) from p_du_checkrecord_t where personnelid = gt.personnelid
+		        	<isNotEmpty prepend="AND" property="startTime">
+		        		checktime >= '$startTime$'
+		        	</isNotEmpty>
+		        	<isNotEmpty prepend="AND" property="endTime">
+		        		'$endTime$' >= checktime
+		        	</isNotEmpty>
+		        	 ) ,0) $checkRecord$
+		        </isEqual>
+	        	<isEqual prepend="" property="checkRecord" compareValue="=0">
+		        	IFNULL( (select count(1) from p_du_checkrecord_t where personnelid = gt.personnelid
+		        	<isNotEmpty prepend="AND" property="startTime">
+		        		checktime >= '$startTime$'
+		        	</isNotEmpty>
+		        	<isNotEmpty prepend="AND" property="endTime">
+		        		'$endTime$' >= checktime
+		        	</isNotEmpty>
+		        	 ) ,0) $checkRecord$
+		        </isEqual>
+	        </isNotEmpty>
+	        <isNotEmpty prepend="AND" property="yesorno">
+	        	<isGreaterThan property="yesorno" compareValue="0">
+	        		FIND_IN_SET(ABS($yesorno$),IFNULL(gt.yesorno,''))
+	        	</isGreaterThan>
+	        	<isLessThan property="yesorno" compareValue="0">
+	        		 not FIND_IN_SET(ABS($yesorno$),IFNULL(gt.yesorno,''))
+	        	</isLessThan>
+	        </isNotEmpty>
+	        <isNotEmpty prepend="AND" property="addtime">
+	        	gt.addtime like '$addtime$%'
+	        </isNotEmpty> 
+	         <isNotEqual prepend="AND" property="caredperson" compareValue="0">
+	        	gt.caredperson = $caredperson$
+	        </isNotEqual>
+	        <isNotEmpty prepend="AND" property="casename">
+	        	gt.casename like '%$casename$%'
+	        </isNotEmpty>
+		    order by gt.id desc
+		</dynamic>
+	</select>
+	<select id="searchDuExtend_count" parameterClass="duextend" resultClass="Integer">
+	       SELECT  count(1)
+			FROM
+				p_du_extend_t gt
+				INNER JOIN p_personnel_t pt ON gt.personnelid = pt.id
+				LEFT JOIN sys_department_t dt ON pt.jdunit1 = dt.id
+				LEFT JOIN sys_user_t ut ON pt.jdpolice1 = ut.id 
+			WHERE
+				gt.validflag > 0 AND pt.validflag > 0 
+			<dynamic prepend="" >
+			 <isNotEmpty prepend="AND" property="cardnumber">
+				pt.cardnumber like '%$cardnumber$%'
+			</isNotEmpty>
+			  <isNotEmpty prepend="AND" property="personname">
+				pt.personname like '%$personname$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="sexes">
+				pt.sexes like '%$sexes$%'
+			</isNotEmpty>
+		    <isNotEmpty prepend="AND" property="homeplace">
+				pt.homeplace like '%$homeplace$%'
+			</isNotEmpty>
+			  <isNotEmpty prepend="AND" property="nation">
+				pt.nation = '$nation$'
+			</isNotEmpty>
+			 <isNotEmpty prepend="AND" property="ptype">
+				gt.ptype = '$ptype$'
+			</isNotEmpty>
+		   <isNotEmpty prepend="AND" property="incontrollevel">
+				gt.incontrollevel = '$incontrollevel$'
+			</isNotEmpty>
+			 <isNotEmpty prepend="AND" property="jointcontrollevel">
+				gt.jointcontrollevel = '$jointcontrollevel$'
+			</isNotEmpty>
+			 <isNotEmpty prepend="AND" property="narcoticstype">
+				gt.narcoticstype like '%$narcoticstype$%'
+			</isNotEmpty>
+			<isNotEqual prepend="AND" property="personneltype" compareValue="0">
+				gt.personneltype in ($personneltype$,3)
+	        </isNotEqual>
+	         <isNotEmpty prepend="AND" property="unitname1">
+				dt.departname like '%$unitname1$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="controlstatus">
+				gt.controlstatus like '%$controlstatus$%'
+			</isNotEmpty>
+			<isNotEqual prepend="AND" property="unitFilter" compareValue="0">
+				(pt.jdunit1 = $unitFilter$  or pt.jdunit2 = $unitFilter$)
+	        </isNotEqual>
+			<isNotEqual prepend="AND" property="personFilter" compareValue="0">
+				(pt.jdpolice1 = $personFilter$ or pt.jdpolice2 = $personFilter$)
+	        </isNotEqual>
+	         <isNotEmpty prepend="AND" property="checkRecord">
+	        	<isNotEqual prepend="" property="checkRecord" compareValue=">0">
+		        	<isNotEqual prepend="" property="checkRecord" compareValue="=0">
+			        	IFNULL( (select count(1) from p_du_checkrecord_t where personnelid = gt.personnelid
+			        		and concat($checkRecord$,'-12-31 24:00:00') >= checktime  
+			        		and checktime >= concat($checkRecord$,'-01-01 00:00:00')
+			        	 ) ,0) >0
+			        </isNotEqual>
+		        </isNotEqual>
+	        	<isEqual prepend="" property="checkRecord" compareValue=">0">
+		        	IFNULL( (select count(1) from p_du_checkrecord_t where personnelid = gt.personnelid
+		        	<isNotEmpty prepend="AND" property="startTime">
+		        		checktime >= '$startTime$'
+		        	</isNotEmpty>
+		        	<isNotEmpty prepend="AND" property="endTime">
+		        		'$endTime$' >= checktime
+		        	</isNotEmpty>
+		        	 ) ,0) $checkRecord$
+		        </isEqual>
+	        	<isEqual prepend="" property="checkRecord" compareValue="=0">
+		        	IFNULL( (select count(1) from p_du_checkrecord_t where personnelid = gt.personnelid
+		        	<isNotEmpty prepend="AND" property="startTime">
+		        		checktime >= '$startTime$'
+		        	</isNotEmpty>
+		        	<isNotEmpty prepend="AND" property="endTime">
+		        		'$endTime$' >= checktime
+		        	</isNotEmpty>
+		        	 ) ,0) $checkRecord$
+		        </isEqual>
+	        </isNotEmpty>
+	        <isNotEmpty prepend="AND" property="yesorno">
+	        	<isGreaterThan property="yesorno" compareValue="0">
+	        		FIND_IN_SET(ABS($yesorno$),IFNULL(gt.yesorno,''))
+	        	</isGreaterThan>
+	        	<isLessThan property="yesorno" compareValue="0">
+	        		 not FIND_IN_SET(ABS($yesorno$),IFNULL(gt.yesorno,''))
+	        	</isLessThan>
+	        </isNotEmpty>
+	        <isNotEmpty prepend="AND" property="addtime">
+	        	gt.addtime like '$addtime$%'
+	        </isNotEmpty>
+	        <isNotEqual prepend="AND" property="caredperson" compareValue="0">
+	        	gt.caredperson = $caredperson$
+	        </isNotEqual>
+	        <isNotEmpty prepend="AND" property="casename">
+	        	gt.casename like '%$casename$%'
+	        </isNotEmpty>
+		</dynamic>
+	</select>
+	<select id="getDuExtendBypersonnelid" parameterClass="Integer" resultClass="duextend">
+	     SELECT
+				rt.*,
+				t3.departname AS unitname1,
+				u1.staffName AS policename1,
+				t4.departname AS unitname2,
+				u2.staffName AS policename2,
+				GROUP_CONCAT( ft1.fileName ORDER BY ft1.id SEPARATOR ',' ) AS filesname,
+				GROUP_CONCAT( ft1.fileallName ORDER BY ft1.id SEPARATOR ',' ) AS filesallname,
+				group_concat(f.basicName separator ',') as casenameMsg
+				
+			FROM
+				p_du_extend_t rt
+				INNER JOIN p_personnel_t pt ON rt.personnelid = pt.id
+				LEFT JOIN sys_department_t t3 ON pt.jdunit1 = t3.id
+				LEFT JOIN sys_department_t t4 ON pt.jdunit2 = t4.id
+				LEFT JOIN sys_user_t u1 ON pt.jdpolice1 = u1.id
+				LEFT JOIN sys_user_t u2 ON pt.jdpolice2 = u2.id
+				LEFT JOIN sys_file_t ft1 ON FIND_IN_SET( ft1.id, rt.attachments ) 
+				left join sys_basic_msg_t f on find_in_set(f.id,rt.casename)
+			WHERE
+				rt.validflag > 0 and pt.validflag > 0
+				AND rt.personnelid = $personnelid$ 
+			GROUP BY
+				rt.id 
+	</select>
+	<update id="updatedupersonel" parameterClass="duextend">
+		UPDATE p_du_extend_t
+		SET narcoticstype = '$narcoticstype$',personneltype=$personneltype$,
+		firsttime='$firsttime$',lasttime='$lasttime$',
+		updateoperator='$updateoperator$',updatetime='$updatetime$',casename='$casename$'
+		WHERE id = $id$
+	</update> 
+	<update id="updateduextend" parameterClass="duextend">
+		UPDATE p_du_extend_t
+		SET jointcontrollevel = '$jointcontrollevel$', incontrollevel = '$incontrollevel$',
+		jurisdictunit1=$jurisdictunit1$,jurisdictpolice1=$jurisdictpolice1$,policephone1='$policephone1$',
+		jurisdictunit2='$jurisdictunit2$',jurisdictpolice2='$jurisdictpolice2$',policephone2='$policephone2$',
+		controlstatus='$controlstatus$',controlstatusmemo='$controlstatusmemo$',caredperson=$caredperson$,safetyaction='$safetyaction$',
+		updateoperator='$updateoperator$',updatetime='$updatetime$',ptype='$ptype$'
+		WHERE id = $id$
+	</update>  
+	<update id="updateduextendXSBX" parameterClass="duextend">
+		UPDATE p_du_extend_t
+		SET actualstate = '$actualstate$', attachments = '$attachments$',memo='$memo$',yesorno='$yesorno$',
+		updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	 <!-- 删除 -->
+	<update id="cancelduextend" parameterClass="duextend">
+		UPDATE p_du_extend_t
+		SET validflag=0,
+		updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	<!-- 导出 -->
+	<select id="exportDuPersonnel" parameterClass="duextend" resultMap="duextend.exportdu">
+		  SELECT
+			 gt.*,pt.persontype,
+				 pt.personname,pt.cardnumber,pt.sexes,pt.usedname,pt.nickname,pt.marrystatus,
+			     pt.soldierstatus,pt.heathstatus,pt.politicalposition,pt.nation,	pt.personheight,
+		         pt.faith,pt.education,pt.houseplace,pt.housepolice,pt.netskillhabit,
+			     pt.homepolice,pt.workplace,pt.workpolice,pt.feature,pt.homeplace,
+			     pt.speciality,pt.records,rt.telnumber,rt.telephone,rt.relatedwifi,rt.relatedvehicle,
+			     rt.bankaccount,rt.netidentity,rt.netpayment,rt.relatedhouse,
+			     rt.relatedlegal,rt.relateddriver,rt.relatedpassport,
+				dt1.departname AS unitname1,
+				ut1.staffName AS policename1,
+				dt2.departname AS unitname2,
+				ut2.staffName AS policename2
+			FROM
+				p_du_extend_t gt
+				INNER JOIN p_personnel_t pt ON gt.personnelid = pt.id
+				INNER JOIN p_relation_t rt ON gt.personnelid = rt.personnelid
+				LEFT JOIN sys_department_t dt1 ON pt.jdunit1 = dt1.id
+				LEFT JOIN sys_user_t ut1 ON pt.jdpolice1 = ut1.id 
+				LEFT JOIN sys_department_t dt2 ON pt.jdunit2 = dt2.id
+				LEFT JOIN sys_user_t ut2 ON pt.jdpolice2 = ut2.id 
+			WHERE
+				gt.validflag > 0 AND pt.validflag > 0 
+		<dynamic prepend="" >
+			 <isNotEmpty prepend="AND" property="cardnumber">
+				pt.cardnumber like '%$cardnumber$%'
+			</isNotEmpty>
+			  <isNotEmpty prepend="AND" property="personname">
+				pt.personname like '%$personname$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="sexes">
+				pt.sexes like '%$sexes$%'
+			</isNotEmpty>
+		    <isNotEmpty prepend="AND" property="nation">
+				pt.nation = '$nation$'
+			</isNotEmpty>
+			 <isNotEmpty prepend="AND" property="ptype">
+				gt.ptype = '$ptype$'
+			</isNotEmpty>
+			 <isNotEmpty prepend="AND" property="homeplace">
+				pt.homeplace like '%$homeplace$%'
+			</isNotEmpty>
+		   <isNotEmpty prepend="AND" property="incontrollevel">
+				gt.incontrollevel = '$incontrollevel$'
+			</isNotEmpty>
+			 <isNotEmpty prepend="AND" property="jointcontrollevel">
+				gt.jointcontrollevel = '$jointcontrollevel$'
+			</isNotEmpty>
+			 <isNotEmpty prepend="AND" property="narcoticstype">
+				gt.narcoticstype like '%$narcoticstype$%'
+			</isNotEmpty>
+			<isNotEqual prepend="AND" property="personneltype" compareValue="0">
+				gt.personneltype in ($personneltype$,3)
+	        </isNotEqual>
+	        <isNotEmpty prepend="AND" property="unitname1">
+				dt1.departname like '%$unitname1$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="controlstatus">
+				gt.controlstatus like '%$controlstatus$%'
+			</isNotEmpty>
+			<isNotEqual prepend="AND" property="unitFilter" compareValue="0">
+				(pt.jdunit1 = $unitFilter$  or pt.jdunit2 = $unitFilter$)
+	        </isNotEqual>
+			<isNotEqual prepend="AND" property="personFilter" compareValue="0">
+				(pt.jdpolice1 = $personFilter$ or pt.jdpolice2 = $personFilter$)
+	        </isNotEqual>
+	        <isNotEmpty prepend="AND" property="checkRecord">
+	        	<isNotEqual prepend="" property="checkRecord" compareValue=">0">
+		        	<isNotEqual prepend="" property="checkRecord" compareValue="=0">
+			        	IFNULL( (select count(1) from p_du_checkrecord_t where personnelid = gt.personnelid
+			        		and concat($checkRecord$,'-12-31 24:00:00') >= checktime  
+			        		and checktime >= concat($checkRecord$,'-01-01 00:00:00')
+			        	 ) ,0) >0
+			        </isNotEqual>
+		        </isNotEqual>
+	        	<isEqual prepend="" property="checkRecord" compareValue=">0">
+		        	IFNULL( (select count(1) from p_du_checkrecord_t where personnelid = gt.personnelid
+		        	<isNotEmpty prepend="AND" property="startTime">
+		        		checktime >= '$startTime$'
+		        	</isNotEmpty>
+		        	<isNotEmpty prepend="AND" property="endTime">
+		        		'$endTime$' >= checktime
+		        	</isNotEmpty>
+		        	 ) ,0) $checkRecord$
+		        </isEqual>
+	        	<isEqual prepend="" property="checkRecord" compareValue="=0">
+		        	IFNULL( (select count(1) from p_du_checkrecord_t where personnelid = gt.personnelid
+		        	<isNotEmpty prepend="AND" property="startTime">
+		        		checktime >= '$startTime$'
+		        	</isNotEmpty>
+		        	<isNotEmpty prepend="AND" property="endTime">
+		        		'$endTime$' >= checktime
+		        	</isNotEmpty>
+		        	 ) ,0) $checkRecord$
+		        </isEqual>
+	        </isNotEmpty>
+	        <isNotEmpty prepend="AND" property="yesorno">
+	        	<isGreaterThan property="yesorno" compareValue="0">
+	        		FIND_IN_SET(ABS($yesorno$),IFNULL(gt.yesorno,''))
+	        	</isGreaterThan>
+	        	<isLessThan property="yesorno" compareValue="0">
+	        		 not FIND_IN_SET(ABS($yesorno$),IFNULL(gt.yesorno,''))
+	        	</isLessThan>
+	        </isNotEmpty>
+	        <isNotEmpty prepend="AND" property="addtime">
+	        	gt.addtime like '$addtime$%'
+	        </isNotEmpty> 
+	         <isNotEqual prepend="AND" property="caredperson" compareValue="0">
+	        	gt.caredperson = $caredperson$
+	        </isNotEqual>
+	        <isNotEmpty prepend="AND" property="casename">
+	        	gt.casename like '%$casename$%'
+	        </isNotEmpty>
+		</dynamic>
+		order by gt.id desc
+	</select>
+	<select id="countDuPersonByPersontype" parameterClass="duextend" resultClass="personnel">
+		select count(p.id) as personcount,CASE d.ptype WHEN '外来前科' THEN 'wlqk' WHEN '本地在册' THEN 'bdzc' END as persontype
+		from p_personnel_t p
+		LEFT JOIN p_du_extend_t d on d.personnelid=p.id and d.personneltype in (#personneltype#,3)
+		where p.validflag>0 and d.validflag>0
+		GROUP BY ptype
+		UNION
+		select count(p.id) as personcount,'zj' as persontype
+		from p_personnel_t p
+		LEFT JOIN p_du_extend_t d on d.personnelid=p.id and d.personneltype in (#personneltype#,3)
+		where p.validflag>0 and d.validflag>0
+	</select>
+	<select id="countDuPersonByUnit" parameterClass="duextend" resultClass="pieModel">
+		SELECT A.departname as name,count(p.id) as value FROM(
+		select * from sys_department_t
+		where validflag>0 and departtype=4)A
+		LEFT JOIN p_du_extend_t d on (d.jurisdictunit1=A.id or d.jurisdictunit2=A.id) and d.validflag>0 and d.personneltype in (#personneltype#,3)
+		LEFT JOIN p_personnel_t p on p.id=d.personnelid and p.validflag>0
+		GROUP BY A.departname ORDER BY A.id
+	</select>
+	<select id="countDuPersonByJointcontrollevel" parameterClass="duextend" resultClass="pieModel">
+		select A.basicName as name,count(p.id) as value FROM(
+		select * FROM sys_basic_msg_t
+		where basicType=82 and validflag>0)A
+		LEFT JOIN p_du_extend_t d on A.basicName=d.jointcontrollevel and d.validflag>0 and d.personneltype in (#personneltype#,3)
+		LEFT JOIN p_personnel_t p on p.id=d.personnelid and p.validflag>0
+		GROUP BY A.id
+		ORDER BY A.id
+	</select>
+	<select id="countDistDuPersonByJointcontrollevel" resultClass="DuModel">
+		select A.id,A.basicName as text,count(p.id)xi,A2.zhi FROM(
+		select * FROM sys_basic_msg_t
+		where basicType=82 and validflag>0)A
+		LEFT JOIN p_du_extend_t d on A.basicName=d.jointcontrollevel and d.validflag>0 and d.personneltype in (1,3)
+		LEFT JOIN p_personnel_t p on p.id=d.personnelid and p.validflag>0
+		LEFT JOIN (select B.id,B.basicName as name,count(p2.id) as zhi FROM(
+		select * FROM sys_basic_msg_t
+		where basicType=82 and validflag>0)B
+		LEFT JOIN p_du_extend_t d2 on B.basicName=d2.jointcontrollevel and d2.validflag>0 and d2.personneltype in (2,3)
+		LEFT JOIN p_personnel_t p2 on p2.id=d2.personnelid and p2.validflag>0 GROUP BY B.id) A2 ON A.id=A2.id
+		GROUP BY A.id
+		ORDER BY A.id
+	</select>
+	
+	
+	<!-- ******************************************涉毒人员 联控记录********************************************************************** -->
+	<insert id="addducheckrecord" parameterClass="ducheckrecord">
+		INSERT INTO p_du_checkrecord_t
+		(personnelid,checktype,checktime,checkunit,checkman,checkcontent,
+		validflag,addoperator,addtime,memo)
+		VALUES
+		($personnelid$,'$checktype$','$checktime$','$checkunit$','$checkman$','$checkcontent$',
+		1,'$addoperator$','$addtime$','$memo$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+	<update id="updateducheckrecord" parameterClass="ducheckrecord">
+	    UPDATE p_du_checkrecord_t
+		SET checktype = '$checktype$', checktime = '$checktime$',
+		checkunit = '$checkunit$', checkman = '$checkman$',
+		checkcontent = '$checkcontent$',updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	<update id="cancelducheckrecord" parameterClass="ducheckrecord">
+	    UPDATE p_du_checkrecord_t
+		SET validflag=0,updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	<select id="searchducheckrecord_count" parameterClass="ducheckrecord" resultClass="Integer">
+	    select count(1)    from 	p_du_checkrecord_t where validflag > 0 and personnelid = $personnelid$ 
+	</select>
+	<select id="searchducheckrecord" parameterClass="ducheckrecord" resultClass="ducheckrecord">
+	    select   *  from 	p_du_checkrecord_t where validflag > 0 and personnelid = $personnelid$ order by id desc
+	</select>
+	<select id="getDuCheckRecordByid" parameterClass="Integer" resultClass="ducheckrecord">
+	    select   *  from 	p_du_checkrecord_t where validflag > 0 and id = $id$ 
+	</select>          
+	
+	<select id="exportxidurenyuan" parameterClass="duextend" resultMap="duextend.dayindu">
+		SELECT
+			gt.ptype,
+			 pt.personname,pt.sexes,pt.nickname,
+			 pt.cardnumber,pt.nation,pt.heathstatus,
+			 pt.education,pt.marrystatus,pt.personheight,
+			 pt.politicalposition,pt.faith,pt.soldierstatus,
+		     gt.narcoticstype,gt.firsttime,gt.lasttime,
+		     pt.houseplace,pt.housepolice,
+		     pt.homeplace,pt.homewifi,pt.homewide,pt.homepolice,
+		     pt.workplace,pt.workwifi,pt.workwide,pt.workpolice,
+		     pt.feature,pt.speciality,pt.checkmethod,pt.records,
+		     gt.jointcontrollevel,gt.incontrollevel,
+		     gt.controlstatus,gt.controlstatusmemo,
+		     gt.caredperson,gt.safetyaction,
+		     dt1.departname AS unitname1,ut1.staffName AS policename1,gt.policephone1,
+		     dt2.departname AS unitname2,ut2.staffName AS policename2,gt.policephone2,
+		     gt.actualstate,gt.memo,gt.personnelid
+		FROM
+			p_du_extend_t gt
+			INNER JOIN p_personnel_t pt ON gt.personnelid = pt.id
+			LEFT JOIN sys_department_t dt1 ON pt.jdunit1 = dt1.id
+			LEFT JOIN sys_user_t ut1 ON pt.jdpolice1 = ut1.id 
+			LEFT JOIN sys_department_t dt2 ON pt.jdunit2 = dt2.id
+			LEFT JOIN sys_user_t ut2 ON pt.jdpolice2 = ut2.id 
+		WHERE
+			gt.validflag > 0 AND pt.validflag > 0 AND gt.id = $id$
+	</select>
+	
+	<select id="exportxiduLiankong" parameterClass="Integer" resultClass="ducheckrecord">
+		select checktype,checkunit,checkman,max(checktime) as checktime,memo,checkcontent
+		from p_du_checkrecord_t where validflag > 0 and personnelid = $personnelid$ group by checktype 
+	</select>
+	
+  </sqlMap>

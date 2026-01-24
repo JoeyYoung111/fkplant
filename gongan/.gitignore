@@ -1,0 +1,7 @@
+/out
+/WebRoot/WEB-INF/lib/*.jar
+/WebRoot/WEB-INF/classes/
+/target/
+/*.war
+*.doc
+*.docx

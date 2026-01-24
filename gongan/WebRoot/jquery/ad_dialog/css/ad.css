@@ -1,0 +1,22 @@
+.float_layer {border: 1px solid #aaaaaa; display:none;}
+.float_layer h2 { height: 25px; line-height: 25px; padding-left: 10px; font-size: 14px; color: #333; background: url(../images/title_bg.gif) repeat-x; border-bottom: 1px solid #aaaaaa; position: relative; margin-top: 0px;}
+
+.float_layer .min { width: 21px; height: 20px; background: url(../images/min.gif) no-repeat 0 bottom; position: absolute; top: 2px; right: 3px; }
+.float_layer .min:hover { background: url(../images/min.gif) no-repeat 0 0; }
+/*
+.float_layer .min { width: 21px; height: 20px; background: url(../images/min.gif) no-repeat 0 bottom; position: absolute; top: 2px; right: 3px; }
+.float_layer .min:hover { background: url(../images/min.gif) no-repeat 0 0; }
+*/
+/*
+.float_layer .max { width: 21px; height: 20px; background: url(../images/max.gif) no-repeat 0 bottom; position: absolute; top: 2px; right: 25px; }
+.float_layer .max:hover { background: url(../images/max.gif) no-repeat 0 0; }
+*/
+.float_layer .max { width: 21px; height: 20px; background: url(../images/max.gif) no-repeat 0 bottom; position: absolute; top: 2px; right: 3px; }
+.float_layer .max:hover { background: url(../images/max.gif) no-repeat 0 0; }
+.float_layer .close { width: 21px; height: 20px; background: url(../images/close.gif) no-repeat 0 bottom; position: absolute; top: 2px; right: 3px; }
+.float_layer .close:hover { background: url(../images/close.gif) no-repeat 0 0; }
+.float_layer .content2 { height: 400px; width:500px; overflow: hidden; font-size: 14px; line-height: 18px; color: #666; margin-top: -11px; }
+.float_layer .wrap2 { padding:10px; height: 400px;}
+
+
+.float_layer .wrap2 p{ font-family: '宋体';border-bottom: 1px dashed #ccc;margin-left: 0px;}

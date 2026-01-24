@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="yujing">
+	<typeAlias alias="yujing" type="com.szrj.business.model.interfaces.Yujing"/>
+
+	<select id="getYujingColumnListByModelId" parameterClass="String" resultClass="yujing">
+		select "table_name","exec_column","create_time"
+		from U_RES_YS_OPE.PUSH_EXEC 
+		where "push_id" in (select "push_id" from U_RES_YS_OPE.MESSAGE_PUSH where "task_id"='$modelId$') 
+		group by "exec_column","table_name","create_time"
+		order by "create_time" desc
+	</select>
+	
+	<select id="getYujingResultListByColumn" parameterClass="yujing" resultClass="yujing">
+		select "exec_column","result","header","row_key"
+		from U_RES_YS_OPE.$table_name$
+		where "exec_column"='$exec_column$'
+		order by "row_key"
+	</select>
+</sqlMap>

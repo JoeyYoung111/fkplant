@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="equipment">
+	<typeAlias alias="equipment" type="com.szrj.business.model.company.YzdEquipment"/>
+	
+	<!-- 新增 -->
+	<insert id="add" parameterClass="equipment">
+		INSERT INTO C_YZD_EQUIPMENT_T
+		(companyid,equipmentname,makecompany,equipmentbrand,equipmenttype,equipmentpower,buydate,
+		useyear,usestatus,purpose,usestate,leasecompany,lesseecompany,sellcompany,buycompany,
+		validflag,addoperator,addtime,memo)
+		VALUES
+		($companyid$,$equipmentname$,'$makecompany$','$equipmentbrand$','$equipmenttype$','$equipmentpower$','$buydate$',
+		'$useyear$','$usestatus$','$purpose$','$usestate$','$leasecompany$','$lesseecompany$','$sellcompany$','$buycompany$',
+		1,'$addoperator$','$addtime$','$memo$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() as ID</selectKey>
+	</insert>
+	
+	<!-- 查询 -->
+	<select id="searchEquipment_count" parameterClass="equipment" resultClass="Integer">
+		select count(id) from c_yzd_equipment_t
+		where validflag > 0
+		<dynamic>
+			<isNotEqual prepend="AND" property="companyid" compareValue="0">
+    			companyid = $companyid$
+    		</isNotEqual>
+			<isNotEqual prepend="AND" property="equipmentname" compareValue="0">
+				equipmentname = $equipmentname$
+			</isNotEqual>
+			<isNotEmpty prepend="AND" property="makecompany">
+				(makecompany like '%$makecompany$%')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="equipmentbrand">
+				(equipmentbrand like '%$equipmentbrand$%')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="buydate">
+				buydate = '$buydate$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="usestatus">
+				usestatus = '$usestatus$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="usestate">
+				usestate = '$usestate$'
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	<!-- 模糊查询 -->
+	<select id="searchEquipment" parameterClass="equipment" resultClass="equipment">
+		select a.*,b.basicName as emsg from c_yzd_equipment_t a
+		left join sys_basic_msg_t b
+		on a.equipmentname = b.id
+		where a.validflag > 0
+		<dynamic>
+			<isNotEqual prepend="AND" property="companyid" compareValue="0">
+    			a.companyid = $companyid$
+    		</isNotEqual>
+			<isNotEqual prepend="AND" property="equipmentname" compareValue="0">
+				a.equipmentname = $equipmentname$
+			</isNotEqual>
+			<isNotEmpty prepend="AND" property="makecompany">
+				(a.makecompany like '%$makecompany$%')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="equipmentbrand">
+				(a.equipmentbrand like '%$equipmentbrand$%')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="buydate">
+				a.buydate = '$buydate$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="usestatus">
+				a.usestatus = '$usestatus$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="usestate">
+				a.usestate = '$usestate$'
+			</isNotEmpty>
+		</dynamic>
+		order by a.id
+	</select>
+	
+	<!-- 根据id查询 -->
+	<select id="getById" parameterClass="int" resultClass="equipment">
+		select a.*,b.basicName as emsg from c_yzd_equipment_t a
+		left join sys_basic_msg_t b on a.equipmentname = b.id
+		where a.validflag>0 and a.ID = $id$
+	</select>
+	
+	<!-- 修改 -->
+	<update id="update" parameterClass="equipment">
+		update c_yzd_equipment_t set equipmentname=$equipmentname$,makecompany='$makecompany$',equipmentbrand='$equipmentbrand$',
+		equipmenttype='$equipmenttype$',equipmentpower='$equipmentpower$',buydate='$buydate$',useyear='$useyear$',
+		usestatus='$usestatus$',purpose='$purpose$',usestate='$usestate$',leasecompany='$leasecompany$',lesseecompany='$lesseecompany$',
+		sellcompany='$sellcompany$',buycompany='$buycompany$',updateoperator='$updateoperator$',updatetime='$updatetime$',memo='$memo$'
+		where id = $id$
+	</update>
+	
+	<!-- 删除 -->
+	<update id="cancel" parameterClass="equipment">
+		UPDATE C_YZD_EQUIPMENT_T SET VALIDFLAG = 0,updateoperator='$updateoperator$',updatetime='$updatetime$' WHERE ID = $id$
+	</update>
+	
+</sqlMap>

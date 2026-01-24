@@ -1,0 +1,82 @@
+package com.szrj.business.model.personel;
+
+/**
+ * 陪侍记录与警情关联表实体类
+ * 对应表：p_zaperson_pei_jq_rel_t
+ */
+public class ZaPeiJqRel {
+    private int id;
+    private int peiId;         // 陪侍记录ID (p_zaperson_pei_t.id)
+    private int personnelid;   // 人员ID (冗余字段，便于查询)
+    private int jqId;          // 警情ID (f_xt_xd_jqxx_new.id)
+    private String cjdw;       // 打处单位 (f_xt_xd_jqxx_new.cjdw)
+    private String remark;     // 备注
+    private int validflag;     // 状态 1有效 0无效
+    private String addtime;    // 创建时间
+
+    // Getters and Setters
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public int getPeiId() {
+        return peiId;
+    }
+
+    public void setPeiId(int peiId) {
+        this.peiId = peiId;
+    }
+
+    public int getPersonnelid() {
+        return personnelid;
+    }
+
+    public void setPersonnelid(int personnelid) {
+        this.personnelid = personnelid;
+    }
+
+    public int getJqId() {
+        return jqId;
+    }
+
+    public void setJqId(int jqId) {
+        this.jqId = jqId;
+    }
+
+    public String getCjdw() {
+        return cjdw;
+    }
+
+    public void setCjdw(String cjdw) {
+        this.cjdw = cjdw;
+    }
+
+    public String getRemark() {
+        return remark;
+    }
+
+    public void setRemark(String remark) {
+        this.remark = remark;
+    }
+
+    public int getValidflag() {
+        return validflag;
+    }
+
+    public void setValidflag(int validflag) {
+        this.validflag = validflag;
+    }
+
+    public String getAddtime() {
+        return addtime;
+    }
+
+    public void setAddtime(String addtime) {
+        this.addtime = addtime;
+    }
+}
+

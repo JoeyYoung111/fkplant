@@ -1,0 +1,203 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="keypersonnel">
+	<typeAlias alias="keypersonnel" type="com.szrj.business.model.event.Keypersonnel"/>
+	
+	<select id="search_count" parameterClass="keypersonnel" resultClass="Integer">
+		select count(*)
+		from(
+		SELECT personnelid,importance FROM e_keypersonnel_t WHERE validflag > 0 
+		<isNotEqual prepend="AND" property="cdtid" compareValue="0">
+			cdtid = #cdtid#
+		</isNotEqual>
+		<isNotEqual prepend="AND" property="workinfoid" compareValue="0">
+			workinfoid = #workinfoid#
+		</isNotEqual> 
+		GROUP BY personnelid) A
+		LEFT JOIN p_personnel_t p on A.personnelid=p.id
+		LEFT JOIN p_wen_grade_t w on w.personnelid=p.id
+		where p.validflag>0 and w.validflag>0
+		<isNotEmpty prepend="AND" property="cardnumber">
+			p.cardnumber like '%$cardnumber$%'
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="personname">
+			p.personname like '%$personname$%'
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="houseplace">
+			p.houseplace like '%$houseplace$%'
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="homeplace">
+			p.homeplace like '%$homeplace$%'
+		</isNotEmpty>
+		order by importance desc
+	</select>
+	<select id="search" parameterClass="keypersonnel" resultClass="keypersonnel">
+		select A.id,A.personnelid,A.deal,A.importance,p.cardnumber,p.personname,p.houseplace,p.homeplace,p.sexes,p.nation,p.marrystatus,p.education,p.politicalposition,
+		p.faith,p.persontype,w.id as wenid,r.telnumber
+		from(
+		SELECT id,personnelid,deal,importance FROM e_keypersonnel_t WHERE validflag > 0 
+		<isNotEqual prepend="AND" property="cdtid" compareValue="0">
+			cdtid = $cdtid$
+		</isNotEqual>
+		<isNotEqual prepend="AND" property="workinfoid" compareValue="0">
+			workinfoid = $workinfoid$
+		</isNotEqual> 
+		GROUP BY personnelid) A
+		LEFT JOIN p_personnel_t p on A.personnelid=p.id
+		LEFT JOIN p_wen_grade_t w on w.personnelid=p.id
+		LEFT JOIN p_relation_t r on r.personnelid=p.id and r.validflag>0
+		where p.validflag>0 and w.validflag>0
+		<isNotEmpty prepend="AND" property="cardnumber">
+			p.cardnumber like '%$cardnumber$%'
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="personname">
+			p.personname like '%$personname$%'
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="houseplace">
+			p.houseplace like '%$houseplace$%'
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="homeplace">
+			p.homeplace like '%$homeplace$%'
+		</isNotEmpty>
+		order by importance desc
+	</select>
+	
+	<!-- 新增 -->
+	<insert id="add" parameterClass="keypersonnel">
+		INSERT INTO e_keypersonnel_t
+		(cdtid,personnelid,validflag,addoperatorid,addoperator,addtime,memo,workinfoid,deal)
+		VALUES
+		($cdtid$,$personnelid$,$validflag$,$addoperatorid$,'$addoperator$','$addtime$','$memo$',$workinfoid$,'$deal$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+	<!-- 删除 -->
+	<update id="cancel" parameterClass="keypersonnel">
+		UPDATE e_keypersonnel_t
+		SET validflag = 0,updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	
+	<select id="count_link" parameterClass="keypersonnel" resultClass="Integer">
+		select count(*)
+		from e_keypersonnel_t
+		where validflag>0 and cdtid=$cdtid$
+		<isNotEqual prepend="AND" property="personnelid" compareValue="0">
+			personnelid = $personnelid$
+        </isNotEqual>
+	</select>
+	
+	<update id="updateLink" parameterClass="keypersonnel">
+		UPDATE e_keypersonnel_t
+		SET workinfoid = #workinfoid#
+		WHERE personnelid = #personnelid#
+	</update>
+	
+	<select id="search_count_Zbevent" parameterClass="keypersonnel" resultClass="Integer">
+		select count(*)
+		from(
+		SELECT personnelid FROM e_keypersonnel_t WHERE validflag > 0 
+		<isNotEqual prepend="AND" property="cdtid" compareValue="0">
+			cdtid = #cdtid#
+		</isNotEqual>
+		<isNotEqual prepend="AND" property="workinfoid" compareValue="0">
+			workinfoid = #workinfoid#
+		</isNotEqual> 
+		GROUP BY personnelid) A
+		LEFT JOIN p_personnel_t p on A.personnelid=p.id
+		where p.validflag>0
+		<isNotEmpty prepend="AND" property="cardnumber">
+			p.cardnumber like '%$cardnumber$%'
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="personname">
+			p.personname like '%$personname$%'
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="houseplace">
+			p.houseplace like '%$houseplace$%'
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="homeplace">
+			p.homeplace like '%$homeplace$%'
+		</isNotEmpty>
+	</select>
+	<select id="search_Zbevent" parameterClass="keypersonnel" resultClass="keypersonnel">
+		select A.id,A.personnelid,A.deal,p.cardnumber,p.personname,p.houseplace,p.homeplace,p.sexes,p.nation,p.marrystatus,p.education,p.politicalposition,
+		p.faith,p.persontype,r.telnumber
+		from(
+		SELECT id,personnelid,deal FROM e_keypersonnel_t WHERE validflag > 0 
+		<isNotEqual prepend="AND" property="cdtid" compareValue="0">
+			cdtid = $cdtid$
+		</isNotEqual>
+		<isNotEqual prepend="AND" property="workinfoid" compareValue="0">
+			workinfoid = $workinfoid$
+		</isNotEqual> 
+		GROUP BY personnelid) A
+		LEFT JOIN p_personnel_t p on A.personnelid=p.id
+		LEFT JOIN p_relation_t r on r.personnelid=p.id and r.validflag>0
+		where p.validflag>0
+		<isNotEmpty prepend="AND" property="cardnumber">
+			p.cardnumber like '%$cardnumber$%'
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="personname">
+			p.personname like '%$personname$%'
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="houseplace">
+			p.houseplace like '%$houseplace$%'
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="homeplace">
+			p.homeplace like '%$homeplace$%'
+		</isNotEmpty>
+	</select>
+	
+	<!-- 政法委 -->
+	<select id="search_count_zfw" parameterClass="keypersonnel" resultClass="Integer">
+		select count(*)
+		from(
+		SELECT personnelid FROM zfw_e_keypersonnel_t WHERE validflag > 0 
+		<isNotEqual prepend="AND" property="cdtid" compareValue="0">
+			cdtid = #cdtid#
+		</isNotEqual>
+		<isNotEqual prepend="AND" property="workinfoid" compareValue="0">
+			workinfoid = #workinfoid#
+		</isNotEqual> 
+		GROUP BY personnelid) A
+		LEFT JOIN p_personnel_t p on A.personnelid=p.id
+		LEFT JOIN p_wen_grade_t w on w.personnelid=p.id
+		where p.validflag>0 and w.validflag>0
+	</select>
+	<select id="search_zfw" parameterClass="keypersonnel" resultClass="keypersonnel">
+		select A.id,A.personnelid,A.deal,p.cardnumber,p.personname,p.houseplace,p.homeplace,p.sexes,p.nation,p.marrystatus,p.education,p.politicalposition,
+		p.faith,p.persontype,w.id as wenid,r.telnumber,A.validflag
+		from(
+		SELECT id,personnelid,deal,validflag FROM zfw_e_keypersonnel_t WHERE validflag > 0 
+		<isNotEqual prepend="AND" property="cdtid" compareValue="0">
+			cdtid = $cdtid$
+		</isNotEqual>
+		<isNotEqual prepend="AND" property="workinfoid" compareValue="0">
+			workinfoid = $workinfoid$
+		</isNotEqual> 
+		GROUP BY personnelid) A
+		LEFT JOIN p_personnel_t p on A.personnelid=p.id
+		LEFT JOIN p_wen_grade_t w on w.personnelid=p.id
+		LEFT JOIN p_relation_t r on r.personnelid=p.id and r.validflag>0
+		where p.validflag>0 and w.validflag>0
+	</select>
+	
+	<select id="getById_zfw" parameterClass="int" resultClass="keypersonnel">
+		select A.*,p.cardnumber from zfw_e_keypersonnel_t A
+		LEFT JOIN p_personnel_t p on A.personnelid=p.id
+		where A.validflag>0 and A.id = $id$
+	</select>
+	
+	<update id="update_zfw" parameterClass="int">
+		UPDATE zfw_e_keypersonnel_t
+		SET validflag = $validflag$
+		WHERE id = $id$
+	</update>
+	
+	<update id="updateKpImportance" parameterClass="keypersonnel">
+		UPDATE e_keypersonnel_t
+		SET importance = #importance#
+		WHERE id = #id#
+	</update>
+</sqlMap>

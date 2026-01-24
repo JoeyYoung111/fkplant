@@ -1,0 +1,223 @@
+.bg-blue{
+	background-color: #3874ba;
+	color: #ffffff;
+}
+.bg-green{
+	background-color: #59b6a4;
+	color: #ffffff;
+}
+.bg-pink{
+	background-color: #fb8f82;
+	color: #ffffff;
+}
+.bg-yello{
+	background-color: #ffc501;
+	color: #ffffff;
+}
+.bg-purple{
+	background-color: #8c6ba4;
+	color: #ffffff;
+}
+.border-blue{
+	border: 1px solid #3874ba;
+}
+.border-yello{
+	border: 1px solid #ffc501;
+}
+.border-red{
+	border: 1px solid #FF0000;
+}
+.border-orange{
+	border: 1px solid #ff7900;
+}
+.border-green{
+	border: 1px solid #59b6a4;
+}
+.border-purple{
+	border: 1px solid #8c6ba4;
+}
+.vh100{
+	height: 100vh;
+}
+.h100{
+	height: 100%;
+}
+.h90{
+	height: 90%;
+}
+.h80{
+	height: 80%;
+}
+.h70{
+	height: 70%;
+}
+.h60{
+	height: 60%;
+}
+.h50{
+	height: 50%;
+}
+.h40{
+	height: 40%;
+}
+.h30{
+	height: 30%;
+}
+.h20{
+	height: 20%;
+}
+.shedu .layui-card{
+	margin-bottom:0 ;
+}
+.layui-card-header{
+	border-bottom: 1px solid #EEEEEE !important;
+}
+.qingbao .layui-card-body{
+	padding: 0!important;
+}
+.qingbao .my-border-b-purple{
+	border-bottom: 1px solid #8c6ba4;
+}
+.qingbao-title{
+	padding: 15px;
+}
+.qingbao-cont{
+	position: relative;
+	height: 550px;
+	width: 100%;
+	overflow-x: hidden;
+	padding:10px 20px;
+}
+.qingbao-cont-center{
+	width: 100%;
+	height: 350px;
+	overflow-y: scroll;
+}
+.qingbao-cont-bottom{
+	position: absolute;
+	left: 0;
+	bottom: 20px;
+	width: 100%;
+	height: 100px;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+}
+.qingbao-cont-bottom>div{
+	width: 20%;
+}
+.qingbao-bnt{
+	height: 50px;
+	display: flex;
+	align-items: center;
+	justify-content: flex-start;
+	/* position: absolute;
+	bottom: 0; */
+}
+.text-box1{
+	position: relative;
+	padding: 20px;
+	padding-bottom: 50px;
+	overflow-y: scroll;
+}
+.text-box1::-webkit-scrollbar { width: 0 !important }
+.text-title1{
+	display: flex;
+}
+.text-title1>span:first-child{
+	width: 30%;
+}
+.text-title1>span:nth-child(2){
+	width: 70%;
+	word-break:break-all;
+}
+.qingbao .text-title3{
+	position: absolute;
+	bottom: 10px;
+}
+.shedu-title{
+	height: 50px;
+	font-size: 18px;
+	line-height: 40px;
+}
+.shedu-sub-title{
+	padding: 10px;
+}
+.btn-box{
+	display: flex;
+	justify-content: space-around;
+	align-items: flex-start;
+	flex-wrap: wrap;
+}
+.shekong-btn{
+	font-size: 18px;
+	height: 60px;
+	width: 45%;
+	margin-top: 20px;
+	border-radius: 10px;
+	border-width: 2px !important;
+	display: flex;
+	justify-content: space-around;
+	align-items: center;
+}
+.shewen-btn{
+	font-size: 18px;
+	height: 50px;
+	width: 200px;
+	margin-top: 10px;
+	border-radius: 10px;
+	border-width: 2px !important;
+	display: flex;
+	justify-content: space-around;
+	align-items: center;
+}
+.swiper-title{
+	height: 30px;
+	line-height: 30px;
+}
+.swiper-box{
+	padding: 10px 30px;
+	position: relative;
+}
+.swiper-wrapper{
+	height: 150px;
+}
+.swiper-slide img{
+	width: 95%;
+}
+.my-swiper-button-next{
+	width: 30px;
+	height: 100%;
+	position: absolute;
+	right: 0;
+	top: 0;
+}
+.my-swiper-button-prev{
+	width: 30px;
+	height: 100%;
+	position: absolute;
+	left: 0;
+	top: 0;
+}
+.my-swiper-button-next:active,
+.my-swiper-button-prev:active{
+	transform: scale(1.2);
+}
+.swiper-button-next1{
+	background: url(../js/swiper/image/2.png) no-repeat center;
+}
+.swiper-button-next2{
+	background: url(../js/swiper/image/4.png) no-repeat center;
+}
+.swiper-button-next3{
+	background: url(../js/swiper/image/6.png) no-repeat center;
+}
+.swiper-button-prev1{
+	background: url(../js/swiper/image/1.png) no-repeat center;
+}
+.swiper-button-prev2{
+	background: url(../js/swiper/image/3.png) no-repeat center;
+}
+.swiper-button-prev3{
+	background: url(../js/swiper/image/5.png) no-repeat center;
+}

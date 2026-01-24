@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="file">
+	<typeAlias alias="file" type="com.szrj.business.model.File"/>
+	
+	<!-- 根据ID删除文件 -->
+	<delete id="cancelFileById" parameterClass="int">
+		DELETE FROM sys_file_t WHERE id = $id$
+	</delete>
+	
+	<!-- 根据文件全名查询该文件ID -->
+	<select id="getFileIdByAllName" parameterClass="String" resultClass="Integer">
+		SELECT id
+		FROM sys_file_t
+		WHERE fileallName = '$fileallName$'
+	</select>
+	
+	<!-- 根据ID获取文件信息 -->
+	<select id="getFileById" parameterClass="int" resultClass="file">
+		SELECT *
+		FROM sys_file_t
+		WHERE id = $id$
+	</select>
+	<!-- 根据多个ID获取文件名字拼接信息 -->
+	<select id="getFileNames" parameterClass="String" resultClass="file">
+	    select  
+		GROUP_CONCAT( ft1.fileName ORDER BY ft1.id SEPARATOR ',' ) AS fileName,
+		GROUP_CONCAT( ft1.fileallName ORDER BY ft1.id SEPARATOR ',' ) AS fileallName,
+		GROUP_CONCAT( ft1.validflag ORDER BY ft1.id SEPARATOR ',' ) AS addOperator 	 
+		from sys_file_t ft1
+		where FIND_IN_SET( ft1.id, '$fileattachments$')
+	</select>
+	<!-- 新增 -->
+	<insert id="add" parameterClass="file">
+
+		INSERT INTO sys_file_t
+		(fileName,fileallName,validflag,addOperator,addTime)
+		VALUES
+		('$fileName$','$fileallName$',1,'$addOperator$','$addTime$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+	
+	<!-- 根据上传的文件ID下载该文件 -->
+	<select id="getfileMsgById" parameterClass="int" resultClass="file">
+		SELECT *
+		FROM sys_file_t
+		WHERE id = $id$
+	</select>
+	
+	<!-- 删除文件 -->
+	<delete id="cancelFile" parameterClass="int">
+		DELETE FROM sys_file_t WHERE id = $id$
+	</delete>
+	
+			<!-- 根据上传的文件ID下载该文件 -->
+	<select id="getfileMsgByIdstr" parameterClass="String" resultClass="file">
+		SELECT *
+		FROM sys_file_t
+		WHERE id in $idstr$
+	</select>
+		
+	<!-- 删除文件 -->
+	<delete id="deleteFile" parameterClass="String">
+		DELETE FROM sys_file_t WHERE id in $idstr$
+	</delete>
+	
+	
+	
+</sqlMap>

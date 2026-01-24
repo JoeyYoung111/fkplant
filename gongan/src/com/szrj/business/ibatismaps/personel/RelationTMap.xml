@@ -1,0 +1,916 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="relation">
+	<typeAlias alias="basicMsg" type="com.szrj.business.model.BasicMsg"/>
+	<typeAlias alias="relation" type="com.szrj.business.model.personel.Relation"/>
+	<typeAlias alias="relationbank" type="com.szrj.business.model.personel.RelationBank"/>
+	<typeAlias alias="relationdriver" type="com.szrj.business.model.personel.RelationDriver"/>
+	<typeAlias alias="relationhouse" type="com.szrj.business.model.personel.RelationHouse"/>
+	<typeAlias alias="relationidentity" type="com.szrj.business.model.personel.RelationIdentity"/>
+	<typeAlias alias="relationlegal" type="com.szrj.business.model.personel.RelationLegal"/>
+	<typeAlias alias="relationpassport" type="com.szrj.business.model.personel.RelationPassport"/>
+	<typeAlias alias="relationpayment" type="com.szrj.business.model.personel.RelationPayment"/>
+	<typeAlias alias="relationphone" type="com.szrj.business.model.personel.RelationPhone"/>
+	<typeAlias alias="relationtelnumber" type="com.szrj.business.model.personel.RelationTelnumber"/>
+	<typeAlias alias="relationvehicle" type="com.szrj.business.model.personel.RelationVehicle"/>
+	<typeAlias alias="relationwifi" type="com.szrj.business.model.personel.RelationWifi"/>
+	<typeAlias alias="socialrelations" type="com.szrj.business.model.personel.SocialRelations"/>
+	<typeAlias alias="trajectoryrecord" type="com.szrj.business.model.personel.TrajectoryRecord"/>
+	<!-- ******************************************风险人员 关联信息********************************************************************** -->
+	<insert id="addrelation" parameterClass="relation">
+		INSERT INTO p_relation_t
+		(personnelid,telnumber,telephone,relatedwifi,relatedvehicle,bankaccount,netidentity,netpayment,relatedhouse,relatedlegal,relateddriver,relatedpassport,validflag,addoperator,addtime,memo)
+		VALUES
+		($personnelid$,'$telnumber$','$telephone$','$relatedwifi$','$relatedvehicle$','$bankaccount$','$netidentity$','$netpayment$',
+		'$relatedhouse$','$relatedlegal$','$relateddriver$','$relatedpassport$',1,'$addoperator$','$addtime$','$memo$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+    <update id="updaterelation" parameterClass="relation">
+		UPDATE p_relation_t
+		SET telnumber='$telnumber$',telephone='$telephone$',relatedwifi='$relatedwifi$',
+		relatedvehicle='$relatedvehicle$',bankaccount='$bankaccount$',
+		netidentity='$netidentity$',netpayment='$netpayment$',
+		relatedhouse='$relatedhouse$',relatedlegal='$relatedlegal$',
+		relateddriver='$relateddriver$',relatedpassport='$relatedpassport$',
+		updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE personnelid = $personnelid$
+	</update>
+	<update id="cancelrelation" parameterClass="relation">
+		UPDATE p_relation_t
+		SET validflag=0,
+		updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+    <select id="searchrelation"  resultClass="relation">
+		SELECT	 t2.*	FROM	p_personnel_t t1,	p_relation_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.personnelid=$personnelid$
+		ORDER BY t2.id
+	</select>
+	<select id="getrelationcount"  resultClass="Integer">
+		SELECT	count(1)	FROM	p_personnel_t t1,	p_relation_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.personnelid=$personnelid$
+	</select>
+	<select id="getrelationtelnumber"  resultClass="String">
+		SELECT	t2.telnumber	FROM	p_personnel_t t1,	p_relation_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.personnelid=$personnelid$
+	</select>
+	<update id="updaterelationbypersonnelid" parameterClass="relation">
+	    UPDATE p_relation_t
+		SET $relationname$='$relationvalue$'  WHERE personnelid = $personnelid$
+	</update>
+	<!-- ******************************************关联银行********************************************************************** -->
+	<insert id="addrelationbank" parameterClass="relationbank">
+		INSERT INTO p_relation_bank_t
+		(personnelid,bankaccount,accounttype,openbank,openaddress,opentime,validflag,addoperator,addtime,memo)
+		VALUES
+		($personnelid$,'$bankaccount$','$accounttype$','$openbank$','$openaddress$','$opentime$',1,'$addoperator$','$addtime$','$memo$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+    <update id="updaterelationbank" parameterClass="relationbank">
+		UPDATE p_relation_bank_t
+		SET bankaccount='$bankaccount$',accounttype='$accounttype$',openbank='$openbank$',
+		openaddress='$openaddress$',opentime='$opentime$',
+		updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	<update id="cancelrelationbank" parameterClass="relationbank">
+		UPDATE p_relation_bank_t
+		SET validflag=0,
+		updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	<select id="searchrelationbank_count"  resultClass="Integer">
+		SELECT	count(1)	FROM	p_personnel_t t1,	p_relation_bank_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.personnelid=$personnelid$
+	</select>
+	<select id="searchrelationbank"  resultClass="relationbank">
+		SELECT	 t2.*	FROM	p_personnel_t t1,	p_relation_bank_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.personnelid=$personnelid$
+		ORDER BY t2.id
+	</select>
+	<select id="getrelationbankbyid"  resultClass="relationbank">
+		SELECT	 t2.*	FROM	p_personnel_t t1,	p_relation_bank_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.id=$id$
+	</select>
+	<select id="getbankaccount"  resultClass="String">
+		SELECT   GROUP_CONCAT( t.openbank ) as bankaccount
+        FROM   p_relation_bank_t t   WHERE  t.validflag > 0 AND t.personnelid=$personnelid$
+	</select>
+	
+	<!-- 政法委 -->
+	<select id="searchrelationbank_count_zfw"  resultClass="Integer">
+		SELECT	count(1)	FROM	p_personnel_t t1,	zfw_p_relation_bank_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.personnelid=$personnelid$
+	</select>
+	<select id="searchrelationbank_zfw"  resultClass="relationbank">
+		SELECT	 t2.*	FROM	p_personnel_t t1,	zfw_p_relation_bank_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.personnelid=$personnelid$
+		ORDER BY t2.id
+	</select>
+	
+	<select id="getrelationbankbyid_zfw"  resultClass="relationbank">
+		SELECT	 t2.*	FROM	p_personnel_t t1,	zfw_p_relation_bank_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.id=$id$
+	</select>
+	
+    <update id="updaterelationbank_zfw" parameterClass="relationbank">
+		UPDATE zfw_p_relation_bank_t
+		SET validflag=$validflag$
+		WHERE id = $id$
+	</update>
+	<!-- ******************************************驾驶证件********************************************************************** -->
+	<insert id="addrelationdriver" parameterClass="relationdriver">
+		INSERT INTO p_relation_driver_t
+		(personnelid,drivertype,driverno,driveraddress,isactivate,validflag,addoperator,addtime,memo)
+		VALUES
+		($personnelid$,'$drivertype$','$driverno$','$driveraddress$',$isactivate$,1,'$addoperator$','$addtime$','$memo$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+    <update id="updaterelationdriver" parameterClass="relationdriver">
+		UPDATE p_relation_driver_t
+		SET drivertype='$drivertype$',driverno='$driverno$',driveraddress='$driveraddress$',
+		isactivate=$isactivate$,updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	  <update id="cancelrelationdriver" parameterClass="relationdriver">
+		UPDATE p_relation_driver_t
+		SET validflag=0,
+		updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	<select id="searchrelationdriver_count"  resultClass="Integer">
+		SELECT	count(1)	FROM	p_personnel_t t1,	p_relation_driver_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.personnelid=$personnelid$
+	</select>
+	<select id="searchrelationdriver"  resultClass="relationdriver">
+		SELECT	 t2.*	FROM	p_personnel_t t1,	p_relation_driver_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.personnelid=$personnelid$
+		ORDER BY t2.id
+	</select>
+	<select id="getrelationdriverbyid"  resultClass="relationdriver">
+		SELECT	 t2.*	FROM	p_personnel_t t1,	p_relation_driver_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.id=$id$
+	</select>
+	<select id="getdrivertype"  resultClass="String">
+		SELECT   GROUP_CONCAT( t.drivertype ) as drivertype
+        FROM   p_relation_driver_t t   WHERE  t.validflag > 0 AND t.personnelid=$personnelid$ AND t.isactivate=0
+	</select>
+	
+	<select id="searchrelationdriver_count_zfw"  resultClass="Integer">
+		SELECT	count(1)	FROM	p_personnel_t t1,	zfw_p_relation_driver_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.personnelid=$personnelid$
+	</select>
+	<select id="searchrelationdriver_zfw"  resultClass="relationdriver">
+		SELECT	 t2.*	FROM	p_personnel_t t1,	zfw_p_relation_driver_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.personnelid=$personnelid$
+		ORDER BY t2.id
+	</select>
+	
+	<select id="getrelationdriverbyid_zfw"  resultClass="relationdriver">
+		SELECT	 t2.*	FROM	p_personnel_t t1,	zfw_p_relation_driver_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.id=$id$
+	</select>
+	
+	<update id="updaterelationdriver_zfw" parameterClass="relationdriver">
+		UPDATE zfw_p_relation_driver_t
+		SET validflag=$validflag$
+		WHERE id = $id$
+	</update>
+	<!-- ******************************************涉及房产信息********************************************************************** -->
+	<insert id="addrelationhouse" parameterClass="relationhouse">
+		INSERT INTO p_relation_house_t
+		(personnelid,housetype,houseorigin,houseaddress,liveflag,validflag,addoperator,addtime,memo)
+		VALUES
+		($personnelid$,'$housetype$','$houseorigin$','$houseaddress$',$liveflag$,1,'$addoperator$','$addtime$','$memo$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+    <update id="updaterelationhouse" parameterClass="relationhouse">
+		UPDATE p_relation_house_t
+		SET housetype='$housetype$',houseorigin='$houseorigin$',houseaddress='$houseaddress$',
+		liveflag=$liveflag$,updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	  <update id="cancelrelationhouse" parameterClass="relationhouse">
+		UPDATE p_relation_house_t
+		SET validflag=0,
+		updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	<select id="searchrelationhouse_count"  resultClass="Integer">
+		SELECT	count(1)	FROM	p_personnel_t t1,	p_relation_house_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.personnelid=$personnelid$
+	</select>
+	<select id="searchrelationhouse"  resultClass="relationhouse">
+		SELECT	 t2.*	FROM	p_personnel_t t1,	p_relation_house_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.personnelid=$personnelid$
+		ORDER BY t2.id
+	</select>
+	<select id="getrelationhousebyid"  resultClass="relationhouse">
+		SELECT	 t2.*	FROM	p_personnel_t t1,	p_relation_house_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.id=$id$
+	</select>
+	<select id="gethousetype"  resultClass="String">
+		SELECT   GROUP_CONCAT( t.housetype ) as housetype
+        FROM   p_relation_house_t t   WHERE  t.validflag > 0 AND t.personnelid=$personnelid$ AND t.liveflag=1
+	</select>
+	
+	<select id="searchrelationhouse_count_zfw"  resultClass="Integer">
+		SELECT	count(1)	FROM	p_personnel_t t1,	zfw_p_relation_house_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.personnelid=$personnelid$
+	</select>
+	<select id="searchrelationhouse_zfw"  resultClass="relationhouse">
+		SELECT	 t2.*	FROM	p_personnel_t t1,	zfw_p_relation_house_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.personnelid=$personnelid$
+		ORDER BY t2.id
+	</select>
+	
+	<select id="getrelationhousebyid_zfw"  resultClass="relationhouse">
+		SELECT	 t2.*	FROM	p_personnel_t t1,	zfw_p_relation_house_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.id=$id$
+	</select>
+	
+    <update id="updaterelationhouse_zfw" parameterClass="relationhouse">
+		UPDATE zfw_p_relation_house_t
+		SET validflag=$validflag$
+		WHERE id = $id$
+	</update>
+	<!-- ******************************************虚拟身份信息********************************************************************** -->
+	<insert id="addrelationidentity" parameterClass="relationidentity">
+		INSERT INTO p_relation_identity_t
+		(personnelid,identitytype,inventedname,accountid,wechat,telnumber,isactivate,validflag,addoperator,addtime,memo)
+		VALUES
+		($personnelid$,'$identitytype$','$inventedname$','$accountid$','$wechat$','$telnumber$',$isactivate$,1,'$addoperator$','$addtime$','$memo$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+    <update id="updaterelationidentity" parameterClass="relationidentity">
+		UPDATE p_relation_identity_t
+		SET identitytype='$identitytype$',inventedname='$inventedname$',accountid='$accountid$',
+		wechat='$wechat$',telnumber='$telnumber$',isactivate=$isactivate$,
+		updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	  <update id="cancelrelationidentity" parameterClass="relationidentity">
+		UPDATE p_relation_identity_t
+		SET validflag=0,
+		updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	<select id="searchrelationidentity_count"  resultClass="Integer">
+		SELECT	count(1)	FROM	p_personnel_t t1,	p_relation_identity_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.personnelid=$personnelid$
+	</select>
+	<select id="searchrelationidentity"  resultClass="relationidentity">
+		SELECT	 t2.*	FROM	p_personnel_t t1,	p_relation_identity_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.personnelid=$personnelid$
+		ORDER BY t2.id
+	</select>
+	<select id="getrelationidentitybyid"  resultClass="relationidentity">
+		SELECT	 t2.*	FROM	p_personnel_t t1,	p_relation_identity_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.id=$id$
+	</select>
+	<select id="getidentitytype"  resultClass="String">
+		SELECT   GROUP_CONCAT( t.identitytype ) as identitytype
+        FROM   p_relation_identity_t t   WHERE  t.validflag > 0 AND t.personnelid=$personnelid$ AND t.isactivate=0
+	</select>
+	
+	<!-- 政法委 -->
+	<select id="searchrelationidentity_count_zfw"  resultClass="Integer">
+		SELECT	count(1)	FROM	p_personnel_t t1,	zfw_p_relation_identity_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.personnelid=$personnelid$
+	</select>
+	<select id="searchrelationidentity_zfw"  resultClass="relationidentity">
+		SELECT	 t2.*	FROM	p_personnel_t t1,	zfw_p_relation_identity_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.personnelid=$personnelid$
+		ORDER BY t2.id
+	</select>
+	
+	<select id="getrelationidentitybyid_zfw"  resultClass="relationidentity">
+		SELECT	 t2.*	FROM	p_personnel_t t1,	zfw_p_relation_identity_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.id=$id$
+	</select>
+	
+	<update id="updaterelationidentity_zfw" parameterClass="relationidentity">
+		UPDATE zfw_p_relation_identity_t
+		SET validflag=$validflag$
+		WHERE id = $id$
+	</update>
+	<!-- ******************************************法人组织信息********************************************************************** -->
+	<insert id="addrelationlegal" parameterClass="relationlegal">
+		INSERT INTO p_relation_legal_t
+		(personnelid,legalname,legaladdress,businessscope,registerdate,voiddate,validflag,addoperator,addtime,memo)
+		VALUES
+		($personnelid$,'$legalname$','$legaladdress$','$businessscope$','$registerdate$','$voiddate$',1,'$addoperator$','$addtime$','$memo$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+    <update id="updaterelationlegal" parameterClass="relationlegal">
+		UPDATE p_relation_legal_t
+		SET legalname='$legalname$',legaladdress='$legaladdress$',businessscope='$businessscope$',
+		registerdate='$registerdate$',voiddate='$voiddate$',
+		updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	  <update id="cancelrelationlegal" parameterClass="relationlegal">
+		UPDATE p_relation_legal_t
+		SET validflag=0,
+		updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	<select id="searchrelationlegal_count"  resultClass="Integer">
+		SELECT	count(1)	FROM	p_personnel_t t1,	p_relation_legal_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.personnelid=$personnelid$
+	</select>
+	<select id="searchrelationlegal"  resultClass="relationlegal">
+		SELECT	 t2.*	FROM	p_personnel_t t1,	p_relation_legal_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.personnelid=$personnelid$
+		ORDER BY t2.id
+	</select>
+	<select id="getrelationlegalbyid"  resultClass="relationlegal">
+		SELECT	 t2.*	FROM	p_personnel_t t1,	p_relation_legal_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.id=$id$
+	</select>
+	<select id="getlegalname"  resultClass="String">
+		SELECT   GROUP_CONCAT( t.legalname ) as legalname
+        FROM   p_relation_legal_t t   WHERE  t.validflag > 0 AND t.personnelid=$personnelid$ 
+	</select>
+	
+	<select id="searchrelationlegal_count_zfw"  resultClass="Integer">
+		SELECT	count(1)	FROM	p_personnel_t t1,	zfw_p_relation_legal_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.personnelid=$personnelid$
+	</select>
+	<select id="searchrelationlegal_zfw"  resultClass="relationlegal">
+		SELECT	 t2.*	FROM	p_personnel_t t1,	zfw_p_relation_legal_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.personnelid=$personnelid$
+		ORDER BY t2.id
+	</select>
+	
+	<select id="getrelationlegalbyid_zfw"  resultClass="relationlegal">
+		SELECT	 t2.*	FROM	p_personnel_t t1,	zfw_p_relation_legal_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.id=$id$
+	</select>
+	
+	<update id="updaterelationlegal_zfw" parameterClass="relationlegal">
+		UPDATE zfw_p_relation_legal_t
+		SET validflag=$validflag$
+		WHERE id = $id$
+	</update>
+	<!-- ******************************************护照证件信息********************************************************************** -->
+	<insert id="addrelationpassport" parameterClass="relationpassport">
+		INSERT INTO p_relation_passport_t
+		(personnelid,passporttype,passportno,isactivate,validflag,addoperator,addtime,memo)
+		VALUES
+		($personnelid$,'$passporttype$','$passportno$',$isactivate$,1,'$addoperator$','$addtime$','$memo$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+    <update id="updaterelationpassport" parameterClass="relationpassport">
+		UPDATE p_relation_passport_t
+		SET passporttype='$passporttype$',passportno='$passportno$',isactivate=$isactivate$,
+		updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	  <update id="cancelrelationpassport" parameterClass="relationpassport">
+		UPDATE p_relation_passport_t
+		SET validflag=0,
+		updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	<select id="searchrelationpassport_count"  resultClass="Integer">
+		SELECT	count(1)	FROM	p_personnel_t t1,	p_relation_passport_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.personnelid=$personnelid$
+	</select>
+	<select id="searchrelationpassport"  resultClass="relationpassport">
+		SELECT	 t2.*	FROM	p_personnel_t t1,	p_relation_passport_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.personnelid=$personnelid$
+		ORDER BY t2.id
+	</select>
+	<select id="getrelationpassportbyid"  resultClass="relationpassport">
+		SELECT	 t2.*	FROM	p_personnel_t t1,	p_relation_passport_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.id=$id$
+	</select>
+	<select id="getpassporttype"  resultClass="String">
+		SELECT   GROUP_CONCAT( t.passporttype ) as passporttype
+        FROM   p_relation_passport_t t   WHERE  t.validflag > 0 AND t.personnelid=$personnelid$ AND t.isactivate=0
+	</select>
+	
+	<select id="searchrelationpassport_count_zfw"  resultClass="Integer">
+		SELECT	count(1)	FROM	p_personnel_t t1,	zfw_p_relation_passport_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.personnelid=$personnelid$
+	</select>
+	<select id="searchrelationpassport_zfw"  resultClass="relationpassport">
+		SELECT	 t2.*	FROM	p_personnel_t t1,	zfw_p_relation_passport_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.personnelid=$personnelid$
+		ORDER BY t2.id
+	</select>
+	
+	<select id="getrelationpassportbyid_zfw"  resultClass="relationpassport">
+		SELECT	 t2.*	FROM	p_personnel_t t1,	zfw_p_relation_passport_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.id=$id$
+	</select>
+	
+    <update id="updaterelationpassport_zfw" parameterClass="relationpassport">
+		UPDATE zfw_p_relation_passport_t
+		SET validflag=$validflag$
+		WHERE id = $id$
+	</update>
+	<!-- *****************************************网络支付信息********************************************************************** -->
+	<insert id="addrelationpayment" parameterClass="relationpayment">
+		INSERT INTO p_relation_payment_t
+		(personnelid,paymentname,payaccount,isactivate,validflag,addoperator,addtime,memo)
+		VALUES
+		($personnelid$,'$paymentname$','$payaccount$',$isactivate$,1,'$addoperator$','$addtime$','$memo$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+    <update id="updaterelationpayment" parameterClass="relationpayment">
+		UPDATE p_relation_payment_t
+		SET paymentname='$paymentname$',payaccount='$payaccount$',isactivate=$isactivate$,
+		updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	  <update id="cancelrelationpayment" parameterClass="relationpayment">
+		UPDATE p_relation_payment_t
+		SET validflag=0,
+		updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	<select id="searchrelationpayment_count"  resultClass="Integer">
+		SELECT	count(1)	FROM	p_personnel_t t1,	p_relation_payment_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.personnelid=$personnelid$
+	</select>
+	<select id="searchrelationpayment"  resultClass="relationpayment">
+		SELECT	 t2.*	FROM	p_personnel_t t1,	p_relation_payment_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.personnelid=$personnelid$
+		ORDER BY t2.id
+	</select>
+	<select id="getrelationpaymentbyid"  resultClass="relationpayment">
+		SELECT	 t2.*	FROM	p_personnel_t t1,	p_relation_payment_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.id=$id$
+	</select>
+	<select id="getpaymentname"  resultClass="String">
+		SELECT   GROUP_CONCAT( t.paymentname ) as paymentname
+        FROM   p_relation_payment_t t   WHERE  t.validflag > 0 AND t.personnelid=$personnelid$ AND t.isactivate=0
+	</select>
+	
+	<!-- 政法委 -->
+	<select id="searchrelationpayment_count_zfw"  resultClass="Integer">
+		SELECT	count(1)	FROM	p_personnel_t t1,	zfw_p_relation_payment_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.personnelid=$personnelid$
+	</select>
+	<select id="searchrelationpayment_zfw"  resultClass="relationpayment">
+		SELECT	 t2.*	FROM	p_personnel_t t1,	zfw_p_relation_payment_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.personnelid=$personnelid$
+		ORDER BY t2.id
+	</select>
+	
+	<select id="getrelationpaymentbyid_zfw"  resultClass="relationpayment">
+		SELECT	 t2.*	FROM	p_personnel_t t1,	zfw_p_relation_payment_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.id=$id$
+	</select>
+	
+	<update id="updaterelationpayment_zfw" parameterClass="relationpayment">
+		UPDATE zfw_p_relation_payment_t
+		SET validflag=$validflag$
+		WHERE id = $id$
+	</update>
+	<!-- ****************************************使用手机信息********************************************************************** -->
+	<insert id="addrelationphone" parameterClass="relationphone">
+		INSERT INTO p_relation_phone_t
+		(personnelid,telbrand,imei,mac,gainorigin,knownlabel,isactivate,validflag,addoperator,addtime,memo)
+		VALUES
+		($personnelid$,'$telbrand$','$imei$','$mac$','$gainorigin$','$knownlabel$',$isactivate$,1,'$addoperator$','$addtime$','$memo$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+    <update id="updaterelationphone" parameterClass="relationphone">
+		UPDATE p_relation_phone_t
+		SET telbrand='$telbrand$',imei='$imei$',mac='$mac$',gainorigin='$gainorigin$',
+		knownlabel='$knownlabel$',isactivate=$isactivate$,
+		updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	  <update id="cancelrelationphone" parameterClass="relationphone">
+		UPDATE p_relation_phone_t
+		SET validflag=0,
+		updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	<select id="searchrelationphone_count"  resultClass="Integer">
+		SELECT	count(1)	FROM	p_personnel_t t1,	p_relation_phone_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.personnelid=$personnelid$
+	</select>
+	<select id="searchrelationphone"  resultClass="relationphone">
+		SELECT	 t2.*	FROM	p_personnel_t t1,	p_relation_phone_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.personnelid=$personnelid$
+		ORDER BY t2.id
+	</select>
+	<select id="getrelationphonebyid"  resultClass="relationphone">
+		SELECT	 t2.*	FROM	p_personnel_t t1,	p_relation_phone_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.id=$id$
+	</select>
+	<select id="gettelbrand"  resultClass="String">
+		SELECT   GROUP_CONCAT( t.telbrand ) as telbrand
+        FROM   p_relation_phone_t t   WHERE  t.validflag > 0 AND t.personnelid=$personnelid$ AND t.isactivate=0
+	</select>
+	
+	<select id="searchrelationphone_count_zfw"  resultClass="Integer">
+		SELECT	count(1)	FROM	p_personnel_t t1,	zfw_p_relation_phone_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.personnelid=$personnelid$
+	</select>
+	<select id="searchrelationphone_zfw"  resultClass="relationphone">
+		SELECT	 t2.*	FROM	p_personnel_t t1,	zfw_p_relation_phone_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.personnelid=$personnelid$
+		ORDER BY t2.id
+	</select>
+	<select id="getrelationphonebyid_zfw"  resultClass="relationphone">
+		SELECT	 t2.*	FROM	p_personnel_t t1,	zfw_p_relation_phone_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.id=$id$
+	</select>
+	<update id="updaterelationphone_zfw" parameterClass="relationphone">
+		UPDATE zfw_p_relation_phone_t
+		SET validflag=$validflag$
+		WHERE id = $id$
+	</update>
+	<!-- ****************************************手机号码信息********************************************************************** -->
+	<insert id="addrelationtelnumber" parameterClass="relationtelnumber">
+		INSERT INTO p_relation_telnumber_t
+		(personnelid,telnumber,imsi,operator,belongarea,gainorigin,knownlabel,isactivate,validflag,addoperator,addtime,memo)
+		VALUES
+		($personnelid$,'$telnumber$','$imsi$','$operator$','$belongarea$','$gainorigin$','$knownlabel$',$isactivate$,1,'$addoperator$','$addtime$','$memo$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+    <update id="updaterelationtelnumber" parameterClass="relationtelnumber">
+		UPDATE p_relation_telnumber_t
+		SET telnumber='$telnumber$',imsi='$imsi$',operator='$operator$',belongarea='$belongarea$',
+		gainorigin='$gainorigin$',knownlabel='$knownlabel$',isactivate=$isactivate$,
+		updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	  <update id="cancelrelationtelnumber" parameterClass="relationtelnumber">
+		UPDATE p_relation_telnumber_t
+		SET validflag=0,
+		updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	<select id="searchrelationtelnumber_count"  resultClass="Integer">
+		SELECT	count(1)	FROM	p_personnel_t t1,	p_relation_telnumber_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.personnelid=$personnelid$
+	</select>
+	<select id="searchrelationtelnumber"  resultClass="relationtelnumber">
+		SELECT	 t2.*	FROM	p_personnel_t t1,	p_relation_telnumber_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.personnelid=$personnelid$
+		ORDER BY t2.id DESC
+	</select>
+	<select id="getrelationtelnumberbyid"  resultClass="relationtelnumber">
+		SELECT	 t2.*	FROM	p_personnel_t t1,	p_relation_telnumber_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.id=$id$
+	</select>
+	<select id="gettelnumber"  resultClass="String">
+		SELECT   GROUP_CONCAT( t.telnumber ) as telnumber
+        FROM   p_relation_telnumber_t t   WHERE  t.validflag > 0 AND t.personnelid=$personnelid$ AND t.isactivate=0
+	</select>
+	<select id="getRelationTelnumberByImsi" parameterClass="String" resultClass="relationtelnumber">
+		SELECT * FROM p_relation_telnumber_t where validflag>0 and imsi like '%$imsi$%'
+	</select>
+	
+	<!-- 政法委 -->
+	<select id="searchrelationtelnumber_count_zfw"  resultClass="Integer">
+		SELECT	count(1)	FROM	p_personnel_t t1,	zfw_p_relation_telnumber_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.personnelid=$personnelid$
+	</select>
+	<select id="searchrelationtelnumber_zfw"  resultClass="relationtelnumber">
+		SELECT	 t2.*	FROM	p_personnel_t t1,	zfw_p_relation_telnumber_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.personnelid=$personnelid$
+		ORDER BY t2.id
+	</select>
+	<select id="getrelationtelnumberbyid_zfw"  resultClass="relationtelnumber">
+		SELECT	 t2.*	FROM	p_personnel_t t1,	zfw_p_relation_telnumber_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.id=$id$
+	</select>
+	<update id="updaterelationtelnumber_zfw" parameterClass="relationtelnumber">
+		UPDATE zfw_p_relation_telnumber_t
+		SET validflag=$validflag$
+		WHERE id = $id$
+	</update>
+	<!-- 检查手机号码是否已存在 -->
+	<select id="checkTelnumberExists" parameterClass="java.util.Map" resultClass="Integer">
+		SELECT COUNT(1) FROM p_relation_telnumber_t
+		WHERE validflag > 0 AND personnelid = #personnelid# AND telnumber = #telnumber#
+	</select>
+	<!-- ****************************************交通工具信息********************************************************************** -->
+	<insert id="addrelationvehicle" parameterClass="relationvehicle">
+		INSERT INTO p_relation_vehicle_t
+		(personnelid,gainorigin,vehicletype,vehicleorigin,vehiclenum,vehiclebrand,vehiclecolor,vehiclephoto,isactivate,validflag,addoperator,addtime,memo)
+		VALUES
+		($personnelid$,'$gainorigin$','$vehicletype$','$vehicleorigin$','$vehiclenum$','$vehiclebrand$','$vehiclecolor$','$vehiclephoto$',$isactivate$,1,'$addoperator$','$addtime$','$memo$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+    <update id="updaterelationvehicle" parameterClass="relationvehicle">
+		UPDATE p_relation_vehicle_t
+		SET gainorigin='$gainorigin$',vehicletype='$vehicletype$',vehicleorigin='$vehicleorigin$',vehiclenum='$vehiclenum$',
+		vehiclebrand='$vehiclebrand$',vehiclecolor='$vehiclecolor$',vehiclephoto='$vehiclephoto$',isactivate=$isactivate$,
+		updateoperator='$updateoperator$',updatetime='$updatetime$',memo='$memo$'
+		WHERE id = $id$
+	</update>
+	  <update id="cancelrelationvehicle" parameterClass="relationvehicle">
+		UPDATE p_relation_vehicle_t
+		SET validflag=0,
+		updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	<select id="searchrelationvehicle_count"  resultClass="Integer">
+		SELECT	count(1)	FROM	p_personnel_t t1,	p_relation_vehicle_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.personnelid=$personnelid$
+	</select>
+	<select id="searchrelationvehicle"  resultClass="relationvehicle">
+		SELECT	 t2.*	FROM	p_personnel_t t1,	p_relation_vehicle_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.personnelid=$personnelid$
+		ORDER BY t2.id
+	</select>
+	<select id="getrelationvehiclebyid"  resultClass="relationvehicle">
+		SELECT	 t2.*	FROM	p_personnel_t t1,	p_relation_vehicle_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.id=$id$
+	</select>
+	<select id="getvehicletype"  resultClass="String">
+		SELECT   GROUP_CONCAT(CONCAT(vehicletype,'(',vehiclenum,')') SEPARATOR ';') as vehicletype
+        FROM   p_relation_vehicle_t t   WHERE  t.validflag > 0 AND t.personnelid=$personnelid$ AND t.isactivate=0
+	</select>
+	
+	<select id="getNewRelationvehicle" parameterClass="int" resultClass="relationvehicle">
+		SELECT	 t2.*	FROM	p_personnel_t t1,	p_relation_vehicle_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid AND t2.personnelid=$personnelid$
+		order by addtime desc LIMIT 4
+	</select>
+	<select id="getRelationVehicleByVehiclenum" parameterClass="String" resultClass="relationvehicle">
+		SELECT * FROM p_relation_vehicle_t where validflag>0 and vehiclenum like '%$vehiclenum$%'
+	</select>
+	
+	<!-- 政法委 -->
+	<select id="searchrelationvehicle_count_zfw"  resultClass="Integer">
+		SELECT	count(1)	FROM	p_personnel_t t1,	zfw_p_relation_vehicle_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.personnelid=$personnelid$
+	</select>
+	<select id="searchrelationvehicle_zfw"  resultClass="relationvehicle">
+		SELECT	 t2.*	FROM	p_personnel_t t1,	zfw_p_relation_vehicle_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.personnelid=$personnelid$
+		ORDER BY t2.id
+	</select>
+	
+	<select id="getrelationvehiclebyid_zfw"  resultClass="relationvehicle">
+		SELECT	 t2.*	FROM	p_personnel_t t1,	zfw_p_relation_vehicle_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.id=$id$
+	</select>
+	
+	<update id="updaterelationvehicle_zfw" parameterClass="relationvehicle">
+		UPDATE zfw_p_relation_vehicle_t
+		SET validflag=$validflag$
+		WHERE id = $id$
+	</update>
+	<!-- ****************************************关联WIFI信息********************************************************************** -->
+	<insert id="addrelationwifi" parameterClass="relationwifi">
+		INSERT INTO p_relation_wifi_t
+		(personnelid,relatedtype,relateddetail,ssid,mac,longitude,latitude,isactivate,validflag,addoperator,addtime,memo)
+		VALUES
+		($personnelid$,'$relatedtype$','$relateddetail$','$ssid$','$mac$','$longitude$','$latitude$',$isactivate$,1,'$addoperator$','$addtime$','$memo$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+    <update id="updaterelationwifi" parameterClass="relationwifi">
+		UPDATE p_relation_wifi_t
+		SET relatedtype='$relatedtype$',relateddetail='$relateddetail$',ssid='$ssid$',mac='$mac$',
+		longitude='$longitude$',latitude='$latitude$',isactivate=$isactivate$,
+		updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	  <update id="cancelrelationwifi" parameterClass="relationwifi">
+		UPDATE p_relation_wifi_t
+		SET validflag=0,
+		updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	<select id="searchrelationwifi_count"  resultClass="Integer">
+		SELECT	count(1)	FROM	p_personnel_t t1,	p_relation_wifi_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.personnelid=$personnelid$
+	</select>
+	<select id="searchrelationwifi"  resultClass="relationwifi">
+		SELECT	 t2.*	FROM	p_personnel_t t1,	p_relation_wifi_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.personnelid=$personnelid$
+		ORDER BY t2.id
+	</select>
+	<select id="getrelationwifibyid"  resultClass="relationwifi">
+		SELECT	 t2.*	FROM	p_personnel_t t1,	p_relation_wifi_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.id=$id$
+	</select>
+	<select id="getssid"  resultClass="String">
+		SELECT   GROUP_CONCAT( t.ssid ) as ssid
+        FROM   p_relation_wifi_t t   WHERE  t.validflag > 0 AND t.personnelid=$personnelid$  AND  t.isactivate=0
+	</select>
+	
+	<!-- 政法委 -->
+	<select id="searchrelationwifi_count_zfw"  resultClass="Integer">
+		SELECT	count(1)	FROM	p_personnel_t t1,	zfw_p_relation_wifi_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.personnelid=$personnelid$
+	</select>
+	<select id="searchrelationwifi_zfw"  resultClass="relationwifi">
+		SELECT	 t2.*	FROM	p_personnel_t t1,	zfw_p_relation_wifi_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.personnelid=$personnelid$
+		ORDER BY t2.id
+	</select>
+	<select id="getrelationwifibyid_zfw"  resultClass="relationwifi">
+		SELECT	 t2.*	FROM	p_personnel_t t1,	zfw_p_relation_wifi_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.id=$id$
+	</select>
+    <update id="updaterelationwifi_zfw" parameterClass="relationwifi">
+		UPDATE zfw_p_relation_wifi_t
+		SET validflag=$validflag$
+		WHERE id = $id$
+	</update>
+	<!-- ****************************************社会关系********************************************************************** -->
+	<insert id="addsocialrelations" parameterClass="socialrelations">
+		INSERT INTO p_social_relations_t
+		(personnelid,riskpersonnel,gainorigin,relationtype,appellation,cardnumber,personname,homeplace,workplace,telnumber1,telnumber2,telnumber3,validflag,addoperator,addtime,memo)
+		VALUES
+		($personnelid$,$riskpersonnel$,'$gainorigin$','$relationtype$','$appellation$','$cardnumber$','$personname$','$homeplace$','$workplace$','$telnumber1$','$telnumber2$','$telnumber3$',1,'$addoperator$','$addtime$','$memo$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+    <update id="updatesocialrelations" parameterClass="socialrelations">
+		UPDATE p_social_relations_t
+		SET gainorigin='$gainorigin$',relationtype='$relationtype$',appellation='$appellation$',cardnumber='$cardnumber$',
+		personname='$personname$',homeplace='$homeplace$',workplace='$workplace$',
+		telnumber1='$telnumber1$',telnumber2='$telnumber2$',telnumber3='$telnumber3$',
+		updateoperator='$updateoperator$',updatetime='$updatetime$',memo='$memo$'
+		WHERE id = $id$
+	</update>
+	 <update id="updateriskpersonnel" parameterClass="socialrelations">
+		UPDATE p_social_relations_t
+		SET riskpersonnel=1,
+		updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE cardnumber='$cardnumber$'
+	</update>
+	  <update id="cancelsocialrelations" parameterClass="socialrelations"> 
+		UPDATE p_social_relations_t
+		SET validflag=0,
+		updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	<select id="searchsocialrelations_count"  resultClass="Integer">
+		SELECT	count(1)	FROM	p_personnel_t t1,	p_social_relations_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.personnelid=$personnelid$
+	</select>
+	<select id="searchsocialrelations"  resultClass="socialrelations">
+		SELECT	 t2.*	FROM	p_personnel_t t1,	p_social_relations_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.personnelid=$personnelid$
+		ORDER BY FIELD(t2.relationtype,'家庭成员','血缘至亲','近亲姻亲','同行访友','同事朋友','其他')
+	</select>
+	<select id="getsocialrelationsbyid"  resultClass="socialrelations">
+		SELECT	 t2.*	FROM	p_personnel_t t1,	p_social_relations_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.id=$id$
+	</select>
+    <select id="getsocialrelationscount"  resultClass="Integer">
+		select count(1)  from p_social_relations_t t where t.validflag>0
+		and t.cardnumber='$cardnumber$'
+		<isNotEqual prepend="AND" property="personnelid" compareValue="0">
+			 t.personnelid=$personnelid$ 
+	     </isNotEqual>
+	</select>
+	
+	<!-- 政法委 -->
+	<select id="searchsocialrelations_count_zfw"  resultClass="Integer">
+		SELECT	count(1)	FROM	p_personnel_t t1,	zfw_p_social_relations_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.personnelid=$personnelid$
+	</select>
+	<select id="searchsocialrelations_zfw"  resultClass="socialrelations">
+		SELECT	 t2.*	FROM	p_personnel_t t1,	zfw_p_social_relations_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.personnelid=$personnelid$
+		ORDER BY FIELD(t2.relationtype,'家庭成员','血缘至亲','近亲姻亲','同行访友','同事朋友','其他')
+	</select>
+	
+	<select id="getsocialrelationsbyid_zfw"  resultClass="socialrelations">
+		SELECT	 t2.*	FROM	p_personnel_t t1,	zfw_p_social_relations_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.id=$id$
+	</select>
+	
+	<update id="updatesocialrelations_zfw" parameterClass="socialrelations">
+		UPDATE zfw_p_social_relations_t
+		SET validflag=$validflag$
+		WHERE id = $id$
+	</update>
+	<!-- 查询该社会关系与风险人员库中的关系 -->
+	<select id="getsocialrelationsbycardnumber"  resultClass="socialrelations">
+		SELECT  	t1.personname,t1.cardnumber,	t2.appellation,t2.memo
+		FROM	p_personnel_t t1,	p_social_relations_t t2 
+		WHERE
+			t1.validflag > 0 
+			AND t2.validflag > 0 
+			AND t1.id = t2.personnelid 
+			AND t2.cardnumber ='$cardnumber$'
+	</select>
+	  <select id="getsocialrelationsname"  resultClass="socialrelations">
+		select *  from p_social_relations_t t where t.validflag>0
+		and t.cardnumber='$cardnumber$'
+		ORDER BY t.id desc   LIMIT 1
+	</select>
+	
+	<select id="getNewSocialrelations" parameterClass="int" resultClass="socialrelations">
+		SELECT  t2.* FROM p_personnel_t t1, p_social_relations_t t2
+		WHERE t1.validflag > 0  AND t2.validflag>0 AND  t1.id = t2.personnelid   AND t2.personnelid=$personnelid$
+		order by addtime desc LIMIT 4
+	</select>
+	
+	<select id="getSocialrelationsCount" parameterClass="int" resultClass="int">
+		select count(*) from p_social_relations_t
+		where validflag>0 and personnelid=$personnelid$
+	</select>
+	<!-- ****************************************轨迹信息********************************************************************** -->
+	  <select id="gettrajectoryrecord"  resultClass="trajectoryrecord">
+		select *  from p_trajectory_record_t t
+		 where 	t.phonenumber  in ($phonenumber$)
+		ORDER BY t.perceivedtime desc 
+	</select>
+	 <select id="gettrajectoryrecord_count"  resultClass="Integer">
+		select count(1)  from p_trajectory_record_t t
+		where 	t.phonenumber  in ($phonenumber$)
+		
+		ORDER BY t.perceivedtime desc 
+	</select>
+	
+	<!-- 政法委 -->
+	<select id="searchrelation_zfw"  resultClass="relation">
+		SELECT	 t2.*	FROM	p_personnel_t t1,	zfw_p_relation_t t2
+		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
+		AND t2.personnelid=$personnelid$
+		ORDER BY t2.id
+	</select>
+</sqlMap>

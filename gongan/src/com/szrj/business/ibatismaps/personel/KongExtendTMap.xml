@@ -1,0 +1,769 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="kongextend">
+	<typeAlias alias="basicMsg" type="com.szrj.business.model.BasicMsg"/>
+	<typeAlias alias="personnel" type="com.szrj.business.model.personel.Personnel"/>
+	<typeAlias alias="kongextend" type="com.szrj.business.model.personel.KongExtend"/>
+	<typeAlias alias="kongdailycontrol" type="com.szrj.business.model.personel.KongDailyControl"/>
+	<typeAlias alias="selectModel" type="com.aladdin.model.SelectModel"/>
+	<resultMap id="exportPersonnel" class="personnel">
+		<result property="personname" column="personname"/>
+		<result property="cardnumber" column="cardnumber"/>
+		<result property="sexes" column="sexes"/>
+		<result property="usedname" column="usedname"/>
+		<result property="nickname" column="nickname"/>
+		<result property="marrystatus" column="marrystatus"/>
+		<result property="nation" column="nation"/>
+		<result property="soldierstatus" column="soldierstatus"/>
+		<result property="heathstatus" column="heathstatus"/>
+		<result property="politicalposition" column="politicalposition"/>
+		<result property="faith" column="faith"/>
+		<result property="education" column="education"/>
+		<result property="persontype" column="persontype"/>
+		<result property="houseplace" column="houseplace"/>
+		<result property="housepolice" column="housepolice"/>
+		<result property="homeplace" column="homeplace"/>
+		<result property="homepolice" column="homepolice"/>
+		<result property="workplace" column="workplace"/>
+		<result property="workpolice" column="workpolice"/>
+		<result property="feature" column="feature"/>
+		<result property="speciality" column="speciality"/>
+		<result property="records" column="records"/>
+		<result property="personheight" column="personheight"/>
+		<result property="netskillhabit" column="netskillhabit"/>
+		<result property="jdunit1" column="jdunit1"/>
+		<result property="jdpolice1" column="jdpolice1"/>
+		<result property="pphone1" column="pphone1"/>
+		<result property="appellation" column="appellation"/>
+		<result property="jdunit2" column="jdunit2"/>
+	</resultMap>
+	<resultMap id="exportRelation" class="relation">
+		<result property="telnumber" column="telnumber"/>
+		<result property="telephone" column="telephone"/>
+		<result property="relatedwifi" column="relatedwifi"/>
+		<result property="relatedvehicle" column="relatedvehicle"/>
+		<result property="bankaccount" column="bankaccount"/>
+		<result property="netidentity" column="netidentity"/>
+		<result property="netpayment" column="netpayment"/>
+		<result property="relatedhouse" column="relatedhouse"/>
+		<result property="relatedlegal" column="relatedlegal"/>
+		<result property="relateddriver" column="relateddriver"/>
+		<result property="relatedpassport" column="relatedpassport"/>
+	</resultMap>
+	<resultMap class="kongextend" id="exportkong" groupBy="personnelid">
+		<result property="addtime" column="addtime" />
+		<result property="addoperator" column="addoperator" />
+		<result property="nativeplace" column="nativeplace" /><!-- 籍贯 -->
+		<result property="jointtype" column="jointtype" />
+		<result property="jointtypename" column="jointtypename" />
+		<result property="incontrollevel" column="incontrollevel" />
+		<result property="suspectaffair" column="suspectaffair" />
+		<result property="controltime" column="controltime" />
+		<result property="cometime" column="cometime" />
+		<result property="leavetime" column="leavetime" />
+		<result property="comereason" column="comereason" />
+		<result property="engagedwork" column="engagedwork" />
+		<result property="identity" column="identity" />
+		<result property="serviceplace" column="serviceplace" />
+		<result property="religion" column="religion" />
+		<result property="suspiciousthing" column="suspiciousthing" />
+		<result property="classify" column="classify" />
+		<result property="classifydetail" column="classifydetail" />
+	
+		
+		<result property="exportPersonnel" resultMap="kongextend.exportPersonnel"/>
+		<result property="exportRelation" resultMap="kongextend.exportRelation"/>
+		
+	</resultMap>
+	
+	<resultMap class="kongextend" id="exportkong1" groupBy="personnelid">
+		<result property="addtime" column="addtime" />
+		<result property="addoperator" column="addoperator" />
+		<result property="nativeplace" column="nativeplace" /><!-- 籍贯 -->
+		<result property="jointtype" column="jointtype" />
+		<result property="jointtypename" column="jointtypename" />
+		<result property="incontrollevel" column="incontrollevel" />
+		<result property="suspectaffair" column="suspectaffair" />
+		<result property="controltime" column="controltime" />
+		<result property="cometime" column="cometime" />
+		<result property="leavetime" column="leavetime" />
+		<result property="comereason" column="comereason" />
+		<result property="engagedwork" column="engagedwork" />
+		<result property="identity" column="identity" />
+		<result property="serviceplace" column="serviceplace" />
+		<result property="religion" column="religion" />
+		<result property="suspiciousthing" column="suspiciousthing" />
+		<result property="qq" column="qq" />
+		<result property="wechat" column="wechat" />
+		<result property="contractperson" column="contractperson" />
+		<result property="filesallname" column="filesallname" />
+		<result property="filevalidflag" column="filevalidflag" />
+		<result property="checkresume" column="checkresume" />
+		
+		<result property="exportPersonnel" resultMap="kongextend.exportPersonnel"/>
+		<result property="exportRelation" resultMap="kongextend.exportRelation"/>
+		
+	</resultMap>
+	<resultMap class="kongdailycontrol" id="exportkongdailycontrol" groupBy="personnelid">
+		<result property="personname" column="personname" />
+		<result property="cardnumber" column="cardnumber" />
+		<result property="controltime" column="controltime" />
+		<result property="controlmode" column="controlmode" />
+		<result property="controlcontent" column="controlcontent" />
+		<result property="addoperatordepart" column="addoperatordepart" />
+		<result property="addoperator" column="addoperator" />
+		<result property="addtime" column="addtime" />
+	</resultMap>
+	
+	<!-- 新增 -->
+	<insert id="add" parameterClass="kongextend">
+		INSERT INTO p_kong_extend_t
+		(personnelid,nativeplace,contractperson,jointtype,incontrollevel,suspectaffair,isassign,jurisdictunit1,jurisdictpolice1,policephone1,jurisdictunit2,jurisdictpolice2,policephone2,validflag,addoperator,addtime,memo,zptime,classify,classifydetail)
+		VALUES
+		($personnelid$,'$nativeplace$','$contractperson$',$jointtype$,'$incontrollevel$','$suspectaffair$',$isassign$,'$jurisdictunit1$','$jurisdictpolice1$','$policephone1$','$jurisdictunit2$','$jurisdictpolice2$','$policephone2$',1,'$addoperator$','$addtime$','$memo$','$zptime$','$classify$','$classifydetail$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+   <!-- 修改   指派信息  管辖单位、双管辖单位-->
+	<update id="updateZP" parameterClass="kongextend">
+		UPDATE p_kong_extend_t
+		SET isassign=$isassign$,
+		jurisdictunit1 = $jurisdictunit1$,	jurisdictpolice1=$jurisdictpolice1$,policephone1='$policephone1$',
+		jurisdictunit2='$jurisdictunit2$',jurisdictpolice2='$jurisdictpolice2$',policephone2='$policephone2$',
+		updateoperator='$updateoperator$',zptime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	  <!-- 修改   角色管控信息-->
+	<update id="updateJSGK" parameterClass="kongextend">
+		UPDATE p_kong_extend_t
+		SET jointtype=$jointtype$,nativeplace='$nativeplace$',incontrollevel='$incontrollevel$',
+		cometime='$cometime$',comereason='$comereason$',engagedwork='$engagedwork$',
+		leavetime='$leavetime$',identity='$identity$',serviceplace='$serviceplace$',contractperson='$contractperson$',
+		classify='$classify$',classifydetail='$classifydetail$',
+		updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	 <!-- 修改   可疑特征信息-->
+	<update id="updateKYTZ" parameterClass="kongextend">
+	    UPDATE p_kong_extend_t
+		SET religion='$religion$',suspiciousthing='$suspiciousthing$',featuresphoto='$featuresphoto$',
+		updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	 <!-- 修改   管控时间-->
+	<update id="updatecontroltime" parameterClass="kongextend">
+	    UPDATE p_kong_extend_t
+		SET controltime=$controltime$,updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE 1=1
+		<dynamic prepend="" >
+			<isNotEqual prepend="AND" property="id" compareValue="0">
+				id = $id$
+			</isNotEqual>
+		</dynamic>
+	</update>
+	 <!-- 修改   在控状态-->
+	<update id="updateincontrollevel" parameterClass="kongextend">
+	    UPDATE p_kong_extend_t
+		SET incontrollevel='$incontrollevel$',updateoperator='$updateoperator$',updatetime='$updatetime$'
+		<dynamic>
+			<isNotEmpty prepend="," property="gdreason">
+				gdreason='$gdreason$'
+			</isNotEmpty>
+		</dynamic>
+		WHERE id = $id$
+	</update>
+	<!-- 归档 -->
+	<update id="gdKong" parameterClass="kongextend">
+	    UPDATE p_kong_extend_t
+		SET incontrollevel='$incontrollevel$',updateoperator='$updateoperator$',gdtime='$gdtime$'
+		<dynamic>
+			<isNotEmpty prepend="," property="gdreason">
+				gdreason='$gdreason$'
+			</isNotEmpty>
+		</dynamic>
+		WHERE id = $id$
+	</update>
+	<!-- 还原 -->
+	<update id="reduction" parameterClass="kongextend">
+	    UPDATE p_kong_extend_t
+		SET incontrollevel='$incontrollevel$',isassign=$isassign$,jurisdictunit1='$jurisdictunit1$',jurisdictpolice1='$jurisdictpolice1$',
+		updateoperator='$updateoperator$',updatetime='$updatetime$',zptime=''
+		WHERE id = $id$
+	</update>
+	 <!-- 删除 -->
+	<update id="cancel" parameterClass="kongextend">
+		UPDATE p_kong_extend_t
+		SET validflag=0,
+		updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	 <!-- 台账 -->
+	<update id="tz" parameterClass="kongextend">
+		UPDATE p_kong_extend_t
+		SET tz=$tz$
+		WHERE id = $id$
+	</update>
+	<update id="updateKongTime" parameterClass="kongextend">
+		UPDATE p_kong_extend_t
+		set updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE personnelid = $personnelid$
+	</update>
+	<select id="searchKongPersonnel_count" parameterClass="kongextend" resultClass="Integer">
+		SELECT
+				count(1)
+				FROM
+				p_kong_extend_t t2,
+				p_personnel_t t1
+				LEFT JOIN sys_department_t t3 ON t1.jdunit1 = t3.id
+				LEFT JOIN sys_department_t t4 ON t1.jdunit2 = t4.id 
+			WHERE
+				t1.validflag > 0  and t2.validflag>0
+				AND t1.id = t2.personnelid
+<!--				AND t1.personlabel like '%$personlabel$%'-->
+		<dynamic prepend="" >
+			 <isNotEmpty prepend="AND" property="cardnumber">
+				t1.cardnumber like '%$cardnumber$%'
+			</isNotEmpty>
+			  <isNotEmpty prepend="AND" property="personname">
+				t1.personname like '%$personname$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="sexes">
+				t1.sexes like '%$sexes$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="nativeplace">
+				t2.nativeplace like '%$nativeplace$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="homeplace">
+				t1.homeplace like '%$homeplace$%'
+			</isNotEmpty>
+		    <isNotEqual prepend="AND" property="jointtype" compareValue="0">
+				t2.jointtype = $jointtype$
+	        </isNotEqual>
+	          <isNotEqual prepend="AND" property="isassign" compareValue="0">
+				t2.isassign = $isassign$
+	        </isNotEqual>
+			 <isNotEmpty prepend="AND" property="incontrollevel">
+				t2.incontrollevel like '%$incontrollevel$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="jurisdictunit1">
+				t1.jdunit1 = '$jurisdictunit1$'
+			</isNotEmpty>
+			<isEqual  prepend="AND" property="isFilter" compareValue="1">
+			       (t1.jdunit1=$filtervalue$ or t1.jdunit2=$filtervalue$)
+			</isEqual>
+			<isEqual  prepend="AND" property="isFilter" compareValue="2">
+			       (t1.jdpolice1=$filtervalue$ or t1.jdpolice2=$filtervalue$)
+			</isEqual>
+		</dynamic>
+	</select>
+	<select id="searchKongPersonnel" parameterClass="kongextend" resultClass="kongextend">
+		SELECT
+			    t1.id,t1.cardnumber,t1.personname,t1.sexes,t1.homeplace,t1.persontype,t1.homepolice, 
+				t2.personnelid,t2.oldpersonnelid,t2.nativeplace,t2.contractperson,t2.jointtype,t2.incontrollevel,t2.suspectaffair,t2.controltime,t2.cometime,
+				t2.leavetime,t2.comereason,t2.engagedwork,t2.identity,t2.serviceplace,t2.religion,t2.suspiciousthing,t2.featuresphoto,t2.isassign,t2.jurisdictunit1,
+				t2.jurisdictpolice1,t2.policephone1,t2.old_jurisdictunit1,t2.old_jurisdictpolice1,t2.jurisdictunit2,t2.jurisdictpolice2,t2.policephone2,
+				t2.old_jurisdictunit2,t2.old_jurisdictpolice2,t2.validflag,t2.addoperator,t2.addtime,t2.updateoperator,t2.updatetime,t2.memo,t2.tz,t2.gdreason,t2.zptime,
+				t2.id as personlabel,
+				t2.id as kongextendid,t2.gdtime,
+				t3.departname as isFilter,
+				t4.departname as filtervalue,
+				u1.staffName as qq,
+				u2.staffName as wechat
+			FROM
+				p_kong_extend_t t2,
+				p_personnel_t t1
+				LEFT JOIN sys_department_t t3 ON t1.jdunit1 = t3.id
+				LEFT JOIN sys_department_t t4 ON t1.jdunit2 = t4.id 
+				LEFT JOIN sys_user_t u1 on t1.jdpolice1=u1.id
+		   LEFT JOIN sys_user_t u2 on t1.jdpolice2=u2.id
+			WHERE
+				t1.validflag > 0 and t2.validflag > 0
+				AND t1.id = t2.personnelid
+<!--				AND t1.personlabel like '%$personlabel$%'-->
+		<dynamic prepend="">
+		   <isNotEmpty prepend="AND" property="cardnumber">
+				t1.cardnumber like '%$cardnumber$%'
+			</isNotEmpty>
+			  <isNotEmpty prepend="AND" property="personname">
+				t1.personname like '%$personname$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="sexes">
+				t1.sexes like '%$sexes$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="nativeplace">
+				t2.nativeplace like '%$nativeplace$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="homeplace">
+				t1.homeplace like '%$homeplace$%'
+			</isNotEmpty>
+		    <isNotEqual prepend="AND" property="jointtype" compareValue="0">
+				t2.jointtype = $jointtype$
+	        </isNotEqual>
+	          <isNotEqual prepend="AND" property="isassign" compareValue="0">
+				t2.isassign = $isassign$
+	        </isNotEqual>
+			 <isNotEmpty prepend="AND" property="incontrollevel">
+				t2.incontrollevel like '%$incontrollevel$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="jurisdictunit1">
+				t1.jdunit1 = '$jurisdictunit1$'
+			</isNotEmpty>
+			<isEqual  prepend="AND" property="isFilter" compareValue="1">
+			       (t1.jdunit1=$filtervalue$ or t1.jdunit2=$filtervalue$)
+			</isEqual>
+			<isEqual  prepend="AND" property="isFilter" compareValue="2">
+			       (t1.jdpolice1=$filtervalue$ or t1.jdpolice2=$filtervalue$)
+			</isEqual>
+			<isEmpty property="sortsql">
+				<isEqual property="incontrollevel" compareValue="在控">
+					ORDER BY t2.zptime desc,t1.jdunit1,t1.jdunit2,t1.homeplace
+				</isEqual>
+			</isEmpty>
+			<isEmpty property="GDsortsql">
+				<isEqual property="incontrollevel" compareValue="归档">
+					ORDER BY t2.gdtime desc,t1.jdunit1,t1.jdunit2,t1.homeplace
+				</isEqual>
+			</isEmpty>
+			<isNotEmpty property="sortsql">
+				$sortsql$,t2.zptime desc,t1.jdunit1,t1.jdunit2,t1.homeplace
+			</isNotEmpty>
+			<isNotEmpty property="GDsortsql">
+				$GDsortsql$,t2.gdtime desc,t1.jdunit1,t1.jdunit2,t1.homeplace
+			</isNotEmpty>
+		</dynamic>
+<!--		order by  FIELD(t2.jointtype,1,2,3,4,0),t2.id-->
+	</select>
+	<select id="getKongExtendBypersonnelid" parameterClass="int" resultClass="kongextend">
+	       SELECT
+				rt.*,
+				GROUP_CONCAT( ft1.fileName ORDER BY ft1.id SEPARATOR ',' ) AS filesname,
+				GROUP_CONCAT( ft1.fileallName ORDER BY ft1.id SEPARATOR ',' ) AS filesallname 	 
+			FROM
+				p_kong_extend_t rt
+				LEFT JOIN sys_file_t ft1 ON FIND_IN_SET( ft1.id, rt.featuresphoto ) 
+			WHERE
+				rt.validflag > 0 
+				AND rt.personnelid = $personnelid$ 
+			GROUP BY
+				rt.id 
+	</select>
+	<select id="getKongExtendById" parameterClass="int" resultClass="kongextend">
+		SELECT *
+		FROM p_kong_extend_t
+		WHERE validflag > 0 AND id = $id$
+	</select>
+	<!-- 导出 -->
+	<select id="exportKongPersonnel" parameterClass="kongextend" resultMap="kongextend.exportkong">
+		SELECT
+			gt.*,CASE gt.jointtype WHEN 0 THEN '' WHEN 1 THEN '红色' WHEN 2 THEN '橙色' WHEN 3 THEN '黄色' WHEN 4 THEN '蓝色' END as jointtypename,
+			pt.personname,pt.cardnumber,pt.sexes,pt.usedname,pt.nickname,pt.marrystatus,
+			pt.soldierstatus,pt.heathstatus,pt.politicalposition,pt.nation,pt.personheight,
+			pt.faith,pt.education,pt.persontype,pt.houseplace,pt.housepolice,pt.netskillhabit,
+			pt.homepolice,pt.workplace,pt.workpolice,pt.feature,pt.homeplace,
+			pt.speciality,pt.records,rt.telnumber,rt.telephone,rt.relatedwifi,rt.relatedvehicle,
+			rt.bankaccount,rt.netidentity,rt.netpayment,rt.relatedhouse,
+			rt.relatedlegal,rt.relateddriver,rt.relatedpassport,
+			IFNULL(dt.departname,'') AS jdunit1,IFNULL(ut.staffName,'') AS jdpolice1,pt.pphone1,IFNULL(dt.departcode,'') AS jdunit2,
+			SUBSTRING_INDEX(GROUP_CONCAT(CONCAT(IF(st.appellation='其他',st.memo,st.appellation),':',st.personname,',',st.cardnumber) ORDER BY FIELD(st.relationtype,'家庭成员','血缘至亲','近亲姻亲','同行访友','同事朋友','同案人员','其他') SEPARATOR '\r\n' ),'\r\n',3) as appellation
+			FROM
+				p_kong_extend_t gt
+				INNER JOIN p_personnel_t pt ON gt.personnelid = pt.id
+				INNER JOIN p_relation_t rt ON gt.personnelid = rt.personnelid
+				LEFT JOIN p_social_relations_t st on st.personnelid=gt.personnelid
+				LEFT JOIN sys_department_t dt ON pt.jdunit1=dt.id
+				LEFT JOIN sys_user_t ut ON pt.jdpolice1=ut.id
+				where gt.validflag>0
+		<dynamic prepend="">
+			<isNotEmpty prepend="AND" property="cardnumber">
+				pt.cardnumber like '%$cardnumber$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="personname">
+				pt.personname like '%$personname$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="sexes">
+				pt.sexes = '$sexes$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="nativeplace">
+				pt.nativeplace = '$nativeplace$'
+			</isNotEmpty>
+		     <isNotEqual prepend="AND" property="isassign" compareValue="0">
+				gt.isassign = $isassign$
+	        </isNotEqual>
+			<isNotEmpty prepend="AND" property="homeplace">
+				pt.homeplace like '%$homeplace$%'
+			</isNotEmpty>
+		     <isNotEqual prepend="AND" property="jointtype" compareValue="0">
+				gt.jointtype = $jointtype$
+	        </isNotEqual>
+			<isNotEmpty prepend="AND" property="incontrollevel">
+				gt.incontrollevel = '$incontrollevel$'
+			</isNotEmpty>
+		</dynamic>
+		GROUP BY gt.personnelid
+		order by gt.zptime desc,pt.jdunit1,pt.jdunit2,pt.homeplace
+	</select>
+	
+	<select id="exportPersonnelById" parameterClass="kongextend" resultMap="kongextend.exportkong1">
+		SELECT
+			gt.addtime,gt.addoperator,gt.nativeplace,gt.jointtype,gt.incontrollevel,gt.suspectaffair,gt.controltime,gt.cometime,gt.leavetime,
+			gt.comereason,gt.engagedwork,gt.identity,gt.serviceplace,gt.religion,gt.suspiciousthing,gt.contractperson,
+			CASE gt.jointtype WHEN 0 THEN '' WHEN 1 THEN '红色' WHEN 2 THEN '橙色' WHEN 3 THEN '黄色' WHEN 4 THEN '蓝色' END as jointtypename,
+			pt.personname,pt.cardnumber,pt.sexes,pt.usedname,pt.nickname,pt.marrystatus,
+			pt.soldierstatus,pt.heathstatus,pt.politicalposition,pt.nation,pt.personheight,
+			pt.faith,pt.education,pt.persontype,pt.houseplace,pt.housepolice,pt.netskillhabit,
+			pt.homepolice,pt.workplace,pt.workpolice,pt.feature,pt.homeplace,
+			pt.speciality,pt.records,rt.telnumber,rt.telephone,rt.relatedwifi,rt.relatedvehicle,
+			rt.bankaccount,rt.netidentity,rt.netpayment,rt.relatedhouse,
+			rt.relatedlegal,rt.relateddriver,rt.relatedpassport,ri.accountid as qq,wxri.wechat,
+			sf.fileallName as filesallname,ifnull(sf.validflag,0) as filevalidflag,kb.checkresume,
+			'' AS jdunit1,'' AS jdpolice1,'' AS pphone1,'' AS jdunit2,'' as appellation
+			FROM
+			p_kong_extend_t gt
+			LEFT JOIN p_personnel_t pt ON gt.personnelid = pt.id
+			LEFT JOIN p_relation_t rt ON gt.personnelid = rt.personnelid
+			LEFT JOIN p_relation_identity_t ri ON (ri.personnelid=pt.id and ri.identitytype="QQ")
+			LEFT JOIN p_relation_identity_t wxri ON (wxri.personnelid=pt.id and wxri.identitytype="微信")
+			LEFT JOIN p_personnel_photo_t ph ON (ph.personnelid=pt.id and ph.validflag>0 and ph.defaultflag=1)
+			LEFT JOIN sys_file_t sf ON (sf.id=ph.fileid and sf.validflag>0)
+			LEFT JOIN p_kong_background_t kb on (kb.personnelid=pt.id and kb.validflag>0 and kb.datatype=1)
+			where gt.validflag>0 and pt.id = $personnelid$
+			order by kb.addtime desc
+			limit 1
+	</select>
+	
+	 <!--	*************************************************日常管控  三天一走访*************************************************-->
+	 	<select id="searchdailycontrol_count" parameterClass="kongdailycontrol" resultClass="int">
+			SELECT
+				count(1)
+				FROM(SELECT
+					rt.*
+				FROM
+					p_kong_dailycontrol_t rt
+					
+				WHERE
+					rt.validflag > 0   AND rt.personnelid =  $personnelid$   AND rt.controltype =  $controltype$  
+				GROUP BY	rt.id ) A,
+					sys_user_t t,sys_department_t d 
+				WHERE
+					A.addoperatorid = t.id 	AND t.departmentid = d.id
+	 	</select>
+	 	<select id="searchdailycontrol" parameterClass="kongdailycontrol" resultClass="kongdailycontrol">
+			 SELECT
+				A.*,	d.departname AS addoperatordepart 
+			FROM(SELECT
+				rt.*
+			FROM
+				p_kong_dailycontrol_t rt
+				
+			WHERE
+				rt.validflag > 0   AND rt.personnelid =  $personnelid$   AND rt.controltype =  $controltype$  
+			GROUP BY	rt.id ) A,
+				sys_user_t t,sys_department_t d 
+			WHERE
+				A.addoperatorid = t.id 	AND t.departmentid = d.id
+				order by DATE_FORMAT(A.controltime,'%Y-%m-%d %h:%i:%m') desc 
+	 	</select>
+	 	<select id="searchDailycontrolByControltype" parameterClass="kongdailycontrol" resultClass="kongdailycontrol">
+			select A.*,p.personname from(
+			select * from p_kong_dailycontrol_t
+			where validflag>0 and controltype=#controltype#)A
+			LEFT JOIN p_personnel_t p on p.id = A.personnelid
+			where p.validflag>0
+			ORDER BY A.controltime desc limit 7
+	 	</select>
+	 	<insert id="addkongdailycontrol" parameterClass="kongdailycontrol">
+		INSERT INTO p_kong_dailycontrol_t
+		(personnelid,controltype,controltime,controlmode,controlcontent,fileattachments,validflag,addoperatorid,addoperator,addtime,memo)
+		VALUES
+		($personnelid$,$controltype$,'$controltime$','$controlmode$','$controlcontent$','$fileattachments$',1,$addoperatorid$,'$addoperator$','$addtime$','$memo$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+	 <select id="searchdailycontrolbyid" parameterClass="int" resultClass="kongdailycontrol">
+			 SELECT
+				A.*,	d.departname AS addoperatordepart 
+			FROM(SELECT
+				rt.*,
+				GROUP_CONCAT( ft1.fileName ORDER BY ft1.id SEPARATOR ',' ) AS filesname,
+				GROUP_CONCAT( ft1.fileallName ORDER BY ft1.id SEPARATOR ',' ) AS filesallname 
+			FROM
+				p_kong_dailycontrol_t rt
+				LEFT JOIN sys_file_t ft1 ON FIND_IN_SET( ft1.id, rt.fileattachments ) 
+			WHERE
+				rt.validflag > 0   AND rt.id =  $id$ 
+			GROUP BY	rt.id ) A,
+				sys_user_t t,sys_department_t d 
+			WHERE
+				A.addoperatorid = t.id 	AND t.departmentid = d.id
+	 	</select>
+	 	<update id="updatekongdailycontrol" parameterClass="kongdailycontrol">
+	    UPDATE p_kong_dailycontrol_t
+		SET controltime='$controltime$',controlmode='$controlmode$',controlcontent='$controlcontent$',
+		fileattachments='$fileattachments$',
+		updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>	
+	<update id="cancelkongdailycontrol" parameterClass="kongdailycontrol">
+	    UPDATE p_kong_dailycontrol_t
+		SET validflag=0,updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	<select id="getNewDailycontrol" parameterClass="kongdailycontrol" resultClass="kongdailycontrol">
+		 SELECT
+			A.*,	d.departname AS addoperatordepart 
+		FROM(SELECT
+			rt.*,
+			GROUP_CONCAT( ft1.fileName ORDER BY ft1.id SEPARATOR ',' ) AS filesname,
+			GROUP_CONCAT( ft1.fileallName ORDER BY ft1.id SEPARATOR ',' ) AS filesallname 
+		FROM
+			p_kong_dailycontrol_t rt
+			LEFT JOIN sys_file_t ft1 ON FIND_IN_SET( ft1.id, rt.fileattachments ) 
+		WHERE
+			rt.validflag > 0   AND rt.personnelid =  $personnelid$   AND rt.controltype =  $controltype$  
+		GROUP BY	rt.id ) A,
+			sys_user_t t,sys_department_t d 
+		WHERE
+			A.addoperatorid = t.id 	AND t.departmentid = d.id
+			order by updatetime desc limit 5
+ 	</select>
+ 	
+ 	<select id="exportAllDailycontrol" parameterClass="kongdailycontrol" resultMap="kongextend.exportkongdailycontrol">
+ 	      SELECT
+					A.*,d.departname AS addoperatordepart 
+				FROM
+					(
+				SELECT
+					rt.*,p.personname,p.cardnumber
+				FROM
+					p_kong_dailycontrol_t rt
+				    INNER JOIN p_personnel_t p ON rt.personnelid = p.id
+				WHERE
+				    rt.controltype =  $controltype$ 
+					AND rt.validflag > 0 
+					AND p.validflag > 0 
+					<dynamic prepend="">
+					    <isNotEmpty prepend="AND" property="cardnumber">
+				                 p.cardnumber like '%$cardnumber$%'
+			             </isNotEmpty>
+			             <isNotEmpty prepend="AND" property="personname">
+				                 p.personname like '%$personname$%'
+			              </isNotEmpty>
+			              <isNotEmpty prepend="AND" property="controlmode">
+				                 rt.controlmode = '$controlmode$'
+			              </isNotEmpty>
+			                 <isNotEmpty prepend="AND" property="starttime">
+								STR_TO_DATE(rt.controltime,'%Y-%m-%d') >= STR_TO_DATE('$starttime$','%Y-%m-%d')
+							</isNotEmpty>
+							<isNotEmpty prepend="AND" property="endtime">
+								STR_TO_DATE('$endtime$','%Y-%m-%d') >= STR_TO_DATE(rt.controltime,'%Y-%m-%d')
+							</isNotEmpty>
+					</dynamic> 
+						GROUP BY
+							rt.id 
+							) A,
+							sys_user_t t,
+							sys_department_t d,
+							p_kong_extend_t t2 
+						WHERE
+							A.addoperatorid = t.id 
+							AND t.departmentid = d.id
+							AND t2.personnelid = A.personnelid
+							AND t2.validflag > 0 
+						 <isEqual  prepend="AND" property="isFilter" compareValue="1">
+			                     (t2.jurisdictunit1=$filtervalue$ or t2.jurisdictunit2=$filtervalue$)
+			             </isEqual>
+			            <isEqual  prepend="AND" property="isFilter" compareValue="2">
+			                     (t2.jurisdictpolice1=$filtervalue$ or t2.jurisdictpolice2=$filtervalue$)
+			            </isEqual>
+					 order by DATE_FORMAT(A.controltime,'%Y-%m-%d %h:%i:%m') desc 
+ 	   </select>
+ 	<select id="getAllDailycontrol" parameterClass="kongdailycontrol" resultClass="kongdailycontrol">
+ 	      SELECT
+					A.*,d.departname AS addoperatordepart 
+				FROM
+					(
+				SELECT
+					rt.*,p.personname,p.cardnumber
+				FROM
+					p_kong_dailycontrol_t rt
+				    INNER JOIN p_personnel_t p ON rt.personnelid = p.id
+				WHERE
+				    rt.controltype =  $controltype$ 
+					AND rt.validflag > 0 
+					AND p.validflag > 0 
+					<dynamic prepend="">
+					    <isNotEmpty prepend="AND" property="cardnumber">
+				                 p.cardnumber like '%$cardnumber$%'
+			             </isNotEmpty>
+			             <isNotEmpty prepend="AND" property="personname">
+				                 p.personname like '%$personname$%'
+			              </isNotEmpty>
+			              <isNotEmpty prepend="AND" property="controlmode">
+				                 rt.controlmode = '$controlmode$'
+			              </isNotEmpty>
+			                 <isNotEmpty prepend="AND" property="starttime">
+								STR_TO_DATE(rt.controltime,'%Y-%m-%d') >= STR_TO_DATE('$starttime$','%Y-%m-%d')
+							</isNotEmpty>
+							<isNotEmpty prepend="AND" property="endtime">
+								STR_TO_DATE('$endtime$','%Y-%m-%d') >= STR_TO_DATE(rt.controltime,'%Y-%m-%d')
+							</isNotEmpty>
+					</dynamic> 
+						GROUP BY
+							rt.id 
+							) A,
+							sys_user_t t,
+							sys_department_t d,
+							p_kong_extend_t t2 
+						WHERE
+							A.addoperatorid = t.id 
+							AND t.departmentid = d.id
+							AND t2.personnelid = A.personnelid
+							AND t2.validflag > 0 
+						 <isEqual  prepend="AND" property="isFilter" compareValue="1">
+			                     (t2.jurisdictunit1=$filtervalue$ or t2.jurisdictunit2=$filtervalue$)
+			             </isEqual>
+			            <isEqual  prepend="AND" property="isFilter" compareValue="2">
+			                     (t2.jurisdictpolice1=$filtervalue$ or t2.jurisdictpolice2=$filtervalue$)
+			            </isEqual>
+					 order by DATE_FORMAT(A.controltime,'%Y-%m-%d %h:%i:%m') desc 
+ 	   </select>
+ 	
+ 	<select id="getAllDailycontrol_count" parameterClass="kongdailycontrol" resultClass="int">
+ 	      SELECT
+					count(1)
+				FROM
+					(
+				SELECT
+					rt.*,p.personname,p.cardnumber
+				FROM
+					p_kong_dailycontrol_t rt
+				    INNER JOIN p_personnel_t p ON rt.personnelid = p.id
+				WHERE
+					 rt.controltype =  $controltype$ 
+					AND rt.validflag > 0 
+					AND p.validflag > 0
+					<dynamic prepend="">
+					    <isNotEmpty prepend="AND" property="cardnumber">
+				                 p.cardnumber like '%$cardnumber$%'
+			             </isNotEmpty>
+			             <isNotEmpty prepend="AND" property="personname">
+				                 p.personname like '%$personname$%'
+			              </isNotEmpty>
+			            
+			             <isNotEmpty prepend="AND" property="controlmode">
+				                 rt.controlmode = '$controlmode$'
+			              </isNotEmpty>
+			                 <isNotEmpty prepend="AND" property="starttime">
+								STR_TO_DATE(rt.controltime,'%Y-%m-%d') >= STR_TO_DATE('$starttime$','%Y-%m-%d')
+							</isNotEmpty>
+							<isNotEmpty prepend="AND" property="endtime">
+								STR_TO_DATE('$endtime$','%Y-%m-%d') >= STR_TO_DATE(rt.controltime,'%Y-%m-%d')
+							</isNotEmpty>
+					</dynamic> 
+						GROUP BY
+							rt.id 
+							) A,
+							sys_user_t t,
+							sys_department_t d,
+							p_kong_extend_t t2 
+						WHERE
+							A.addoperatorid = t.id 
+							AND t.departmentid = d.id
+							AND t2.personnelid = A.personnelid
+							AND t2.validflag > 0 
+						<isEqual  prepend="AND" property="isFilter" compareValue="1">
+			                     (t2.jurisdictunit1=$filtervalue$ or t2.jurisdictunit2=$filtervalue$)
+			             </isEqual>
+			            <isEqual  prepend="AND" property="isFilter" compareValue="2">
+			                     (t2.jurisdictpolice1=$filtervalue$ or t2.jurisdictpolice2=$filtervalue$)
+			            </isEqual>
+ 	   </select>
+		
+		<select id="countpersonByJointtype" resultClass="kongextend">
+			select A.jointtype,CASE A.jointtype WHEN 1 THEN '红色' WHEN 2 THEN '橙色' WHEN 3 THEN '黄色' WHEN 4 THEN '蓝色' END as jointtypename,count(p.id) as personcount from(
+			select 1 as jointtype
+			from dual
+			UNION select 2 as jointtype
+			from dual
+			UNION select 3 as jointtype
+			from dual
+			UNION select 4 as jointtype
+			from dual)A
+			LEFT JOIN p_kong_extend_t k on k.jointtype=A.jointtype and k.validflag>0
+			LEFT JOIN p_personnel_t p on p.id=k.personnelid and p.validflag>0
+			GROUP BY A.jointtype
+			ORDER BY A.jointtype
+		</select>
+		<select id="countDistpersonByJointtype" resultClass="selectModel">
+			select A.jointtype,CASE A.jointtype WHEN 1 THEN '红色' WHEN 2 THEN '橙色' WHEN 3 THEN '黄色' WHEN 4 THEN '蓝色' END as text,count(p.id) as value from(
+			select 1 as jointtype
+			from dual
+			UNION select 2 as jointtype
+			from dual
+			UNION select 3 as jointtype
+			from dual
+			UNION select 4 as jointtype
+			from dual)A
+			LEFT JOIN p_kong_extend_t k on k.jointtype=A.jointtype and k.incontrollevel='在控'  and k.validflag>0
+			LEFT JOIN p_personnel_t p on p.id=k.personnelid and p.validflag>0
+			GROUP BY A.jointtype
+			ORDER BY A.jointtype
+		</select>
+		
+		<select id="countpersonByNativeplace" resultClass="kongextend">
+			SELECT A.basicname as nativeplace,count(p.id) as personcount FROM(
+			select * from sys_basic_msg_t
+			where basicType=51 and validflag>0 ORDER BY id)A
+			LEFT JOIN p_kong_extend_t k on A.basicName = k.nativeplace and k.validflag>0
+			LEFT JOIN p_personnel_t p on p.id = k.personnelid and p.validflag>0
+			GROUP BY A.id
+		</select>
+		<select id="countDistpersonByNativeplace" resultClass="selectModel">
+			SELECT A.basicname as text,count(p.id) as value FROM(
+			select * from sys_basic_msg_t
+			where basicType=51 and validflag>0 ORDER BY id)A
+			LEFT JOIN p_kong_extend_t k on A.basicName = k.nativeplace and k.incontrollevel='在控' and k.validflag>0
+			LEFT JOIN p_personnel_t p on p.id = k.personnelid and p.validflag>0
+			GROUP BY A.id
+			ORDER BY value desc
+			limit 5;
+		</select>
+		
+		<select id="countpersonByPolice" resultClass="kongextend">
+			select A.departname as jurisdictunit,count(p.id) as personcount from(
+			select * from sys_department_t
+			where validflag>0 and departtype=4 order by id)A
+			LEFT JOIN p_kong_extend_t k on (k.jurisdictunit1=A.id or k.jurisdictunit2=A.id) and k.validflag>0
+			LEFT JOIN p_personnel_t p on p.id=k.personnelid and p.validflag>0
+			GROUP BY A.id
+		</select>
+		
+		<select id="checkMYPG" resultClass="kongextend">
+			SELECT  t1.cardnumber,t1.personname,t1.sexes,t1.homeplace,t1.persontype,u.contactnumber as policephone1,u1.contactnumber as policephone2
+			FROM     p_kong_extend_t t2,     p_personnel_t t1
+			left join p_kong_dailycontrol_t dc on dc.personnelid=t1.id and dc.validflag>0 and controltype=2 
+			and controltime like CONCAT('%',DATE_FORMAT(now(),'%Y-%m'),'%')
+			left join sys_user_t u on u.id=t1.jdpolice1 and u.validflag>0
+			left join sys_user_t u1 on u1.id=t1.jdpolice2 and u1.validflag>0
+			WHERE t1.validflag > 0 and t2.validflag > 0 AND t1.id = t2.personnelid AND t2.incontrollevel like '%在控%' and dc.id is null and t2.jointtype!=4
+		</select>
+		
+		<select id="checkSRYZF" resultClass="kongextend">
+			select A.* from(
+			SELECT  t1.cardnumber,t1.personname,u.contactnumber as policephone1,u1.contactnumber as policephone2,DATE_FORMAT(DATE_SUB(now(),INTERVAL t2.controltime day),'%Y-%m-%d') as limitdate,t1.id
+			FROM     p_kong_extend_t t2,     p_personnel_t t1
+			left join sys_user_t u on u.id=t1.jdpolice1 and u.validflag>0
+			left join sys_user_t u1 on u1.id=t1.jdpolice2 and u1.validflag>0
+			WHERE t1.validflag > 0 and t2.validflag > 0 AND t1.id = t2.personnelid AND t2.incontrollevel like '%在控%')A
+			left join p_kong_dailycontrol_t dc on dc.personnelid=A.id and dc.validflag>0  and controltype=1 and controltime>A.limitdate
+			where dc.id is null
+		</select>
+		
+		<select id="checkSFYLR" resultClass="kongextend">
+			SELECT  t1.cardnumber,t1.personname,u.contactnumber as policephone1,u1.contactnumber as policephone2,t1.id
+			FROM     p_kong_extend_t t2,     p_personnel_t t1
+			left join sys_user_t u on u.id=t1.jdpolice1 and u.validflag>0
+			left join sys_user_t u1 on u1.id=t1.jdpolice2 and u1.validflag>0
+			WHERE t1.validflag > 0 and t2.validflag > 0 AND t1.id = t2.personnelid AND t2.incontrollevel like '%在控%' and DATE_FORMAT(DATE_SUB(now(),INTERVAL 9 day),'%Y-%m-%d')>t2.updatetime
+		</select>
+</sqlMap>

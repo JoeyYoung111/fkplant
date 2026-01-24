@@ -1,0 +1,629 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+        
+<sqlMap namespace="wenGrade">
+	<typeAlias alias="wenGrade" type="com.szrj.business.model.personel.WenGrade"/>
+	<typeAlias alias="personnel" type="com.szrj.business.model.personel.Personnel"/>
+	<typeAlias alias="relation" type="com.szrj.business.model.personel.Relation"/>
+	<typeAlias alias="wenRisk" type="com.szrj.business.model.personel.WenRisk"/>
+	<typeAlias alias="realityShow" type="com.szrj.business.model.personel.RealityShow"/>
+	<typeAlias alias="pieModel" type="com.aladdin.model.PieModel"/>
+	<typeAlias alias="selectModel" type="com.aladdin.model.SelectModel"/>
+	<typeAlias alias="wenjointcontrollevel" type="com.szrj.business.model.personel.WenJointControlLevel"/>
+	<resultMap id="exportPersonnel" class="personnel">
+		<result property="personname" column="personname"/>
+		<result property="cardnumber" column="cardnumber"/>
+		<result property="sexes" column="sexes"/>
+		<result property="usedname" column="usedname"/>
+		<result property="nickname" column="nickname"/>
+		<result property="marrystatus" column="marrystatus"/>
+		<result property="nation" column="nation"/>
+		<result property="soldierstatus" column="soldierstatus"/>
+		<result property="heathstatus" column="heathstatus"/>
+		<result property="politicalposition" column="politicalposition"/>
+		<result property="faith" column="faith"/>
+		<result property="education" column="education"/>
+		<result property="persontype" column="persontype"/>
+		<result property="houseplace" column="houseplace"/>
+		<result property="housepolice" column="housepolice"/>
+		<result property="homeplace" column="homeplace"/>
+		<result property="homepolice" column="homepolice"/>
+		<result property="workplace" column="workplace"/>
+		<result property="workpolice" column="workpolice"/>
+		<result property="feature" column="feature"/>
+		<result property="speciality" column="speciality"/>
+		<result property="records" column="records"/>
+		<result property="maintainrate1" column="maintainrate1"/>
+		<result property="personheight" column="personheight"/>
+		<result property="netskillhabit" column="netskillhabit"/>
+	</resultMap>
+	<resultMap id="exportRelation" class="relation">
+		<result property="telnumber" column="telnumber"/>
+		<result property="telephone" column="telephone"/>
+		<result property="relatedwifi" column="relatedwifi"/>
+		<result property="relatedvehicle" column="relatedvehicle"/>
+		<result property="bankaccount" column="bankaccount"/>
+		<result property="netidentity" column="netidentity"/>
+		<result property="netpayment" column="netpayment"/>
+		<result property="relatedhouse" column="relatedhouse"/>
+		<result property="relatedlegal" column="relatedlegal"/>
+		<result property="relateddriver" column="relateddriver"/>
+		<result property="relatedpassport" column="relatedpassport"/>
+	</resultMap>
+	<resultMap id="exportWenRisk" class="wenRisk">
+		<result property="conflictdetails" column="conflictdetails"/>
+		<result property="riskappeal" column="riskappeal"/>
+	</resultMap>
+	<resultMap id="exportRealityShow" class="realityShow">
+		<result property="lifepattern" column="lifepattern"/>
+		<result property="healthstate" column="healthstate"/>
+		<result property="characteristic" column="characteristic"/>
+		<result property="lifehabit" column="lifehabit"/>
+	</resultMap>
+	<resultMap class="wenGrade" id="exportGrade" groupBy="personnelid">
+		<result property="addtime" column="addtime" />
+		<result property="addoperator" column="addoperator" />
+		<result property="jointcontrollevel" column="jointcontrollevel" />
+		<result property="incontrollevel" column="incontrollevel" />
+		<result property="typename" column="typename" />
+		<result property="policename" column="policename" />
+		<result property="unitname1" column="unitname1" />
+		<result property="policename1" column="policename1" />
+		<result property="policephone1" column="policephone1" />
+		<result property="unitname2" column="unitname2" />
+		<result property="policename2" column="policename2" />
+		<result property="policephone2" column="policephone2"/>
+		
+		<result property="exportPersonnel" resultMap="wenGrade.exportPersonnel"/>
+		<result property="exportRelation" resultMap="wenGrade.exportRelation"/>
+		<result property="exportWenRisk" resultMap="wenGrade.exportWenRisk"/>
+		<result property="exportRealityShow" resultMap="wenGrade.exportRealityShow"/>
+	</resultMap>
+	<select id="getById" parameterClass="int" resultClass="wenGrade">
+		SELECT
+			A.*,
+			dt1.departname AS unitname1,
+			ut1.staffName AS policename1,
+			dt2.departname AS unitname2,
+			ut2.staffName AS policename2,
+			GROUP_CONCAT( ft2.basicName ORDER BY ft2.id SEPARATOR ',' ) AS policename 
+		FROM
+			(
+		SELECT
+			t.*,
+			GROUP_CONCAT( ft1.basicName ORDER BY ft1.id SEPARATOR ',' ) AS typename 
+		FROM
+			p_wen_grade_t t
+			LEFT JOIN sys_basic_msg_t ft1 ON FIND_IN_SET( ft1.id, t.personneltype ) 
+		WHERE
+			t.validflag > 0 
+			AND t.ID = $id$ 
+			) A
+			LEFT JOIN sys_basic_msg_t ft2 ON FIND_IN_SET( ft2.id, A.responsiblepolice )
+			LEFT JOIN sys_department_t dt1 ON A.jurisdictunit1 = dt1.id
+			LEFT JOIN sys_user_t ut1 ON A.jurisdictpolice1 = ut1.id
+			LEFT JOIN sys_department_t dt2 ON A.jurisdictunit2 = dt2.id
+			LEFT JOIN sys_user_t ut2 ON A.jurisdictpolice2 = ut2.id
+	</select>
+	<select id="getBypersonnelid" parameterClass="int" resultClass="wenGrade">
+		SELECT
+			A.*,
+			dt1.departname AS unitname1,
+			ut1.staffName AS policename1,
+			dt2.departname AS unitname2,
+			ut2.staffName AS policename2,
+			GROUP_CONCAT( ft2.basicName ORDER BY ft2.id SEPARATOR ',' ) AS policename 
+		FROM
+			(
+		SELECT
+			t.*,
+			GROUP_CONCAT( ft1.basicName ORDER BY ft1.id SEPARATOR ',' ) AS typename 
+		FROM
+			p_wen_grade_t t
+			LEFT JOIN sys_basic_msg_t ft1 ON FIND_IN_SET( ft1.id, t.personneltype ) 
+		WHERE
+			t.validflag > 0 
+			AND t.personnelid = $personnelid$ 
+			) A
+			LEFT JOIN sys_basic_msg_t ft2 ON FIND_IN_SET( ft2.id, A.responsiblepolice )
+			LEFT JOIN sys_department_t dt1 ON A.jurisdictunit1 = dt1.id
+			LEFT JOIN sys_user_t ut1 ON A.jurisdictpolice1 = ut1.id
+			LEFT JOIN sys_department_t dt2 ON A.jurisdictunit2 = dt2.id
+			LEFT JOIN sys_user_t ut2 ON A.jurisdictpolice2 = ut2.id
+	</select>
+	<select id="searchWenGrade_count" parameterClass="wenGrade" resultClass="Integer">
+		SELECT COUNT(a.id) FROM (SELECT gt.id
+		FROM p_wen_grade_t gt
+		LEFT JOIN p_personnel_t pt ON gt.personnelid=pt.id
+		LEFT JOIN sys_user_t ut ON pt.jdpolice1=ut.id
+<!--		LEFT JOIN p_relation_telnumber_t rtt ON (rtt.personnelid=pt.id AND rtt.validflag>0)-->
+<!--		LEFT JOIN (select personcard_number,CASE WHEN 43200>=UNIX_TIMESTAMP(now())-UNIX_TIMESTAMP(STR_TO_DATE(max(appear_time),'%Y-%m-%d %H:%i:%s')) THEN 'green' WHEN UNIX_TIMESTAMP(now())-UNIX_TIMESTAMP(STR_TO_DATE(max(appear_time),'%Y-%m-%d %H:%i:%s'))>43200 and 86400>=UNIX_TIMESTAMP(now())-		 UNIX_TIMESTAMP(STR_TO_DATE(max(appear_time),'%Y-%m-%d %H:%i:%s')) THEN 'orange' ELSE 'red' END color from f_trajectory_t GROUP BY personcard_number)A on A.personcard_number=pt.cardnumber-->
+		WHERE gt.validflag > 0 AND pt.validflag>0
+		<dynamic prepend="">
+<!--			<isNotEqual prepend="AND" property="zslabel1" compareValue="0">-->
+<!--				FIND_IN_SET($zslabel1$,pt.zslabel1)-->
+<!--	        </isNotEqual>-->
+			<isNotEmpty prepend="AND" property="cardnumber">
+				pt.cardnumber like '%$cardnumber$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="personname">
+				pt.personname like '%$personname$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="telnumber">
+<!--				rtt.telnumber like '%$telnumber$%'-->
+				IFNULL((SELECT count(id) FROM p_relation_telnumber_t WHERE personnelid=gt.personnelid AND validflag>0 AND telnumber like '%$telnumber$%'),0)>0
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="homeplace">
+				pt.homeplace like '%$homeplace$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="unitname1">
+				FIND_IN_SET(pt.jdunit1,'$unitname1$')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="policename1">
+				ut.staffName like '%$policename1$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="sqltype">
+				($sqltype$)
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="sqlpolice">
+				($sqlpolice$)
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="jointcontrollevel">
+			    <isNotEqual property="jointcontrollevel"  compareValue="1">
+				   gt.jointcontrollevel = '$jointcontrollevel$'
+				</isNotEqual>
+			</isNotEmpty>
+			<isEmpty prepend="AND" property="jointcontrollevel">
+				gt.jointcontrollevel != '存档'
+			</isEmpty>
+			<isNotEmpty prepend="AND" property="awaywill">
+				gt.awaywill = '$awaywill$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="incontrollevel">
+				gt.incontrollevel = '$incontrollevel$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="color">
+				ifnull((select CASE WHEN 43200>=UNIX_TIMESTAMP(now())-UNIX_TIMESTAMP(STR_TO_DATE(max(appear_time),'%Y-%m-%d %H:%i:%s')) THEN 'green' WHEN UNIX_TIMESTAMP(now())-UNIX_TIMESTAMP(STR_TO_DATE(max(appear_time),'%Y-%m-%d %H:%i:%s'))>43200 and 86400>=UNIX_TIMESTAMP(now())-		 UNIX_TIMESTAMP(STR_TO_DATE(max(appear_time),'%Y-%m-%d %H:%i:%s')) THEN 'orange' ELSE 'red' END color from f_trajectory_t where personcard_number=pt.cardnumber GROUP BY personcard_number),'blue' ) = '$color$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="persontype">
+				pt.persontype = '$persontype$'
+			</isNotEmpty>
+			<isNotEqual prepend="AND" property="unitFilter" compareValue="0">
+				(pt.jdunit1 = $unitFilter$  or pt.jdunit2 = $unitFilter$)
+	        </isNotEqual>
+			<isNotEqual prepend="AND" property="personFilter" compareValue="0">
+				(pt.jdpolice1 = $personFilter$ or pt.jdpolice2 = $personFilter$)
+	        </isNotEqual>
+	        <isNotEqual prepend="AND" property="policeFilter" compareValue="0">
+				FIND_IN_SET($policeFilter$,gt.responsiblepolice)
+	        </isNotEqual>
+		</dynamic>
+		GROUP BY gt.id) a
+	</select>
+	<select id="searchWenGrade" parameterClass="wenGrade" resultClass="wenGrade">
+		SELECT gt.*,pt.cardnumber,pt.personname,pt.homeplace,pt.persontype,pt.sexes,pt.zslabel2 AS typename,IFNULL(pt.maintainrate1,0) AS maintainrate1,
+<!--		IFNULL((SELECT totalpoints FROM p_maintainrate_t WHERE gt.personnelid=personnelid AND personlabel=1),0) AS maintainrate1,-->
+		IFNULL(dt.departname,'') AS unitname1,IFNULL(ut.staffName,'') AS policename1,
+		GROUP_CONCAT(bmt.basicName SEPARATOR ',') AS policename
+<!--		,IFNULL(A.color,'blue') as color-->
+		FROM p_wen_grade_t gt
+		LEFT JOIN p_personnel_t pt ON gt.personnelid=pt.id
+		LEFT JOIN sys_department_t dt ON pt.jdunit1=dt.id
+		LEFT JOIN sys_user_t ut ON pt.jdpolice1=ut.id
+		LEFT JOIN sys_basic_msg_t bmt ON bmt.validflag > 0 AND bmt.id in (gt.responsiblepolice) 
+<!--		LEFT JOIN (select personcard_number,CASE WHEN 43200>=UNIX_TIMESTAMP(now())-UNIX_TIMESTAMP(STR_TO_DATE(max(appear_time),'%Y-%m-%d %H:%i:%s')) THEN 'green' WHEN UNIX_TIMESTAMP(now())-UNIX_TIMESTAMP(STR_TO_DATE(max(appear_time),'%Y-%m-%d %H:%i:%s'))>43200 and 86400>=UNIX_TIMESTAMP(now())-		 UNIX_TIMESTAMP(STR_TO_DATE(max(appear_time),'%Y-%m-%d %H:%i:%s')) THEN 'orange' ELSE 'red' END color from f_trajectory_t GROUP BY personcard_number)A on A.personcard_number=pt.cardnumber-->
+<!--		LEFT JOIN sys_basic_msg_t mt ON (FIND_IN_SET(mt.id,gt.personneltype) AND mt.validflag>0)-->
+		WHERE gt.validflag > 0 AND pt.validflag > 0
+		<dynamic prepend="">
+<!--			<isNotEqual prepend="AND" property="zslabel1" compareValue="0">-->
+<!--				FIND_IN_SET($zslabel1$,pt.zslabel1)-->
+<!--	        </isNotEqual>-->
+			<isNotEmpty prepend="AND" property="cardnumber">
+				pt.cardnumber like '%$cardnumber$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="personname">
+				pt.personname like '%$personname$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="telnumber">
+				IFNULL((SELECT count(id) FROM p_relation_telnumber_t WHERE personnelid=gt.personnelid AND validflag>0 AND telnumber like '%$telnumber$%'),0)>0
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="homeplace">
+				pt.homeplace like '%$homeplace$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="unitname1">
+				FIND_IN_SET(pt.jdunit1,'$unitname1$')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="policename1">
+				ut.staffName like '%$policename1$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="sqltype">
+				($sqltype$)
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="sqlpolice">
+				($sqlpolice$)
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="jointcontrollevel">
+			    <isNotEqual property="jointcontrollevel"  compareValue="1">
+				   gt.jointcontrollevel = '$jointcontrollevel$'
+				</isNotEqual>
+			</isNotEmpty>
+			<isEmpty prepend="AND" property="jointcontrollevel">
+				gt.jointcontrollevel != '存档'
+			</isEmpty>
+			<isNotEmpty prepend="AND" property="awaywill">
+				gt.awaywill = '$awaywill$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="incontrollevel">
+				gt.incontrollevel = '$incontrollevel$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="color">
+				ifnull((select CASE WHEN 43200>=UNIX_TIMESTAMP(now())-UNIX_TIMESTAMP(STR_TO_DATE(max(appear_time),'%Y-%m-%d %H:%i:%s')) THEN 'green' WHEN UNIX_TIMESTAMP(now())-UNIX_TIMESTAMP(STR_TO_DATE(max(appear_time),'%Y-%m-%d %H:%i:%s'))>43200 and 86400>=UNIX_TIMESTAMP(now())-		 UNIX_TIMESTAMP(STR_TO_DATE(max(appear_time),'%Y-%m-%d %H:%i:%s')) THEN 'orange' ELSE 'red' END color from f_trajectory_t where personcard_number=pt.cardnumber GROUP BY personcard_number),'blue' ) = '$color$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="persontype">
+				pt.persontype = '$persontype$'
+			</isNotEmpty>
+			<isNotEqual prepend="AND" property="unitFilter" compareValue="0">
+				(pt.jdunit1 = $unitFilter$  or pt.jdunit2 = $unitFilter$)
+	        </isNotEqual>
+			<isNotEqual prepend="AND" property="personFilter" compareValue="0">
+				(pt.jdpolice1 = $personFilter$ or pt.jdpolice2 = $personFilter$)
+	        </isNotEqual>
+			<isNotEqual prepend="AND" property="policeFilter" compareValue="0">
+				FIND_IN_SET($policeFilter$,gt.responsiblepolice)
+	        </isNotEqual>
+		</dynamic>
+		GROUP BY gt.id
+		<dynamic prepend="">
+			<isNotEmpty property="sortsql">
+				$sortsql$,if(isnull(gt.jointcontrollevel),1,0),if(length(gt.jointcontrollevel),0,1),FIELD(gt.jointcontrollevel,'一级','二级','三级','自控','存档')
+			</isNotEmpty>
+			<isEmpty property="sortsql">
+				order by if(isnull(gt.jointcontrollevel),1,0),if(length(gt.jointcontrollevel),0,1),FIELD(gt.jointcontrollevel,'一级','二级','三级','自控','存档'),IFNULL(pt.maintainrate1,0) desc
+			</isEmpty>
+		</dynamic>
+	</select>
+	<!-- 新增 -->
+	<insert id="add" parameterClass="wenGrade">
+		INSERT INTO p_wen_grade_t
+		(personnelid,jurisdictunit1,jurisdictpolice1,policephone1,jointcontrollevel,
+		personneltype,responsiblepolice,
+		validflag,addoperator,addtime,memo)
+		VALUES
+		($personnelid$,$jurisdictunit1$,$jurisdictpolice1$,'$policephone1$','自控',
+		'$personneltype$','$responsiblepolice$',
+		$validflag$,'$addoperator$','$addtime$','$memo$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+	<!-- 删除 -->
+	<update id="cancel" parameterClass="wenGrade">
+		UPDATE p_wen_grade_t
+		SET validflag = 0,
+		updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	<!-- 导出 -->
+	<select id="exportWenGrade" parameterClass="wenGrade" resultMap="wenGrade.exportGrade">
+		SELECT a.*,GROUP_CONCAT(pat.attributelabel SEPARATOR ',') AS typename 
+		FROM (SELECT gt.*,
+		pt.personname,pt.cardnumber,
+		pt.sexes,pt.usedname,pt.nickname,
+		pt.marrystatus,pt.nation,pt.soldierstatus,
+		pt.heathstatus,pt.politicalposition,pt.faith,
+		pt.education,pt.persontype,pt.houseplace,
+		pt.housepolice,pt.homeplace,pt.homepolice,
+		pt.workplace,pt.workpolice,pt.feature,
+		pt.speciality,pt.records,IFNULL(pt.maintainrate1,0) AS maintainrate1,
+		pt.personheight,pt.netskillhabit,pt.zslabel2,
+		(SELECT GROUP_CONCAT(CONCAT(prtt.telnumber,IF(prtt.imsi is NULL OR prtt.imsi='','',CONCAT('(IMSI:',prtt.imsi,')')))) FROM p_relation_telnumber_t prtt where prtt.validflag>0 AND prtt.isactivate=0 AND prtt.personnelid=gt.personnelid GROUP BY prtt.personnelid) as telnumber,
+		rt.telephone,rt.relatedwifi,
+		rt.relatedvehicle,rt.bankaccount,rt.netidentity,
+		rt.netpayment,rt.relatedhouse,rt.relatedlegal,
+		rt.relateddriver,rt.relatedpassport,
+		wrt.conflictdetails,wrt.riskappeal,
+		rst.lifepattern,rst.healthstate,rst.characteristic,rst.lifehabit,
+		dt1.departname AS unitname1,ut1.staffName AS policename1,
+		dt2.departname AS unitname2,ut2.staffName AS policename2
+		,GROUP_CONCAT(bmt.basicName SEPARATOR ',') AS policename
+		FROM p_wen_grade_t gt
+		LEFT JOIN p_personnel_t pt ON gt.personnelid=pt.id
+		LEFT JOIN p_relation_telnumber_t rtt ON (rtt.personnelid=pt.id AND rtt.validflag>0)
+		LEFT JOIN p_relation_t rt ON gt.personnelid=rt.personnelid
+		LEFT JOIN p_wen_risk_t wrt ON (gt.personnelid=wrt.personnelid AND wrt.validflag=2)
+		LEFT JOIN p_reality_show_t rst ON (gt.personnelid=rst.personnelid AND rst.validflag=2 AND rst.datalabel=1)
+		LEFT JOIN sys_department_t dt1 ON pt.jdunit1=dt1.id
+		LEFT JOIN sys_user_t ut1 ON pt.jdpolice1=ut1.id
+		LEFT JOIN sys_department_t dt2 ON pt.jdunit2=dt2.id
+		LEFT JOIN sys_user_t ut2 ON pt.jdpolice2=ut2.id
+		LEFT JOIN (select personcard_number,CASE WHEN 43200>=UNIX_TIMESTAMP(now())-UNIX_TIMESTAMP(STR_TO_DATE(max(appear_time),'%Y-%m-%d %H:%i:%s')) THEN 'green' WHEN UNIX_TIMESTAMP(now())-UNIX_TIMESTAMP(STR_TO_DATE(max(appear_time),'%Y-%m-%d %H:%i:%s'))>43200 and 86400>=UNIX_TIMESTAMP(now())-		 UNIX_TIMESTAMP(STR_TO_DATE(max(appear_time),'%Y-%m-%d %H:%i:%s')) THEN 'orange' ELSE 'red' END color from f_trajectory_t GROUP BY personcard_number)A on A.personcard_number=pt.cardnumber
+		LEFT JOIN sys_basic_msg_t bmt ON FIND_IN_SET(bmt.id,gt.responsiblepolice) AND bmt.validflag>0
+		WHERE gt.validflag > 0 AND pt.validflag > 0
+		<dynamic prepend="">
+<!--			<isNotEqual prepend="AND" property="zslabel1" compareValue="0">-->
+<!--				FIND_IN_SET($zslabel1$,pt.zslabel1)-->
+<!--	        </isNotEqual>-->
+			<isNotEmpty prepend="AND" property="cardnumber">
+				pt.cardnumber like '%$cardnumber$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="personname">
+				pt.personname like '%$personname$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="telnumber">
+				rtt.telnumber like '%$telnumber$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="homeplace">
+				pt.homeplace like '%$homeplace$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="unitname1">
+				FIND_IN_SET(pt.jdunit1,'$unitname1$')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="policename1">
+				ut1.staffName like '%$policename1$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="sqltype">
+				($sqltype$)
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="sqlpolice">
+				($sqlpolice$)
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="jointcontrollevel">
+			    <isNotEqual property="jointcontrollevel"  compareValue="1">
+				   gt.jointcontrollevel = '$jointcontrollevel$'
+				</isNotEqual>
+			</isNotEmpty>
+			<isEmpty prepend="AND" property="jointcontrollevel">
+				gt.jointcontrollevel != '存档'
+			</isEmpty>
+			<isNotEmpty prepend="AND" property="incontrollevel">
+				gt.incontrollevel = '$incontrollevel$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="color">
+				IFNULL(A.color,'blue') = '$color$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="persontype">
+				pt.persontype = '$persontype$'
+			</isNotEmpty>
+			<isNotEqual prepend="AND" property="unitFilter" compareValue="0">
+				(pt.jdunit1 = $unitFilter$  or pt.jdunit2 = $unitFilter$)
+	        </isNotEqual>
+			<isNotEqual prepend="AND" property="personFilter" compareValue="0">
+				(pt.jdpolice1 = $personFilter$ or pt.jdpolice2 = $personFilter$)
+	        </isNotEqual>
+	        <isNotEqual prepend="AND" property="policeFilter" compareValue="0">
+				FIND_IN_SET($policeFilter$,gt.responsiblepolice)
+	        </isNotEqual>
+		</dynamic>
+		GROUP BY gt.id) a
+		LEFT JOIN p_attributelabel_t pat ON FIND_IN_SET(pat.id,a.zslabel2) AND rootid=1
+		GROUP BY a.id
+		<dynamic prepend="">
+			<isNotEmpty property="sortsql">
+				$sortsql$,if(isnull(a.jointcontrollevel),1,0),if(length(a.jointcontrollevel),0,1),FIELD(a.jointcontrollevel,'一级','二级','三级','自控','存档')
+			</isNotEmpty>
+			<isEmpty property="sortsql">
+				order by if(isnull(a.jointcontrollevel),1,0),if(length(a.jointcontrollevel),0,1),FIELD(a.jointcontrollevel,'一级','二级','三级','自控','存档'),a.maintainrate1 desc
+			</isEmpty>
+		</dynamic>
+	</select>
+	<!-- 修改 -->
+	<update id="update" parameterClass="wenGrade">
+		UPDATE p_wen_grade_t
+		SET incontrollevel='$incontrollevel$',jointcontrollevel='$jointcontrollevel$',awaywill='$awaywill$',
+		jurisdictunit1=$jurisdictunit1$,jurisdictpolice1=$jurisdictpolice1$,policephone1='$policephone1$',
+		jurisdictunit2='$jurisdictunit2$',jurisdictpolice2='$jurisdictpolice2$',policephone2='$policephone2$',
+		personneltype='$personneltype$',responsiblepolice='$responsiblepolice$',
+		updateoperator='$updateoperator$',updatetime='$updatetime$',memo='$memo$'
+		WHERE id = $id$
+	</update>
+	<update id="updatejointcontrollevelapply" parameterClass="wenGrade">
+	  update p_wen_grade_t  set
+	   jointcontrollevelapply=$jointcontrollevelapply$,
+	   jointcontrollevel='$jointcontrollevel$'
+	  where personnelid=$personnelid$ 
+	</update>
+	
+	<!-- *****************************************级别调整********************************************************************** -->
+	<insert id="addjointcontrollevel" parameterClass="wenjointcontrollevel">
+		INSERT INTO p_wen_jointcontrollevel_t
+		(personnelid,jointcontrollevel_old,jointcontrollevel_new,applicantreason,
+		applicantid,applicant,applicanttime)
+		VALUES
+		($personnelid$,'$jointcontrollevel_old$','$jointcontrollevel_new$','$applicantreason$',
+		$applicantid$,'$applicant$','$applicanttime$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+	<update id="examinejointcontrolleve" parameterClass="wenjointcontrollevel">
+	    update p_wen_jointcontrollevel_t set reviewerid=$reviewerid$,reviewer='$reviewer$',reviewertime='$reviewertime$',
+	    examinestatus=$examinestatus$,examineresult='$examineresult$',memo='$memo$'
+	    where id=$id$
+	</update>
+	<update id="updatejointcontrollevel" parameterClass="wenjointcontrollevel">
+	    update p_wen_jointcontrollevel_t set applicantid=$applicantid$,applicant='$applicant$',applicanttime='$applicanttime$',
+	    jointcontrollevel_new='$jointcontrollevel_new$', jointcontrollevel_old='$jointcontrollevel_old$',applicantreason='$applicantreason$'
+	    where id=$id$
+	</update>
+	<select id="searchjointcontrollevel_count" parameterClass="wenjointcontrollevel" resultClass="Integer">
+		select count(1) from p_wen_jointcontrollevel_t t1
+		left join p_personnel_t p on t1.personnelid = p.id
+		left join sys_department_t dt ON p.jdunit1 = dt.id
+		where 1=1
+		<dynamic prepend="">
+				<isNotEqual prepend="AND" property="personnelid" compareValue="0">
+					t1.personnelid=$personnelid$
+				</isNotEqual>
+				<isNotEmpty prepend="AND" property="starttime">
+	 				t1.applicanttime >= '$starttime$'
+	 			</isNotEmpty>
+	 			<isNotEmpty prepend="AND" property="endtime">
+	 				'$endtime$' >= t1.applicanttime
+	 			</isNotEmpty>
+	 			<isNotEmpty prepend="AND" property="homepolice">
+	 				p.jdunit1 = '$homepolice$'
+	 			</isNotEmpty>
+	 			<isNotEqual prepend="AND" property="unitFilter" compareValue="0">
+					(p.jdunit1 = $unitFilter$  or p.jdunit2 = $unitFilter$)
+		        </isNotEqual>
+				<isNotEqual prepend="AND" property="personFilter" compareValue="0">
+					(p.jdpolice1 = $personFilter$ or p.jdpolice2 = $personFilter$)
+		        </isNotEqual>
+			</dynamic>
+	</select>
+	<select id="searchjointcontrollevel" parameterClass="wenjointcontrollevel" resultClass="wenjointcontrollevel">
+		select t1.*,p.personname,p.cardnumber,IFNULL(dt.departname,'')as homepolice
+		    from p_wen_jointcontrollevel_t t1
+		    left join p_personnel_t p on p.id = t1.personnelid
+		    left join sys_department_t dt ON p.jdunit1 = dt.id
+			where 1=1 
+			<dynamic prepend="">
+				<isNotEqual prepend="AND" property="personnelid" compareValue="0">
+					t1.personnelid=$personnelid$
+				</isNotEqual>
+				<isNotEmpty prepend="AND" property="starttime">
+	 				t1.applicanttime >= '$starttime$'
+	 			</isNotEmpty>
+	 			<isNotEmpty prepend="AND" property="endtime">
+	 				'$endtime$' >= t1.applicanttime
+	 			</isNotEmpty>
+	 			<isNotEmpty prepend="AND" property="homepolice">
+	 				p.jdunit1 = '$homepolice$'
+	 			</isNotEmpty>
+	 			<isNotEqual prepend="AND" property="unitFilter" compareValue="0">
+					(p.jdunit1 = $unitFilter$  or p.jdunit2 = $unitFilter$)
+		        </isNotEqual>
+				<isNotEqual prepend="AND" property="personFilter" compareValue="0">
+					(p.jdpolice1 = $personFilter$ or p.jdpolice2 = $personFilter$)
+		        </isNotEqual>
+			</dynamic>
+			order by t1.id desc
+	</select>
+	<select id="getjointcontrolleveById" parameterClass="Integer" resultClass="wenjointcontrollevel">
+		select t1.*
+		    from p_wen_jointcontrollevel_t t1
+			where t1.id=$id$
+			order by t1.id desc
+	</select>
+	<select id="getjointcontrollevelCount" parameterClass="Integer" resultClass="Integer">
+		select  count(1)  from p_wen_jointcontrollevel_t t where t.personnelid=$personnelid$   and t.examinestatus=1
+	</select>
+	<select id="getjointcontrollevelNew" parameterClass="Integer" resultClass="wenjointcontrollevel">
+		select  t.*  from p_wen_jointcontrollevel_t t where t.personnelid=$personnelid$   and t.examinestatus=1
+	</select>
+	
+	<!-- 
+	LEFT JOIN p_personnel_photo_t pp on p.id=pp.personnelid and pp.validflag>0 and defaultflag=1
+	LEFT JOIN sys_file_t sf on sf.id = pp.fileid and sf.validflag>0
+	 -->
+	<select id="getPersonInfoByIncontrollevel" parameterClass="personnel" resultClass="personnel">
+		select wg.id,p.personname,wg.personnelid
+		from p_personnel_t p
+		LEFT JOIN p_wen_grade_t wg on p.id=wg.personnelid
+		where p.validflag>0 and wg.incontrollevel like CONCAT('%',#incontrolleve#,'%') and wg.validflag>0
+	</select>
+	<select id="getAllCountByIncontrollevel" parameterClass="String" resultClass="selectModel">
+		select b.basicName text,count(p.id) value
+		from sys_basic_msg_t b	
+		LEFT JOIN p_wen_grade_t wg on wg.incontrollevel=b.basicName and wg.validflag>0
+		LEFT JOIN p_personnel_t p on p.id=wg.personnelid and p.validflag>0
+		WHERE FIND_IN_SET(b.basicName,#levelString#) and basicType=22
+		GROUP BY b.basicName
+		order by FIELD(b.basicName,'在控','临控','在京','在宁','下落不明','不在控','归档');
+	</select>
+	
+	<select id="getCountByJointcontrollevel" parameterClass="personnel" resultClass="Integer">
+		select count(p.id)
+		from p_personnel_t p
+		LEFT JOIN p_wen_grade_t wg on p.id=wg.personnelid
+		where p.validflag>0 and wg.validflag>0
+		<dynamic prepend="">
+			<isNotEmpty prepend="AND" property="jointcontrollevel">
+				wg.jointcontrollevel = #jointcontrollevel#
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	<select id="getAllCountByJointcontrollevel" parameterClass="String" resultClass="selectModel">
+		select b.basicName text,count(p.id) value
+		from sys_basic_msg_t b	
+		LEFT JOIN p_wen_grade_t wg on wg.jointcontrollevel=b.basicName and wg.validflag>0
+		LEFT JOIN p_personnel_t p on p.id=wg.personnelid and p.validflag>0
+		WHERE FIND_IN_SET(b.basicName,#levelString#) and basicType=47
+		GROUP BY b.basicName
+		order by FIELD(b.basicName,'一级','二级','三级','自控','存档'); 
+	</select>
+	
+	<select id="countTodayLevelAdjust" resultClass="Integer">
+		select count(*)
+		from p_wen_jointcontrollevel_t
+		where examineresult=1 and reviewertime like CONCAT('%',DATE_FORMAT(CURRENT_DATE,'%Y-%m-%d'),'%')
+	</select>
+	
+	<select id="countTodayLevelUp" resultClass="Integer">
+		select count(*) from(
+		select id,CASE jointcontrollevel_old WHEN '' THEN 0 WHEN '存档' THEN 1 WHEN '自控' THEN 2 WHEN '三级' THEN 3 WHEN '二级' THEN 4 WHEN '一级' THEN 5 END as old,CASE jointcontrollevel_new WHEN '' THEN 0 WHEN '存档' THEN 1 WHEN '自控' THEN 2 WHEN '三级' THEN 3 WHEN '二级' THEN 4 WHEN '一级' THEN 5 END as new
+		from p_wen_jointcontrollevel_t
+		where examineresult=1 and reviewertime like CONCAT('%',DATE_FORMAT(CURRENT_DATE,'%Y-%m-%d'),'%'))A
+		where A.new>=A.old
+	</select>
+	
+	<select id="getAllCountByAttributelabel" parameterClass="String" resultClass="selectModel">
+		SELECT id,attributelabel name,getAttributelabelCount(id) value from p_attributelabel_t
+		WHERE FIND_IN_SET(attributelabel,#levelString#) and 
+		parentid=1 and validflag>0 and examineflag=1
+		ORDER BY value,id; 
+	</select>
+	
+	<select id="getPCSCountByJointcontrollevel" parameterClass="personnel" resultClass="Integer">
+		select count(p.id)
+		from sys_department_t sd
+		LEFT JOIN p_wen_grade_t wg on wg.validflag>0 and wg.jointcontrollevel=#jointcontrollevel#
+		LEFT JOIN p_personnel_t p on sd.id=p.jdunit1 and p.id=wg.personnelid and p.validflag>0
+		where sd.departtype=4 and sd.validflag>0
+		GROUP BY sd.departname
+		ORDER BY sd.id
+	</select>
+	
+	<select id="countPersonByResponsiblepolice" parameterClass="personnel" resultClass="pieModel">
+		select A.basicName as name,count(p.id) as value
+		from(
+		select *
+		from sys_basic_msg_t
+		where basicType=24 and validflag>0)A
+		LEFT JOIN p_wen_grade_t wg on FIND_IN_SET(A.id,wg.responsiblepolice) and A.validflag>0
+		LEFT JOIN p_personnel_t p on p.id = wg.personnelid and p.validflag>0 and FIND_IN_SET(#personlabel#,p.zslabel1)
+		GROUP BY A.id
+		ORDER BY A.id
+	</select>
+	
+	<select id="getRelationchart" parameterClass="wenGrade" resultClass="personnel">
+		select p.id,p.personname,p.cardnumber,sf.fileallName,'' as appellation,0 as relationid,1 as riskpersonnel,IFNULL(sf.validflag ,0) as validflag
+		from p_personnel_t p
+		LEFT JOIN p_personnel_photo_t ph on ph.personnelid=p.id and ph.defaultflag=1 and ph.validflag>0
+		LEFT JOIN sys_file_t sf on sf.id=ph.fileid and sf.validflag>0
+		where p.id=$personnelid$ and p.validflag>0
+		<dynamic prepend="">
+			<isNotEmpty prepend="AND" property="cardnumber">
+				not FIND_IN_SET(p.cardnumber,'$cardnumber$')
+			</isNotEmpty>
+		</dynamic>
+		UNION
+		select p.id,p.personname,p.cardnumber,sf.fileallName,sr.appellation,sr.id as relationid,sr.riskpersonnel,IFNULL(sf.validflag ,0) as validflag
+		from p_social_relations_t sr
+		LEFT JOIN p_personnel_t p on sr.cardnumber=p.cardnumber and p.validflag>0
+		LEFT JOIN p_personnel_photo_t ph on ph.personnelid=p.id and ph.defaultflag=1 and ph.validflag>0
+		LEFT JOIN sys_file_t sf on sf.id=ph.fileid and sf.validflag>0
+		where sr.personnelid=$personnelid$ and sr.validflag>0 and sr.riskpersonnel=1
+		<dynamic prepend="">
+			<isNotEmpty prepend="AND" property="cardnumber">
+				not FIND_IN_SET(p.cardnumber,'$cardnumber$')
+			</isNotEmpty>
+		</dynamic>
+		UNION
+		select 0 as id,sr.personname,sr.cardnumber,'' as fileallName,sr.appellation,sr.id as relationid,sr.riskpersonnel,0 as validflag
+		from p_social_relations_t sr
+		where sr.personnelid=$personnelid$ and sr.validflag>0 and sr.riskpersonnel=0
+		<dynamic prepend="">
+			<isNotEmpty prepend="AND" property="cardnumber">
+				not FIND_IN_SET(sr.cardnumber,'$cardnumber$')
+			</isNotEmpty>
+		</dynamic>
+	</select>
+</sqlMap>

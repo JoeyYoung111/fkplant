@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="department">
+	<typeAlias alias="department" type="com.szrj.business.model.Department"/>
+	<!-- 新增 -->
+	<insert id="add" parameterClass="department">
+		INSERT INTO sys_department_t
+		(departname,departtype,parentid,lingwuid,validflag,updateoperator,updatetime,addoperator,addtime,memo)
+		VALUES
+		('$departname$',$departtype$,$parentid$,'$lingwuid$',1,'$updateoperator$','$updatetime$','$addoperator$','$addtime$','$memo$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+   <!-- 删除 -->
+	<update id="cancel" parameterClass="int">
+		UPDATE sys_department_t
+		SET validflag = 0
+		WHERE id = $id$
+	</update>
+	<!-- 修改 -->
+	<update id="update" parameterClass="department">
+		UPDATE sys_department_t
+		SET departname = '$departname$',memo='$memo$',departtype=$departtype$,parentid=$parentid$,lingwuid='$lingwuid$'
+		WHERE id = $id$
+	</update>
+	<select id="getDepartmentList_count" parameterClass="department" resultClass="Integer">
+		SELECT COUNT(id)
+		FROM sys_department_t
+		WHERE validflag > 0
+		<dynamic prepend="" >
+			<isNotEqual prepend="AND" property="departtype" compareValue="0">
+				departtype = $departtype$
+            </isNotEqual>
+          
+            <isNotEmpty prepend="AND" property="departname">
+				(departname like '%$departname$%')
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	<select id="getDepartmentList" parameterClass="department" resultClass="department">
+		SELECT *
+		FROM sys_department_t
+		WHERE validflag > 0
+		<dynamic prepend="">
+			<isNotEqual prepend="AND" property="departtype" compareValue="0">
+				departtype = $departtype$
+            </isNotEqual>
+            <isNotEmpty prepend="AND" property="departname">
+				(departname like '%$departname$%')
+			</isNotEmpty>
+		</dynamic>
+		ORDER BY id
+	</select>
+	<select id="getById" parameterClass="int" resultClass="department">
+		SELECT *
+		FROM sys_department_t
+		WHERE validflag > 0 AND id = $id$
+	</select>
+	
+	<select id="getByParentid" parameterClass="int" resultClass="department">
+		SELECT *
+		FROM sys_department_t
+		WHERE validflag > 0 AND parentid = $parentid$
+	</select>
+	
+	<select id="getAllReceiver" parameterClass="department" resultClass="department">
+		select id,parentid,departname
+		from sys_department_t
+		where validflag>0
+		UNION
+		select 0-id,departmentid,staffName
+		from sys_user_t
+		where validflag>0
+		<isNotEmpty prepend="AND" property="departname">
+			staffName like '%$departname$%'
+		</isNotEmpty>
+	</select>
+	
+	<select id="getDepartmentListOrderbyid" parameterClass="department" resultClass="String">
+		SELECT departname
+		FROM sys_department_t
+		WHERE validflag > 0
+		<dynamic prepend="">
+			<isNotEqual prepend="AND" property="departtype" compareValue="0">
+				departtype = $departtype$
+            </isNotEqual>
+		</dynamic>
+		ORDER BY id
+	</select>
+
+	<!-- 获取江阴派出所列表 (ID: 240-263 在 sys_department_t_new 表中) -->
+	<select id="getJiangyinPoliceStations" resultClass="java.util.HashMap">
+		SELECT  id as departmentid, departname, departcode, lingwuid
+		FROM sys_department_t_new
+		WHERE id BETWEEN 240 AND 263 AND validflag = 1
+		ORDER BY id
+	</select>
+</sqlMap>

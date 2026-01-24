@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN" "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<!-- 风险人员-管控文件 -->
+<sqlMap namespace="controlfiles">
+	<!-- 定义实体映射 -->
+	<typeAlias alias="controlfiles" type="com.szrj.business.model.personel.ControlFiles"/>
+	
+	<!-- 添加管控文件 -->
+	<insert id="add" parameterClass="controlfiles">
+		INSERT INTO p_personnel_controlfiles_t
+		(personnelid, type, filename, attachment_id, addoperator, addtime, updateoperator, updatetime, memo, validflag)
+		VALUES
+		($personnelid$, '$type$', '$filename$', '$attachment_id$', '$addoperator$', '$addtime$', '$updateoperator$', '$updatetime$', '$memo$', 1)
+	</insert>
+	
+	<!-- 修改管控文件 -->
+	<update id="update" parameterClass="controlfiles">
+		UPDATE p_personnel_controlfiles_t
+		SET type = $type$,
+			filename = '$filename$',
+			attachment_id = $attachment_id$,
+			updateoperator = '$updateoperator$',
+			updatetime = '$updatetime$',
+			memo = '$memo$'
+		WHERE id = $id$
+	</update>
+	
+	<!-- 删除管控文件 -->
+	<update id="cancel" parameterClass="controlfiles">
+		UPDATE p_personnel_controlfiles_t
+		SET validflag = 0,
+			updateoperator = '$updateoperator$',
+			updatetime = '$updatetime$'
+		WHERE id = $id$
+	</update>
+	
+	<!-- 根据ID获取管控文件 -->
+	<select id="getById" parameterClass="int" resultClass="controlfiles">
+		SELECT *
+		FROM p_personnel_controlfiles_t
+		WHERE id = $id$ AND validflag = 1
+	</select>
+	
+	<!-- 根据人员ID获取管控文件 -->
+	<select id="getByPersonnelId" parameterClass="int" resultClass="controlfiles">
+		SELECT *
+		FROM p_personnel_controlfiles_t
+		WHERE personnelid = $personnelid$ AND validflag = 1
+	</select>
+	
+	<!-- 查询管控文件列表 -->
+	<select id="searchcontrolplan" resultClass="controlfiles">
+		SELECT *
+		FROM p_personnel_controlfiles_t
+		WHERE personnelid = $personnelid$ AND validflag = 1 AND type = 1
+	</select>
+	
+	<!-- 查询管控文件数量 -->
+	<select id="searchcontrolplan_count" resultClass="Integer">
+		SELECT COUNT(*)
+		FROM p_personnel_controlfiles_t
+		WHERE personnelid = $personnelid$ AND validflag = 1 AND type = 1
+	</select>
+
+
+
+	<!-- 查询管控文件列表 -->
+	<select id="searchcontrolemergency" resultClass="controlfiles">
+		SELECT *
+		FROM p_personnel_controlfiles_t
+		WHERE personnelid = $personnelid$ AND validflag = 1 AND type = 2
+	</select>
+
+	<!-- 查询管控文件数量 -->
+	<select id="searchcontrolemergency_count" resultClass="Integer">
+		SELECT COUNT(*)
+		FROM p_personnel_controlfiles_t
+		WHERE personnelid = $personnelid$ AND validflag = 1 AND type = 2
+	</select>
+
+</sqlMap>

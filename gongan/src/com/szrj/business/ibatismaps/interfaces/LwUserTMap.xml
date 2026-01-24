@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="lwuser">
+	<typeAlias alias="user" type="com.szrj.business.model.User"/>
+
+	<select id="getUsersByDepartmentLingwuid" parameterClass="String" resultClass="user">
+		SELECT xu.USER_LOGIN_ID AS usercode,xu.COMMON_NO AS alarmsignal,USER_NAME AS staffName,ID_CARD_NUM AS cardnumber,SEX AS sexes,MOBILE_NO AS contactnumber
+		FROM XTBG.XLOA_USER xu
+		LEFT JOIN XTBG.XLOA_USER_DEPT xd ON xu.USER_ID=xd.USER_ID
+		WHERE xd.DEPT_ID = '$lingwuid$' 
+<!--		AND xu.COMMON_NO IS NOT NULL-->
+	</select>
+</sqlMap>

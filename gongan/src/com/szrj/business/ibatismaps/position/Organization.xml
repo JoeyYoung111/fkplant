@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+        
+<sqlMap namespace="organization">
+	<typeAlias alias="organization" type="com.szrj.business.model.position.Organization"/>
+	<typeAlias alias="organizationPerson" type="com.szrj.business.model.position.OrganizationPerson"/>
+	<typeAlias alias="workRecord" type="com.szrj.business.model.position.WorkRecord"/>
+
+	<!-- 组织主表 -->
+	<select id="searchOrganization_count" parameterClass="organization" resultClass="Integer">
+		select count(org.id)
+		from a_organization_t org
+		where org.validflag > 0
+		<dynamic prepend="">
+			<isNotEqual prepend="AND" property="personnelid" compareValue="0">
+				ifnull((select count(aop.id) from a_organization_person_t aop where aop.orgid=org.id and aop.validflag>0 and aop.personnelid=#personnelid#),0)>0
+	        </isNotEqual>
+			<isNotEmpty prepend="AND" property="orgName">
+				org.orgName like '%$orgName$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="orgType">
+				org.orgType = '$orgType$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="orgClass">
+				org.orgClass = '$orgClass$'
+			</isNotEmpty>
+			<isNotEqual prepend="AND" property="unitFilter" compareValue="0">
+				org.controlUnit = $unitFilter$
+	        </isNotEqual>
+			<isNotEqual prepend="AND" property="personFilter" compareValue="0">
+				org.controlPolice = $personFilter$
+	        </isNotEqual>
+			<isNotEmpty prepend="AND" property="orgForeignName">
+				org.orgForeignName like '%$orgForeignName$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="isRegister">
+				org.isRegister = '%$isRegister$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="isForeignConnections">
+				org.isForeignConnections = '%$isForeignConnections$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="starttime">
+ 				org.createTime >= '$starttime$'
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="endtime">
+ 				'$endtime$' >= org.createTime
+ 			</isNotEmpty>
+		</dynamic>
+	</select>
+	<select id="searchOrganization" parameterClass="organization" resultClass="organization">
+		select org.*,dt.departname AS unitname,ut.staffName AS policename
+		from a_organization_t org
+		LEFT JOIN sys_department_t dt ON org.controlUnit = dt.id
+		LEFT JOIN sys_user_t ut ON org.controlPolice = ut.id
+		where org.validflag > 0
+		<dynamic prepend="">
+			<isNotEqual prepend="AND" property="personnelid" compareValue="0">
+				ifnull((select count(aop.id) from a_organization_person_t aop where aop.orgid=org.id and aop.validflag>0 and aop.personnelid=#personnelid#),0)>0
+	        </isNotEqual>
+			<isNotEmpty prepend="AND" property="orgName">
+				org.orgName like '%$orgName$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="orgType">
+				org.orgType = '$orgType$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="orgClass">
+				org.orgClass = '$orgClass$'
+			</isNotEmpty>
+			<isNotEqual prepend="AND" property="unitFilter" compareValue="0">
+				org.controlUnit = $unitFilter$
+	        </isNotEqual>
+			<isNotEqual prepend="AND" property="personFilter" compareValue="0">
+				org.controlPolice = $personFilter$
+	        </isNotEqual>
+			<isNotEmpty prepend="AND" property="orgForeignName">
+				org.orgForeignName like '%$orgForeignName$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="isRegister">
+				org.isRegister = '%$isRegister$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="isForeignConnections">
+				org.isForeignConnections = '%$isForeignConnections$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="starttime">
+ 				org.createTime >= '$starttime$'
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="endtime">
+ 				'$endtime$' >= org.createTime
+ 			</isNotEmpty>
+		</dynamic>
+		order by org.addtime desc
+	</select>
+	<!-- 新增 -->
+	<insert id="addOrganization" parameterClass="organization">
+		insert into a_organization_t
+		(orgName,orgType,orgClass,orgForeignName,inProvince,isRegister,createTime,createAddress,
+		address,activeLevel,activeRange,activeWay,activeWayDetails,isForeignConnections,
+		orgGeneral,proposition,finance,subsidize,controlTime,controlUnit,controlPolice,
+		controlPhone,validflag,addoperator,addtime,memo
+		)
+		values
+		('$orgName$','$orgType$','$orgClass$','$orgForeignName$','$inProvince$','$isRegister$','$createTime$','$createAddress$',
+		'$address$','$activeLevel$','$activeRange$','$activeWay$','$activeWayDetails$','$isForeignConnections$',
+		'$orgGeneral$','$proposition$','$finance$','$subsidize$','$controlTime$','$controlUnit$','$controlPolice$',
+		'$controlPhone$',$validflag$,'$addoperator$','$addtime$','$memo$'
+		)
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+	<!-- 删除 -->
+	<update id="cancelOrganization" parameterClass="organization">
+		update a_organization_t set validflag = 0,updateoperator='$updateoperator$',updatetime='$updatetime$' where id = $id$
+	</update>
+	<!-- 修改 -->
+	<update id="updateOrganization" parameterClass="organization">
+		update a_organization_t
+		set orgName='$orgName$',orgType='$orgType$',orgClass='$orgClass$',orgForeignName='$orgForeignName$',inProvince='$inProvince$',isRegister='$isRegister$',createTime='$createTime$',
+		createAddress='$createAddress$',address='$address$',activeLevel='$activeLevel$',activeRange='$activeRange$',activeWay='$activeWay$',
+		activeWayDetails='$activeWayDetails$',isForeignConnections='$isForeignConnections$',orgGeneral='$orgGeneral$',proposition='$proposition$',
+		finance='$finance$',subsidize='$subsidize$',controlTime='$controlTime$',controlUnit='$controlUnit$',controlPolice='$controlPolice$',
+		controlPhone='$controlPhone$',updateoperator='$updateoperator$',updatetime='$updatetime$',memo='$memo$' where id = $id$
+	</update>
+	<!-- 根据id查询 -->
+	<select id="organizationgetById" parameterClass="int" resultClass="organization">
+		select org.*,dt.departname AS unitname,ut.staffName AS policename
+		from a_organization_t org 
+		LEFT JOIN sys_department_t dt ON org.controlUnit = dt.id
+		LEFT JOIN sys_user_t ut ON org.controlPolice = ut.id
+		where org.validflag > 0 and org.id = $id$
+	</select>
+	
+	
+	<!-- 组织人员 -->
+	<select id="searchOrganizationPerson_count" parameterClass="organizationPerson" resultClass="Integer">
+		select count(op.id) 
+		from a_organization_person_t op
+		where op.validflag > 0
+		<dynamic prepend="">
+			<isNotEqual prepend="AND" property="orgid" compareValue="0">
+				op.orgid = $orgid$
+			</isNotEqual>
+			<isNotEmpty prepend="AND" property="identity">
+				op.identity = '$identity$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="personName">
+				op.personName like '%$personName$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="cardnumber">
+				op.cardnumber = '$cardnumber$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="telnumber">
+				op.telnumber = '$telnumber$'
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	<select id="searchOrganizationPerson" parameterClass="organizationPerson" resultClass="organizationPerson">
+		select op.*
+		from a_organization_person_t op
+		where op.validflag > 0
+		 <dynamic prepend="">
+			<isNotEqual prepend="AND" property="orgid" compareValue="0">
+				op.orgid = $orgid$
+			</isNotEqual>
+			<isNotEmpty prepend="AND" property="identity">
+				op.identity = '$identity$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="personName">
+				op.personName like '%$personName$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="cardnumber">
+				op.cardnumber = '$cardnumber$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="telnumber">
+				op.telnumber = '$telnumber$'
+			</isNotEmpty>
+		</dynamic>
+		order by op.addtime desc
+	</select>
+	<!-- 新增 -->
+	<insert id="addOrganizationPerson" parameterClass="organizationPerson">
+		insert into a_organization_person_t
+		(orgid,personnelid,identity,personName,cardnumber,homeplace,telnumber,
+		validflag,addoperator,addtime,memo
+		)
+		values
+		('$orgid$','$personnelid$','$identity$','$personName$','$cardnumber$','$homeplace$','$telnumber$',
+		$validflag$,'$addoperator$','$addtime$','$memo$'
+		)
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+	<!-- 删除 -->
+	<update id="cancelOrganizationPerson" parameterClass="organizationPerson">
+		update a_organization_person_t set validflag = 0,updateoperator='$updateoperator$',updatetime='$updatetime$' where id = $id$
+	</update>
+	<!-- 修改 -->
+	<update id="updateOrganizationPerson" parameterClass="organizationPerson">
+		update a_organization_person_t set
+		orgid='$orgid$',personnelid='$personnelid$',identity='$identity$',personName='$personName$',
+		cardnumber='$cardnumber$,homeplace='$homeplace$',telnumber='$telnumber$',
+		updateoperator='$updateoperator$',updatetime='$updatetime$',memo='$memo$' where id = $id$
+	</update>
+	<!-- 根据id查询 -->
+	<select id="getOrganizationPersonnById" parameterClass="int" resultClass="organizationPerson">
+		select op.* from a_organization_person_t op 
+		where op.validflag > 0 and op.id = $id$
+	</select>
+	<!-- 根据主表id获取人员列表 -->
+	<select id="getOrganizationPersonListByOrgid" parameterClass="int" resultClass="organizationPerson">
+		select op.* from a_organization_person_t op
+		where op.validflag > 0 and op.orgid = $orgid$
+	</select>
+
+	<!-- 民警工作记载 -->
+	<select id="searchWorkRecord_count" parameterClass="workRecord" resultClass="Integer">
+		select count(op.id) 
+		from a_work_record_t op
+		where op.validflag > 0
+		<dynamic prepend="">
+			<isNotEmpty prepend="AND" property="recordtype">
+				op.recordtype = '$recordtype$'
+			</isNotEmpty>
+			<isNotEqual prepend="AND" property="recordid" compareValue="0">
+				op.recordid = $recordid$
+			</isNotEqual>
+			<isNotEmpty prepend="AND" property="worktype">
+				op.worktype = '$worktype$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="workplace">
+				op.workplace like '%$workplace$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="workrecord">
+				op.workrecord like '%$workrecord$%'
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	<select id="searchWorkRecord" parameterClass="workRecord" resultClass="workRecord">
+		select op.*
+		from a_work_record_t op
+		where op.validflag > 0
+		 <dynamic prepend="">
+			<isNotEmpty prepend="AND" property="recordtype">
+				op.recordtype = '$recordtype$'
+			</isNotEmpty>
+			<isNotEqual prepend="AND" property="recordid" compareValue="0">
+				op.recordid = $recordid$
+			</isNotEqual>
+			<isNotEmpty prepend="AND" property="worktype">
+				op.worktype = '$worktype$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="workplace">
+				op.workplace like '%$workplace$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="workrecord">
+				op.workrecord like '%$workrecord$%'
+			</isNotEmpty>
+		</dynamic>
+		order by op.worktime desc
+	</select>
+	<!-- 新增 -->
+	<insert id="addWorkRecord" parameterClass="workRecord">
+		insert into a_work_record_t
+		(recordtype,recordid,worktype,worktime,workplace,workrecord,
+		validflag,addoperator,addtime,memo,fileattachments
+		)
+		values
+		('$recordtype$',$recordid$,'$worktype$','$worktime$','$workplace$','$workrecord$',
+		$validflag$,'$addoperator$','$addtime$','$memo$','$fileattachments$'
+		)
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+	<!-- 删除 -->
+	<update id="cancelWorkRecord" parameterClass="workRecord">
+		update a_work_record_t set validflag = 0,updateoperator='$updateoperator$',updatetime='$updatetime$' where id = $id$
+	</update>
+	<!-- 修改 -->
+	<update id="updateWorkRecord" parameterClass="workRecord">
+		update a_work_record_t set
+		worktype='$worktype$',worktime='$worktime$',workplace='$workplace$',workrecord='$workrecord$',
+		updateoperator='$updateoperator$',updatetime='$updatetime$',memo='$memo$',fileattachments='$fileattachments$' where id = $id$
+	</update>
+	<!-- 根据id查询 -->
+	<select id="getWorkRecordById" parameterClass="int" resultClass="workRecord">
+		SELECT
+			op.*,
+			IFNULL(GROUP_CONCAT(ft.id ORDER BY ft.id DESC SEPARATOR ','), '') AS file_ids,
+			GROUP_CONCAT(ft.fileName ORDER BY ft.id DESC SEPARATOR ',') AS filesname,
+			GROUP_CONCAT(IFNULL(ft.addTime, '') ORDER BY ft.id DESC SEPARATOR ',') AS filesaddtime
+		FROM
+			a_work_record_t op
+				LEFT JOIN sys_file_t ft ON FIND_IN_SET(ft.id, op.fileattachments)
+		WHERE
+			op.validflag > 0
+		  AND op.id = $id$
+		GROUP BY
+			op.id
+
+	</select>
+</sqlMap>

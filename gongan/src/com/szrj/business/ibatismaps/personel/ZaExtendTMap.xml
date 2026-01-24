@@ -1,0 +1,488 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+  <sqlMap namespace="zaExtend">      
+	<typeAlias alias="basicMsg" type="com.szrj.business.model.BasicMsg"/>
+	<typeAlias alias="personnel" type="com.szrj.business.model.personel.Personnel"/>
+	<typeAlias alias="zaExtend" type="com.szrj.business.model.personel.ZaExtend"/>
+	<typeAlias alias="zaDu" type="com.szrj.business.model.personel.ZaDu"/>
+	<typeAlias alias="zaChang" type="com.szrj.business.model.personel.ZaChang"/>
+	<typeAlias alias="zaPei" type="com.szrj.business.model.personel.ZaPei"/>
+	<typeAlias alias="zaCaseAddress" type="com.szrj.business.model.personel.ZaCaseAddress"/>
+	<typeAlias alias="homeplaceHistory" type="com.szrj.business.model.personel.HomeplaceHistory"/>
+	<typeAlias alias="zaDuAjRel" type="com.szrj.business.model.personel.ZaDuAjRel"/>
+	<typeAlias alias="zaDuJqRel" type="com.szrj.business.model.personel.ZaDuJqRel"/>
+	<typeAlias alias="zaChangAjRel" type="com.szrj.business.model.personel.ZaChangAjRel"/>
+	<typeAlias alias="zaChangJqRel" type="com.szrj.business.model.personel.ZaChangJqRel"/>
+	<typeAlias alias="zaPeiAjRel" type="com.szrj.business.model.personel.ZaPeiAjRel"/>
+	<typeAlias alias="zaPeiJqRel" type="com.szrj.business.model.personel.ZaPeiJqRel"/>
+
+	<!-- 新增 -->
+	<insert id="add" parameterClass="zaExtend">
+		INSERT INTO p_zaperson_extend_t
+		(personnelid,zy,workunit,addtime,addoperator)
+		VALUES
+		($personnelid$,'$zy$','$workunit$','$addtime$','$addoperator$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+	
+	<update id="update" parameterClass="zaExtend">
+		UPDATE p_zaperson_extend_t
+		SET zy = '$zy$', workunit = '$workunit$', updateoperator = '$updateoperator$', updatetime = '$updatetime$'
+		WHERE personnelid = $personnelid$
+	</update> 
+	
+	<select id="search_count" parameterClass="zaExtend" resultClass="Integer">
+		select count(*)
+		from p_zaperson_extend_t
+	</select>
+	
+	<select id="search" parameterClass="zaExtend" resultClass="zaExtend">
+		select *
+		from p_zaperson_extend_t
+	</select>
+	
+	<select id="getById" parameterClass="Integer" resultClass="zaExtend">
+		select *
+		from p_zaperson_extend_t
+		WHERE personnelid = $personnelid$
+	</select>
+	
+	<select id="getZaDuByPersonnelid" parameterClass="int" resultClass="zaDu">
+		SELECT *
+		FROM p_zaperson_du_t
+		WHERE validflag =2 AND personnelid = $personnelid$
+		ORDER BY addtime DESC LIMIT 1
+	</select>
+	<select id="searchZaDu_count" parameterClass="zaDu" resultClass="Integer">
+		select count(*)
+		from p_zaperson_du_t
+		WHERE validflag >0 AND personnelid = $personnelid$
+	</select>
+	<select id="searchZaDu" parameterClass="zaDu" resultClass="zaDu">
+		select du.id,du.personnelid,du.lssdqk,du.chsj,du.chjg,du.cfjg,du.clxq,du.dbfs,du.dbbw,
+		du.validflag,du.addoperator,du.addtime,du.memo,du.phone,
+		du.person_attribute as personAttribute,
+		du.collect_source as collectSource,du.other_memo as otherMemo,
+		du.home_province as homeProvince,du.home_city as homeCity,du.home_county as homeCounty,
+		du.home_town as homeTown,du.home_police_station_id as homePoliceStationId,
+		d.departname as homePoliceStationName,
+		du.home_detail as homeDetail,du.home_lng as homeLng,du.home_lat as homeLat,
+		du.has_shedu_record as hasSheduRecord,
+		du.collect_date as collectDate,du.case_address_list as caseAddressList
+		from p_zaperson_du_t du
+		LEFT JOIN sys_department_t_new d ON du.home_police_station_id = d.id AND d.validflag = 1
+		WHERE du.validflag >0 AND du.personnelid = $personnelid$
+		order by du.id desc
+	</select>
+	
+	<insert id="addZaDu" parameterClass="zaDu">
+		INSERT INTO p_zaperson_du_t
+		(personnelid,lssdqk,chsj,chjg,cfjg,clxq,dbfs,dbbw,
+		validflag,addoperator,addtime,memo,phone,
+		person_attribute,collect_source,other_memo,
+		home_province,home_city,home_county,home_town,home_police_station_id,
+		home_detail,home_lng,home_lat,has_shedu_record,collect_date,case_address_list)
+		VALUES
+		($personnelid$,'$lssdqk$','$chsj$','$chjg$','$cfjg$','$clxq$','$dbfs$','$dbbw$',
+		$validflag$,'$addoperator$','$addtime$','$memo$','$phone$',
+		'$personAttribute$','$collectSource$','$otherMemo$',
+		'$homeProvince$','$homeCity$','$homeCounty$','$homeTown$',#homePoliceStationId#,
+		'$homeDetail$','$homeLng$','$homeLat$',$hasSheduRecord$,'$collectDate$','$caseAddressList$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+	
+	<update id="updateZaDu" parameterClass="zaDu">
+		UPDATE p_zaperson_du_t
+		SET validflag=$validflag$,
+		updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	
+	<select id="getZaChangByPersonnelid" parameterClass="int" resultClass="zaChang">
+		SELECT *
+		FROM p_zaperson_chang_t
+		WHERE validflag =2 AND personnelid = $personnelid$
+		ORDER BY addtime DESC LIMIT 1
+	</select>
+	<select id="searchZaChang_count" parameterClass="zaChang" resultClass="Integer">
+		select count(*)
+		from p_zaperson_chang_t
+		WHERE validflag >0 AND personnelid = $personnelid$
+	</select>
+	<select id="searchZaChang" parameterClass="zaChang" resultClass="zaChang">
+		select c.id,c.personnelid,c.chang_lsscqk,c.chang_scjs,c.chang_scbw,c.chang_myfs,
+		c.chang_chsj,c.chang_chjg,c.chang_cfjg,c.chang_clxq,
+		c.validflag,c.addoperator,c.addtime,c.memo,
+		c.chang_method as changMethod,c.chang_type as changType,
+		c.collect_source as collectSource,c.other_memo as otherMemo,c.is_minor_case as isMinorCase,
+		c.home_province as homeProvince,c.home_city as homeCity,c.home_county as homeCounty,
+		c.home_town as homeTown,c.home_police_station_id as homePoliceStationId,
+		d.departname as homePoliceStationName,
+		c.home_detail as homeDetail,c.home_lng as homeLng,c.home_lat as homeLat,
+		c.has_shechang_record as hasSechangRecord,
+		c.collect_date as collectDate,c.case_address_list as caseAddressList
+		from p_zaperson_chang_t c
+		LEFT JOIN sys_department_t_new d ON c.home_police_station_id = d.id AND d.validflag = 1
+		WHERE c.validflag >0 AND c.personnelid = $personnelid$
+		order by c.id desc
+	</select>
+	
+	<insert id="addZaChang" parameterClass="zaChang">
+		INSERT INTO p_zaperson_chang_t
+		(personnelid,chang_lsscqk,chang_chsj,chang_chjg,chang_cfjg,chang_clxq,chang_myfs,chang_scbw,chang_scjs,
+		validflag,addoperator,addtime,memo,
+		chang_method,chang_type,collect_source,other_memo,is_minor_case,
+		home_province,home_city,home_county,home_town,home_police_station_id,
+		home_detail,home_lng,home_lat,has_shechang_record,collect_date,case_address_list)
+		VALUES
+		($personnelid$,'$chang_lsscqk$','$chang_chsj$','$chang_chjg$','$chang_cfjg$','$chang_clxq$','$chang_myfs$','$chang_scbw$','$chang_scjs$',
+		$validflag$,'$addoperator$','$addtime$','$memo$',
+		'$changMethod$','$changType$','$collectSource$','$otherMemo$',$isMinorCase$,
+		'$homeProvince$','$homeCity$','$homeCounty$','$homeTown$',#homePoliceStationId#,
+		'$homeDetail$','$homeLng$','$homeLat$',$hasSechangRecord$,'$collectDate$','$caseAddressList$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+	
+	<update id="updateZaChang" parameterClass="zaChang">
+		UPDATE p_zaperson_chang_t
+		SET validflag=$validflag$,
+		updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+
+	<!-- =============== 陪侍人员相关 =============== -->
+	<select id="getZaPeiByPersonnelid" parameterClass="int" resultClass="zaPei">
+		SELECT *
+		FROM p_zaperson_pei_t
+		WHERE validflag =2 AND personnelid = $personnelid$
+		ORDER BY addtime DESC LIMIT 1
+	</select>
+
+	<select id="searchZaPei_count" parameterClass="zaPei" resultClass="Integer">
+		select count(*)
+		from p_zaperson_pei_t
+		WHERE validflag >0 AND personnelid = $personnelid$
+	</select>
+
+	<select id="searchZaPei" parameterClass="zaPei" resultClass="zaPei">
+		select p.id,p.personnelid,p.collect_source as collectSource,p.collect_date as collectDate,
+		p.activity_venue as activityVenue,p.other_memo as otherMemo,
+		p.home_province as homeProvince,p.home_city as homeCity,p.home_county as homeCounty,
+		p.home_town as homeTown,p.home_police_station_id as homePoliceStationId,
+		d.departname as homePoliceStationName,
+		p.home_detail as homeDetail,p.home_lng as homeLng,p.home_lat as homeLat,
+		p.validflag,p.addoperator,p.addtime,p.memo
+		from p_zaperson_pei_t p
+		LEFT JOIN sys_department_t_new d ON p.home_police_station_id = d.id AND d.validflag = 1
+		WHERE p.validflag >0 AND p.personnelid = $personnelid$
+		order by p.id desc
+	</select>
+
+	<insert id="addZaPei" parameterClass="zaPei">
+		INSERT INTO p_zaperson_pei_t
+		(personnelid,collect_source,collect_date,activity_venue,other_memo,
+		home_province,home_city,home_county,home_town,home_police_station_id,
+		home_detail,home_lng,home_lat,
+		validflag,addoperator,addtime,memo)
+		VALUES
+		($personnelid$,'$collectSource$','$collectDate$','$activityVenue$','$otherMemo$',
+		'$homeProvince$','$homeCity$','$homeCounty$','$homeTown$',#homePoliceStationId#,
+		'$homeDetail$','$homeLng$','$homeLat$',
+		$validflag$,'$addoperator$','$addtime$','$memo$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+
+	<update id="updateZaPei" parameterClass="zaPei">
+		UPDATE p_zaperson_pei_t
+		SET validflag=$validflag$,
+		updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+
+	<!-- =============== 涉案地址相关 =============== -->
+	<insert id="addCaseAddress" parameterClass="zaCaseAddress">
+		INSERT INTO p_zaperson_case_address_t
+		(record_id,record_type,province,city,county,town,detail_address,longitude,latitude,validflag,addtime)
+		VALUES
+		($recordId$,$recordType$,'$province$','$city$','$county$','$town$','$detailAddress$','$longitude$','$latitude$',1,'$addtime$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+
+	<update id="deleteCaseAddressByRecordId" parameterClass="zaCaseAddress">
+		UPDATE p_zaperson_case_address_t SET validflag=0 WHERE record_id=$recordId$ AND record_type=$recordType$
+	</update>
+
+	<select id="getCaseAddressByRecordId" parameterClass="zaCaseAddress" resultClass="zaCaseAddress">
+		SELECT id,record_id as recordId,record_type as recordType,province,city,county,town,
+		detail_address as detailAddress,longitude,latitude,validflag,addtime
+		FROM p_zaperson_case_address_t
+		WHERE validflag=1 AND record_id=$recordId$ AND record_type=$recordType$
+		ORDER BY id ASC
+	</select>
+
+	<!-- =============== 住址历史相关 =============== -->
+    <insert id="addHomeplaceHistory" parameterClass="homeplaceHistory">
+        INSERT INTO p_homeplace_history_t
+        (
+        personnelid,
+        home_province,
+        home_city,
+        home_county,
+        home_town,
+        home_police_station_id,
+        home_detail,
+        home_lng,
+        home_lat,
+        validflag,
+        addoperator,
+        addtime
+        )
+        VALUES
+        (
+        #personnelid#,
+        #province#,
+        #city#,
+        #county#,
+        #town#,
+        #policeStationId#,
+        #detailAddress#,
+        #longitude#,
+        #latitude#,
+        1,
+        #addoperator#,
+        #addtime#
+        )
+        <selectKey resultClass="Integer" keyProperty="id">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+    </insert>
+
+	<select id="getHomeplaceHistoryByPersonnelid" parameterClass="int" resultClass="homeplaceHistory">
+		SELECT h.id,h.personnelid,
+		h.home_province as province,
+		h.home_city as city,
+		h.home_county as county,
+		h.home_town as town,
+		h.home_police_station_id as policeStationId,
+		d.departname as policeStationName,
+		h.home_detail as detailAddress,
+		h.home_lng as longitude,
+		h.home_lat as latitude,
+		h.validflag,h.addoperator,h.addtime
+		FROM p_homeplace_history_t h
+		LEFT JOIN sys_department_t_new d ON h.home_police_station_id = d.id AND d.validflag = 1
+		WHERE h.validflag=1 AND h.personnelid=$personnelid$
+		ORDER BY h.addtime DESC
+	</select>
+
+	<!-- =============================================== -->
+	<!-- ========== 涉赌-案件关联表 SQL ========== -->
+	<!-- =============================================== -->
+	<insert id="batchInsertDuAjRel" parameterClass="java.util.List">
+		INSERT INTO p_zaperson_du_aj_rel_t (du_id, personnelid, aj_id, sldw, validflag, addtime)
+		VALUES
+		<iterate conjunction=",">
+			(#[]​.duId#, #[]​.personnelid#, #[]​.ajId#, #[]​.sldw#, 1, #[]​.addtime#)
+		</iterate>
+	</insert>
+
+	<update id="deleteDuAjByDuId" parameterClass="int">
+		UPDATE p_zaperson_du_aj_rel_t SET validflag=0 WHERE du_id=$value$
+	</update>
+
+	<select id="findAjByDuId" parameterClass="int" resultClass="java.util.HashMap">
+		SELECT aj.* FROM f_xt_xd_ajxx_new aj
+		JOIN p_zaperson_du_aj_rel_t r ON aj.id = r.aj_id
+		WHERE r.du_id = $value$ AND r.validflag = 1
+	</select>
+
+	<select id="findDuByAjId" parameterClass="int" resultClass="zaDu">
+		SELECT d.* FROM p_zaperson_du_t d
+		JOIN p_zaperson_du_aj_rel_t r ON d.id = r.du_id
+		WHERE r.aj_id = $value$ AND r.validflag = 1
+	</select>
+
+	<select id="findAjByPersonnelId" parameterClass="int" resultClass="java.util.HashMap">
+		SELECT DISTINCT aj.* FROM f_xt_xd_ajxx_new aj
+		JOIN p_zaperson_du_aj_rel_t r ON aj.id = r.aj_id
+		WHERE r.personnelid = $value$ AND r.validflag = 1
+	</select>
+
+	<!-- =============================================== -->
+	<!-- ========== 涉赌-警情关联表 SQL ========== -->
+	<!-- =============================================== -->
+	<insert id="batchInsertDuJqRel" parameterClass="java.util.List">
+		INSERT INTO p_zaperson_du_jq_rel_t (du_id, personnelid, jq_id, cjdw, validflag, addtime)
+		VALUES
+		<iterate conjunction=",">
+			(#[]​.duId#, #[]​.personnelid#, #[]​.jqId#, #[]​.cjdw#, 1, #[]​.addtime#)
+		</iterate>
+	</insert>
+
+	<update id="deleteDuJqByDuId" parameterClass="int">
+		UPDATE p_zaperson_du_jq_rel_t SET validflag=0 WHERE du_id=$value$
+	</update>
+
+	<select id="findJqByDuId" parameterClass="int" resultClass="java.util.HashMap">
+		SELECT jq.* FROM f_xt_xd_jqxx_new jq
+		JOIN p_zaperson_du_jq_rel_t r ON jq.id = r.jq_id
+		WHERE r.du_id = $value$ AND r.validflag = 1
+	</select>
+
+	<select id="findDuByJqId" parameterClass="int" resultClass="zaDu">
+		SELECT d.* FROM p_zaperson_du_t d
+		JOIN p_zaperson_du_jq_rel_t r ON d.id = r.du_id
+		WHERE r.jq_id = $value$ AND r.validflag = 1
+	</select>
+
+	<select id="findJqByPersonnelId" parameterClass="int" resultClass="java.util.HashMap">
+		SELECT DISTINCT jq.* FROM f_xt_xd_jqxx_new jq
+		JOIN p_zaperson_du_jq_rel_t r ON jq.id = r.jq_id
+		WHERE r.personnelid = $value$ AND r.validflag = 1
+	</select>
+
+	<!-- =============================================== -->
+	<!-- ========== 涉娼-案件关联表 SQL ========== -->
+	<!-- =============================================== -->
+	<insert id="batchInsertChangAjRel" parameterClass="java.util.List">
+		INSERT INTO p_zaperson_chang_aj_rel_t (chang_id, personnelid, aj_id, sldw, validflag, addtime)
+		VALUES
+		<iterate conjunction=",">
+			(#[]​.changId#, #[]​.personnelid#, #[]​.ajId#, #[]​.sldw#, 1, #[]​.addtime#)
+		</iterate>
+	</insert>
+
+	<update id="deleteChangAjByChangId" parameterClass="int">
+		UPDATE p_zaperson_chang_aj_rel_t SET validflag=0 WHERE chang_id=$value$
+	</update>
+
+	<select id="findAjByChangId" parameterClass="int" resultClass="java.util.HashMap">
+		SELECT aj.* FROM f_xt_xd_ajxx_new aj
+		JOIN p_zaperson_chang_aj_rel_t r ON aj.id = r.aj_id
+		WHERE r.chang_id = $value$ AND r.validflag = 1
+	</select>
+
+	<select id="findChangByAjId" parameterClass="int" resultClass="zaChang">
+		SELECT c.* FROM p_zaperson_chang_t c
+		JOIN p_zaperson_chang_aj_rel_t r ON c.id = r.chang_id
+		WHERE r.aj_id = $value$ AND r.validflag = 1
+	</select>
+
+	<select id="findChangAjByPersonnelId" parameterClass="int" resultClass="java.util.HashMap">
+		SELECT DISTINCT aj.* FROM f_xt_xd_ajxx_new aj
+		JOIN p_zaperson_chang_aj_rel_t r ON aj.id = r.aj_id
+		WHERE r.personnelid = $value$ AND r.validflag = 1
+	</select>
+
+	<!-- =============================================== -->
+	<!-- ========== 涉娼-警情关联表 SQL ========== -->
+	<!-- =============================================== -->
+	<insert id="batchInsertChangJqRel" parameterClass="java.util.List">
+		INSERT INTO p_zaperson_chang_jq_rel_t (chang_id, personnelid, jq_id, cjdw, validflag, addtime)
+		VALUES
+		<iterate conjunction=",">
+			(#[]​.changId#, #[]​.personnelid#, #[]​.jqId#, #[]​.cjdw#, 1, #[]​.addtime#)
+		</iterate>
+	</insert>
+
+	<update id="deleteChangJqByChangId" parameterClass="int">
+		UPDATE p_zaperson_chang_jq_rel_t SET validflag=0 WHERE chang_id=$value$
+	</update>
+
+	<select id="findJqByChangId" parameterClass="int" resultClass="java.util.HashMap">
+		SELECT jq.* FROM f_xt_xd_jqxx_new jq
+		JOIN p_zaperson_chang_jq_rel_t r ON jq.id = r.jq_id
+		WHERE r.chang_id = $value$ AND r.validflag = 1
+	</select>
+
+	<select id="findChangByJqId" parameterClass="int" resultClass="zaChang">
+		SELECT c.* FROM p_zaperson_chang_t c
+		JOIN p_zaperson_chang_jq_rel_t r ON c.id = r.chang_id
+		WHERE r.jq_id = $value$ AND r.validflag = 1
+	</select>
+
+	<select id="findChangJqByPersonnelId" parameterClass="int" resultClass="java.util.HashMap">
+		SELECT DISTINCT jq.* FROM f_xt_xd_jqxx_new jq
+		JOIN p_zaperson_chang_jq_rel_t r ON jq.id = r.jq_id
+		WHERE r.personnelid = $value$ AND r.validflag = 1
+	</select>
+
+	<!-- =============================================== -->
+	<!-- ========== 陪侍-案件关联表 SQL ========== -->
+	<!-- =============================================== -->
+	<insert id="batchInsertPeiAjRel" parameterClass="java.util.List">
+		INSERT INTO p_zaperson_pei_aj_rel_t (pei_id, personnelid, aj_id, sldw, validflag, addtime)
+		VALUES
+		<iterate conjunction=",">
+			(#[]​.peiId#, #[]​.personnelid#, #[]​.ajId#, #[]​.sldw#, 1, #[]​.addtime#)
+		</iterate>
+	</insert>
+
+	<update id="deletePeiAjByPeiId" parameterClass="int">
+		UPDATE p_zaperson_pei_aj_rel_t SET validflag=0 WHERE pei_id=$value$
+	</update>
+
+	<select id="findAjByPeiId" parameterClass="int" resultClass="java.util.HashMap">
+		SELECT aj.* FROM f_xt_xd_ajxx_new aj
+		JOIN p_zaperson_pei_aj_rel_t r ON aj.id = r.aj_id
+		WHERE r.pei_id = $value$ AND r.validflag = 1
+	</select>
+
+	<select id="findPeiByAjId" parameterClass="int" resultClass="zaPei">
+		SELECT p.* FROM p_zaperson_pei_t p
+		JOIN p_zaperson_pei_aj_rel_t r ON p.id = r.pei_id
+		WHERE r.aj_id = $value$ AND r.validflag = 1
+	</select>
+
+	<select id="findPeiAjByPersonnelId" parameterClass="int" resultClass="java.util.HashMap">
+		SELECT DISTINCT aj.* FROM f_xt_xd_ajxx_new aj
+		JOIN p_zaperson_pei_aj_rel_t r ON aj.id = r.aj_id
+		WHERE r.personnelid = $value$ AND r.validflag = 1
+	</select>
+
+	<!-- =============================================== -->
+	<!-- ========== 陪侍-警情关联表 SQL ========== -->
+	<!-- =============================================== -->
+	<insert id="batchInsertPeiJqRel" parameterClass="java.util.List">
+		INSERT INTO p_zaperson_pei_jq_rel_t (pei_id, personnelid, jq_id, cjdw, validflag, addtime)
+		VALUES
+		<iterate conjunction=",">
+			(#[]​.peiId#, #[]​.personnelid#, #[]​.jqId#, #[]​.cjdw#, 1, #[]​.addtime#)
+		</iterate>
+	</insert>
+
+	<update id="deletePeiJqByPeiId" parameterClass="int">
+		UPDATE p_zaperson_pei_jq_rel_t SET validflag=0 WHERE pei_id=$value$
+	</update>
+
+	<select id="findJqByPeiId" parameterClass="int" resultClass="java.util.HashMap">
+		SELECT jq.* FROM f_xt_xd_jqxx_new jq
+		JOIN p_zaperson_pei_jq_rel_t r ON jq.id = r.jq_id
+		WHERE r.pei_id = $value$ AND r.validflag = 1
+	</select>
+
+	<select id="findPeiByJqId" parameterClass="int" resultClass="zaPei">
+		SELECT p.* FROM p_zaperson_pei_t p
+		JOIN p_zaperson_pei_jq_rel_t r ON p.id = r.pei_id
+		WHERE r.jq_id = $value$ AND r.validflag = 1
+	</select>
+
+	<select id="findPeiJqByPersonnelId" parameterClass="int" resultClass="java.util.HashMap">
+		SELECT DISTINCT jq.* FROM f_xt_xd_jqxx_new jq
+		JOIN p_zaperson_pei_jq_rel_t r ON jq.id = r.jq_id
+		WHERE r.personnelid = $value$ AND r.validflag = 1
+	</select>
+
+	<!-- ========== 前科判定相关SQL ========== -->
+	<!-- 判断人员是否存在涉赌记录(高效exists查询) -->
+	<select id="existsDuByPersonnelId" parameterClass="int" resultClass="java.lang.Integer">
+		SELECT 1 FROM p_zaperson_du_t WHERE personnelid = $value$ AND validflag > 0 LIMIT 1
+	</select>
+
+	<!-- 判断人员是否存在涉娼记录(高效exists查询) -->
+	<select id="existsChangByPersonnelId" parameterClass="int" resultClass="java.lang.Integer">
+		SELECT 1 FROM p_zaperson_chang_t WHERE personnelid = $value$ AND validflag > 0 LIMIT 1
+	</select>
+
+  </sqlMap>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="basicType">
+	<typeAlias alias="basicType" type="com.szrj.business.model.BasicType"/>
+	<!-- 新增 -->
+	<insert id="add" parameterClass="basicType">
+		INSERT INTO sys_basic_type_t
+		(basicTypeName,isexternal,externalid,istree,validflag,parentid,addoperator,addtime,memo)
+		VALUES
+		('$basicTypeName$',$isexternal$,$externalid$,$istree$,$validflag$,$parentid$,'$addoperator$','$addtime$','$memo$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+   <!-- 删除 -->
+	<update id="cancel" parameterClass="int">
+		UPDATE sys_basic_type_t
+		SET validflag = 0
+		WHERE id = $id$
+	</update>
+	<!-- 修改 -->
+	<update id="update" parameterClass="basicType">
+		UPDATE sys_basic_type_t
+		SET basicTypeName = '$basicTypeName$',isexternal=$isexternal$,externalid=$externalid$,istree=$istree$
+		,parentid=$parentid$,memo='$memo$',addoperator='$addoperator$',addtime='$addtime$'
+		WHERE id = $id$
+	</update>
+	<!-- 查询全部 -->
+	<select id="getAll" resultClass="basicType">
+		    SELECT
+				b.*,	CONCAT( b.id, '-', b.basicTypeName ) AS basicTypeName1 
+			FROM	sys_basic_type_t b 
+			WHERE	b.validflag > 0 
+			ORDER BY	b.id
+	</select>
+	<!-- 名称查重 -->
+	<select id="getTypeNameExit" parameterClass="basicType" resultClass="int">
+		SELECT IFNULL(id,COUNT(id))
+		FROM sys_basic_type_t
+		WHERE validflag > 0 and basicTypeName='$basicTypeName$'
+	</select>
+	<select id="getById" parameterClass="int" resultClass="basicType">
+		SELECT *
+		FROM sys_basic_type_t
+		WHERE validflag > 0 AND id = $id$
+	</select>
+	
+</sqlMap>

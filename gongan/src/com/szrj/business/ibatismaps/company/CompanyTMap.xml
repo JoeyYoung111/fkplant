@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+        
+ <sqlMap namespace="company">
+ 	<typeAlias alias="company" type="com.szrj.business.model.company.Company"/>
+ 	<typeAlias alias="selectModel" type="com.aladdin.model.SelectModel"/>
+ 	<!-- 新增 -->
+ 	<insert id="add" parameterClass="company">
+ 		INSERT INTO C_COMPANY_T
+ 		(companyname,companycode,companytype,affecttype,innet,managetype,telephone,companystatus,
+ 		unusedreason,managerange,registerplace,registerowner,realworkplace,realworkowner,longitude,latitude,
+ 		codephoto,legalname,sexes,zjlx,cardnumber,nation,education,politicalposition,legalphone,homeplace,lifeplace,
+ 		validflag,addoperator,addtime,memo)
+ 		VALUES
+ 		('$companyname$','$companycode$','$companytype$','$affecttype$',$innet$,'$managetype$','$telephone$','$companystatus$',
+ 		'$unusedreason$','$managerange$','$registerplace$','$registerowner$','$realworkplace$','$realworkowner$','$longitude$','$latitude$',
+ 		'$codephoto$','$legalname$','$sexes$','$zjlx$','$cardnumber$','$nation$','$education$','$politicalposition$','$legalphone$','$homeplace$','$lifeplace$',
+ 		1,'$addoperator$','$addtime$','$memo$')
+ 		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+ 	</insert>
+ 	
+ 	<!-- 查询 -->
+ 	<select id="searchCompany_count" parameterClass="company" resultClass="Integer">
+ 		SELECT COUNT(ID)
+ 		FROM C_COMPANY_T 
+ 		WHERE VALIDFLAG > 0 
+ 		<dynamic prepend="">
+ 			<isNotEmpty prepend="AND" property="companyname">
+ 				(companyname like '%$companyname$%')
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="companycode">
+ 				(companycode like '%$companycode$%')
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="companytype">
+ 				find_in_set('$companytype$',companytype)
+ 			</isNotEmpty>
+<!-- 			<isNotEqual prepend="AND" property="companytype" compareValue="0">-->
+<!-- 				companytype = $companytype$-->
+<!-- 			</isNotEqual>-->
+ 			<isNotEmpty prepend="AND" property="affecttype">
+ 				(affecttype like '%$affecttype$%')
+ 			</isNotEmpty>
+ 			<isNotEqual prepend="AND" property="innet" compareValue="0">
+ 				innet = $innet$
+ 			</isNotEqual>
+ 			<isNotEmpty prepend="AND" property="managetype">
+ 				managetype = '$managetype$'
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="telephone">
+ 				telephone = '$telephone$'
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="companystatus">
+ 				companystatus = '$companystatus$'
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="unusedreason">
+ 				unusedreason = '$unusedreason$'
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="managerange">
+ 				managerange = '$managerange$'
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="registerplace">
+ 				registerplace = '$registerplace$'
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="registerowner">
+ 				registerowner = '$registerowner$'
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="realworkplace">
+ 				realworkplace = '$realworkplace$'
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="realworkowner">
+ 				realworkowner = '$realworkowner$'
+ 			</isNotEmpty>
+ 		</dynamic>
+ 	</select>
+ 	<!-- 模糊查询 -->
+ 	<select id="searchCompany" parameterClass="company" resultClass="company">
+ 		SELECT a.*,d.departname as realworkownerString,e.departname as registerownerString,group_concat(f.basicName separator ',') as sjpzMsg
+ 		FROM C_COMPANY_T a
+ 		LEFT JOIN sys_department_t d on a.realworkowner = d.id
+ 		LEFT JOIN sys_department_t e on a.registerowner = e.id
+ 		left join sys_basic_msg_t f on find_in_set(f.id,a.managetype)
+ 		WHERE a.VALIDFLAG > 0 
+ 		<dynamic prepend="">
+ 			<isNotEmpty prepend="AND" property="companyname">
+ 				(a.companyname like '%$companyname$%')
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="companycode">
+ 				(a.companycode like '%$companycode$%')
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="companytype">
+ 				find_in_set('$companytype$',a.companytype)
+ 			</isNotEmpty>
+<!-- 			<isNotEqual prepend="AND" property="companytype" compareValue="0">-->
+<!-- 				companytype = $companytype$-->
+<!-- 			</isNotEqual>-->
+ 			<isNotEmpty prepend="AND" property="affecttype">
+ 				(a.affecttype like '%$affecttype$%')
+ 			</isNotEmpty>
+ 			<isNotEqual prepend="AND" property="innet" compareValue="0">
+ 				a.innet = $innet$
+ 			</isNotEqual>
+ 			<isNotEmpty prepend="AND" property="managetype">
+ 				a.managetype = '$managetype$'
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="telephone">
+ 				a.telephone = '$telephone$'
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="companystatus">
+ 				a.companystatus = '$companystatus$'
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="unusedreason">
+ 				a.unusedreason = '$unusedreason$'
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="managerange">
+ 				a.managerange = '$managerange$'
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="registerplace">
+ 				a.registerplace = '$registerplace$'
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="registerowner">
+ 				a.registerowner = '$registerowner$'
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="realworkplace">
+ 				a.realworkplace = '$realworkplace$'
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="realworkowner">
+ 				a.realworkowner = '$realworkowner$'
+ 			</isNotEmpty>
+ 		</dynamic>
+ 		group by a.id order by a.id
+ 	</select>
+ 	
+ 	<!-- 根据id查询 -->
+ 	<select id="getById" parameterClass="int" resultClass="company">
+ 		SELECT a.*,c.departname as registerownerString,d.departname as realworkownerString,group_concat(e.basicName separator ',') as sjpzMsg
+ 		FROM C_COMPANY_T a
+		left join sys_department_t c on a.registerowner = c.id
+		left join sys_department_t d on a.realworkowner = d.id
+		left join sys_basic_msg_t e on find_in_set(e.id,a.managetype)
+ 		WHERE a.VALIDFLAG > 0 AND a.id = $id$
+ 	</select>
+ 	
+ 	<!-- 删除 -->
+ 	<update id="cancel" parameterClass="int">
+ 		UPDATE C_COMPANY_T SET VALIDFLAG = 0 WHERE id = $id$
+ 	</update>
+ 	
+ 	<!-- 修改公司基本信息 -->
+ 	<update id="update" parameterClass="company">
+ 		UPDATE C_COMPANY_T SET companyname='$companyname$',companycode='$companycode$',
+ 		managetype='$managetype$',telephone='$telephone$',companystatus='$companystatus$',
+ 		unusedreason='$unusedreason$',managerange='$managerange$',registerplace='$registerplace$',
+ 		registerowner='$registerowner$',realworkplace='$realworkplace$',realworkowner='$realworkowner$',
+ 		longitude='$longitude$',latitude='$latitude$',codephoto='$codephoto$',memo='$memo$',
+ 		updateoperator='$updateoperator$',updatetime='$updatetime$'
+<!-- 		<isNotEqual prepend="," property="companytype" compareValue="0">-->
+<!--			companytype = $companytype$-->
+<!--		</isNotEqual>-->
+		<isNotEmpty prepend="," property="companytype">
+			companytype = '$companytype$'
+		</isNotEmpty>
+		<isNotEmpty prepend="," property="affecttype">
+			affecttype = '$affecttype$'
+		</isNotEmpty>
+		<isNotEqual prepend="," property="innet" compareValue="0">
+			innet = $innet$
+		</isNotEqual>
+ 		WHERE id=$id$
+ 	</update>
+ 	
+ 	<!-- 修改公司法人信息 -->
+ 	<update id="updateFR" parameterClass="company">
+ 		UPDATE C_COMPANY_T SET legalname='$legalname$',sexes='$sexes$',zjlx='$zjlx$',
+ 		cardnumber='$cardnumber$',nation='$nation$',education='$education$',
+ 		politicalposition='$politicalposition$',legalphone='$legalphone$',
+ 		homeplace='$homeplace$',lifeplace='$lifeplace$',
+ 		updateoperator='$updateoperator$',updatetime='$updatetime$'
+ 		where id = $id$
+ 	</update>
+ 	
+ 	<select id="search_code" parameterClass="String" resultClass="Integer">
+ 		select IFNULL(id,count(id)) from c_company_t where companycode = '$companycode$' and validflag >0
+ 	</select>
+ 	
+ 	<select id="getCompanyToJSON" parameterClass="company" resultClass="company">
+ 		select id,companyname from c_company_t where validflag >0
+ 		<dynamic prepend="">
+ 			<isNotEmpty prepend="AND" property="affecttype">
+				(affecttype like '%$affecttype$%')
+			</isNotEmpty>
+ 		</dynamic>
+ 	</select>
+ 	
+ 	<select id="getIdByName" parameterClass="String" resultClass="Integer">
+ 		select id from c_company_t where validflag > 0 and companyname = '$companyname$'
+ 	</select>
+ 	
+ 	<select id="countByAffecttype" resultClass="selectModel">
+		SELECT
+			b.basicName text,
+			count( 1 ) value
+		FROM
+			( SELECT id, basicName FROM sys_basic_msg_t WHERE validflag > 0 AND basicType = 52 ORDER BY id ) b
+			LEFT JOIN c_company_t c ON FIND_IN_SET( b.basicName, c.affecttype ) 
+			AND c.validflag > 0 
+		GROUP BY
+			b.basicName 
+		ORDER BY value DESC;
+	</select>
+ </sqlMap>

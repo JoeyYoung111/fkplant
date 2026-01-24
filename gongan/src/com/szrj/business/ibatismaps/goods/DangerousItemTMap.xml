@@ -1,0 +1,98 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="dangerousItem">
+	<typeAlias alias="dangerousItem" type="com.szrj.business.model.goods.DangerousItem"/>
+	
+	<select id="search_count" parameterClass="dangerousItem" resultClass="Integer">
+		select count(*)
+		from g_dangerousitem_t d
+		left join sys_basic_msg_t bm on bm.id=d.goodscode
+		where d.validflag>0
+		<isNotEmpty prepend="AND" property="casename">
+				d.casename like '%$casename$%'
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="goodscode">
+				bm.basicName like '%$goodscode$%'
+		</isNotEmpty>
+	</select>
+	<select id="search" parameterClass="dangerousItem" resultClass="dangerousItem">
+		select d.*,bm.basicName as goodscodename
+		from g_dangerousitem_t d
+		left join sys_basic_msg_t bm on bm.id=d.goodscode
+		where d.validflag>0
+		<isNotEmpty prepend="AND" property="casename">
+				d.casename like '%$casename$%'
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="goodscode">
+				bm.basicName like '%$goodscode$%'
+		</isNotEmpty>
+		order by sjdate desc
+	</select>
+	
+	<!-- 新增 -->
+	<insert id="add" parameterClass="dangerousItem">
+		INSERT INTO g_dangerousitem_t
+		(itemtype,goodscode,casename,codenum,sjdate,sjgov,sjmj,sjfs,sl,position,result,sjdx,dxsfz,attachments,validflag,addoperator,addtime,memo,personid)
+		VALUES
+		('$itemtype$','$goodscode$','$casename$','$codenum$','$sjdate$','$sjgov$','$sjmj$','$sjfs$','$sl$','$position$','$result$','$sjdx$',
+		'$dxsfz$','$attachments$',$validflag$,'$addoperator$','$addtime$','$memo$',$personid$)
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+	<!-- 删除 -->
+	<update id="cancel" parameterClass="dangerousItem">
+		UPDATE g_dangerousitem_t
+		SET validflag = 0,updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	<!-- 修改 -->
+	<update id="update" parameterClass="dangerousItem">
+		UPDATE g_dangerousitem_t
+		SET itemtype='$itemtype$',goodscode='$goodscode$',casename='$casename$',codenum='$codenum$',sjdate='$sjdate$',sjgov='$sjgov$',
+		sjmj='$sjmj$',sjfs='$sjfs$',sl='$sl$',position='$position$',result='$result$',sjdx='$sjdx$',sjdx='$sjdx$',dxsfz='$dxsfz$',
+		attachments='$attachments$',updateoperator='$updateoperator$',updatetime='$updatetime$',memo='$memo$',personid=$personid$
+		WHERE id = $id$
+	</update>
+	<!-- 根据ID获取 -->
+	<select id="getById" parameterClass="int" resultClass="dangerousItem">
+		select A.*,GROUP_CONCAT(sf.fileName order by sf.id) as filenames,GROUP_CONCAT(sf.id order by sf.id) as fileids,bm.basicName as goodscodename 
+		from(SELECT * FROM g_dangerousitem_t WHERE validflag > 0 AND id = $id$)A
+		LEFT JOIN sys_file_t sf on FIND_IN_SET(sf.id,A.attachments)
+		left join sys_basic_msg_t bm on bm.id=A.goodscode
+		GROUP BY A.id
+	</select>
+	
+	<!-- 获取今天有几条数据了 -->
+	<select id="generateCodenum" resultClass="int">
+		select count(*)
+		from g_dangerousitem_t
+		where addtime like CONCAT('%',DATE_FORMAT(now(),'%Y-%m-%d'),'%')
+	</select>
+	
+	<select id="searchItemByPerson_count" parameterClass="dangerousItem" resultClass="int">
+		select count(*)
+		from g_dangerousitem_t
+		where validflag>0 and personid=$personid$
+		order by sjdate desc
+	</select>
+	<select id="searchItemByPerson" parameterClass="dangerousItem" resultClass="dangerousItem">
+		select d.*,bm.basicName as goodscodename
+		from g_dangerousitem_t d
+		left join sys_basic_msg_t bm on bm.id=d.goodscode
+		where d.validflag>0 and d.personid=$personid$
+		order by sjdate desc
+	</select>
+	
+	<update id="updatePersonByCodenum" parameterClass="dangerousItem">
+		UPDATE g_dangerousitem_t
+		SET personid=$personid$,updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE codenum = '$codenum$'
+	</update>
+	
+	<update id="cancelGoodsConnect" parameterClass="dangerousItem">
+		UPDATE g_dangerousitem_t
+		SET personid=$personid$,updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+</sqlMap>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+        
+<sqlMap namespace="infoTimeLine">
+	<typeAlias alias="infoTimeLine" type="com.szrj.business.model.information.InfoTimeLine"/>
+
+	<select id="search" parameterClass="infoTimeLine" resultClass="infoTimeLine">
+		SELECT * FROM I_INFOTIMELINE_T WHERE VALIDFLAG > 0
+		<dynamic prepend="">
+			<isNotEqual prepend="AND" property="infoid" compareValue="0">
+				INFOID = $infoid$
+			</isNotEqual>
+			<isNotEqual prepend="AND" property="infoAnnotationid" compareValue="0">
+				infoAnnotationid = $infoAnnotationid$
+			</isNotEqual>
+			<isNotEqual prepend="AND" property="infoAssign" compareValue="0">
+				infoAssign = $infoAssign$
+			</isNotEqual>
+			<isNotEqual prepend="AND" property="assignSignfor" compareValue="0">
+				assignSignfor = $assignSignfor$
+			</isNotEqual>
+			<isNotEmpty prepend="AND" property="informationsendid">
+				(informationsendid like '%$informationsendid$%')
+			</isNotEmpty>
+		</dynamic>
+		ORDER BY ID desc
+	</select>
+	
+	<insert id="add" parameterClass="infoTimeLine">
+		INSERT INTO I_INFOTIMELINE_T
+		(infoid,informationsendid,informationreceiveid,title,content,addtime,validflag,infoAnnotationid,infoAssign,assignSignfor)
+		VALUES
+		($infoid$,$informationsendid$,'$informationreceiveid$','$title$','$content$','$addtime$',1,$infoAnnotationid$,$infoAssign$,$assignSignfor$)
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+	
+	<select id="searchAssignSignforList" parameterClass="infoTimeLine">
+		SELECT * FROM I_INFOTIMELINE_T WHERE VALIDFLAG > 0 and infoAssign = $infoAssign$
+		<dynamic prepend="">
+			<isNotEqual prepend="AND" property="assignSignfor" compareValue="0">
+				assignSignfor = $assignSignfor$
+			</isNotEqual>
+		</dynamic>
+		order by id desc
+	</select>
+	
+</sqlMap>

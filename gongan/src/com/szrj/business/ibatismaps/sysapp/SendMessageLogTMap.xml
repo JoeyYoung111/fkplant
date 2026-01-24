@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="sendMessageLog">
+	<typeAlias alias="sendMessageLog" type="com.szrj.business.model.sysapp.SendMessageLog"/>
+	
+	<select id="search_count" parameterClass="sendMessageLog" resultClass="Integer">
+		select count(*)
+		from s_sendmessagelog_t
+	</select>
+	<select id="search" parameterClass="sendMessageLog" resultClass="sendMessageLog">
+		select ml.*,CASE sm.smstype when 1 then '模板发送' when 2 then '自定义发送' end as smstype,sm.smstext
+		from s_sendmessagelog_t ml,s_sendmessage_t sm
+		where ml.sendmessageid=sm.id
+		ORDER BY sendtime desc
+	</select>
+	
+	<!-- 新增 -->
+	<insert id="add" parameterClass="sendMessageLog">
+		INSERT INTO s_sendmessagelog_t
+		(sendmessageid,sendperson,sendtime,sendflag)
+		VALUES
+		($sendmessageid$,'$sendperson$','$sendtime$',$sendflag$)
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+</sqlMap>

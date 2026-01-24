@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>政法委数据看板</title>
+
+  <link rel="stylesheet" type="text/css" href="./layui/css/layui.css"/>
+  <link rel="stylesheet" type="text/css" href="./css/root.css"/>
+  <link rel="stylesheet" type="text/css" href="./css/zhengfawei.css"/>
+</head>
+<body class="body">
+  <div class="container">
+    <!-- 数据面板 -->
+    <div class="panels">
+      <div class="panel panel-1">
+        <div class="layui-container">
+          <div class="layui-col-space15 h-full">
+            <div class="layui-col-sm2 layui-col-md2 layui-col-lg2 h-full">
+              <div class="block block-1">
+                <div class="flex flex-col w-full h-full">
+                  <div class="item">
+                    <img src="./images/icon-1.png">
+                    <p class="key">矛盾总数</p>
+                    <p class="value">380</p>
+                  </div>
+
+                  <div id="chart1" class="w-full h-full"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="layui-col-sm4 layui-col-md4 layui-col-lg4 h-full">
+              <div class="block block-2">
+                <div class="title">
+                  <p><img src="./images/icon-4.png"><span>矛盾化解情况</span></p>
+                </div>
+
+                <div id="chart2" class="w-full h-full"></div>
+              </div>
+            </div>
+
+            <div class="layui-col-sm6 layui-col-md6 layui-col-lg6 h-full">
+              <div class="block block-3">
+                <div class="title">
+                  <p><img src="./images/icon-4.png"><span>矛盾风险分布</span></p>
+                </div>
+
+                <div id="chart3" class="w-full h-full"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel panel-2">
+        <div class="layui-container">
+          <div class="layui-col-space15 h-full">
+            <div class="layui-col-sm2 layui-col-md2 layui-col-lg2 h-full">
+              <div class="block block-4">
+                <div class="flex flex-col w-full h-full">
+                  <div class="item">
+                    <img src="./images/icon-9.png">
+                    <p class="key">涉稳人员</p>
+                    <p class="value">2440</p>
+                  </div>
+
+                  <div id="chart4" class="w-full h-full"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="layui-col-sm4 layui-col-md4 layui-col-lg4 h-full">
+              <div class="block block-5">
+                <div class="title">
+                  <p><img src="./images/icon-4.png"><span>人员在控状态</span></p>
+                </div>
+
+                <div id="chart5" class="w-full h-full"></div>
+              </div>
+            </div>
+
+            <div class="layui-col-sm6 layui-col-md6 layui-col-lg6 h-full">
+              <div class="block block-6">
+                <div class="title">
+                  <p><img src="./images/icon-4.png"><span>人员风险分布</span></p>
+                </div>
+
+                <div class="item">
+                  <div id="chart6" class="chart"></div>
+                  <div id="chart7" class="chart"></div>
+                  <div id="chart8" class="chart"></div>
+                  <div id="chart9" class="chart"></div>
+                  <div id="chart10" class="chart"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel panel-3">
+        <div class="layui-container">
+          <div class="layui-col-space15 h-full">
+            <div class="layui-col-sm3 layui-col-md3 layui-col-lg3 h-full">
+              <div class="block block-7">
+                <div class="title">
+                  <p><img src="./images/icon-7.png" style="width: 17px;"><span>通知公告</span></p>
+
+                  <img src="./images/icon-8.png" class="btn">
+                </div>
+
+                <div class="table table1">
+                  <div class="tbody">
+                    <div class="tr">
+                      <div class="td">通知公告</div>
+                      <div class="td right">2023-02-02</div>
+                    </div>
+                    <div class="tr">
+                      <div class="td">任务布置</div>
+                      <div class="td right">2023-01-01</div>
+                    </div>
+                    <div class="tr">
+                      <div class="td">全体通知</div>
+                      <div class="td right">2022-12-01</div>
+                    </div>
+                    <div class="tr">
+                      <div class="td">告知</div>
+                      <div class="td right">2022-05-11</div>
+                    </div>
+                    <div class="tr">
+                      <div class="td">通知公告</div>
+                      <div class="td right">2023-02-02</div>
+                    </div>
+                    <div class="tr">
+                      <div class="td">任务布置</div>
+                      <div class="td right">2023-01-01</div>
+                    </div>
+                    <div class="tr">
+                      <div class="td">全体通知</div>
+                      <div class="td right">2022-12-01</div>
+                    </div>
+                    <div class="tr">
+                      <div class="td">告知</div>
+                      <div class="td right">2022-05-11</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="layui-col-sm3 layui-col-md3 layui-col-lg3 h-full">
+              <div class="block block-8">
+                <div class="title">
+                  <p><img src="./images/icon-7.png" style="width: 17px;"><span>待办事项</span></p>
+
+                  <img src="./images/icon-8.png" class="btn">
+                </div>
+
+                <div class="table table2">
+                  <div class="tbody">
+                    <div class="tr">
+                      <div class="td">待办事项</div>
+                      <div class="td right">2023-02-02</div>
+                    </div>
+                    <div class="tr">
+                      <div class="td">【邮件未读】邮件</div>
+                      <div class="td right">2023-01-01</div>
+                    </div>
+                    <div class="tr">
+                      <div class="td">【工作交办-督办单未签收】测试</div>
+                      <div class="td right">2022-12-01</div>
+                    </div>
+                    <div class="tr">
+                      <div class="td">【工作交办-提示单未签收】测试</div>
+                      <div class="td right">2022-05-11</div>
+                    </div>
+                    <div class="tr">
+                      <div class="td">待办事项</div>
+                      <div class="td right">2023-02-02</div>
+                    </div>
+                    <div class="tr">
+                      <div class="td">【邮件未读】邮件</div>
+                      <div class="td right">2023-01-01</div>
+                    </div>
+                    <div class="tr">
+                      <div class="td">【工作交办-督办单未签收】测试</div>
+                      <div class="td right">2022-12-01</div>
+                    </div>
+                    <div class="tr">
+                      <div class="td">【工作交办-提示单未签收】测试</div>
+                      <div class="td right">2022-05-11</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="layui-col-sm6 layui-col-md6 layui-col-lg6 h-full">
+              <div class="block block-9">
+                <div class="title">
+                  <p><img src="./images/icon-4.png"><span>风险区域分布</span></p>
+                </div>
+
+                <div id="chart11" class="w-full h-full"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="./js/jquery-1.9.1.min.js" type="text/javascript"></script>
+  <script src="./js/global.js" type="text/javascript"></script>
+  <script src="./js/echarts.min.js"></script>
+  <script type="text/javascript">
+    var chartOptions = {
+      option1: {
+        series: [
+          {
+            type: 'gauge',
+            radius: '100%',
+            startAngle: 180,
+            endAngle: 0,
+            min: 0,
+            max: 100,
+            progress: {
+              show: true,
+              roundCap: true,
+              itemStyle: {
+                // 前景色
+                color: '#15d187',
+              },
+            },
+            pointer: {
+              show: false
+            },
+            axisLine: {
+              roundCap: true,
+              lineStyle: {
+                // 背景色
+                color: [[1, '#d2f6e9']]
+              }
+            },
+            axisTick: {
+              show: false,
+            },
+            splitLine: {
+              show: false
+            },
+            axisLabel: {
+              show: false
+            },
+            title: {
+              offsetCenter: [0, '-15%'],
+              fontSize: calcfontSize(14)
+            },
+            detail: {
+              fontSize: calcfontSize(14),
+              formatter: function (value) {
+                return value + '%'
+              },
+              color: '#15d187'
+            },
+            data: [
+              {
+                name: '化解率',
+                value: 60
+              }
+            ]
+          }
+        ]
+      },
+
+      option2: {
+        tooltip: {
+          trigger: 'item',
+          formatter: '{b}：{c}%'
+        },
+        legend: {
+          top: 'bottom',
+          icon: 'rect'
+        },
+        series: [
+          {
+            name: '外边框',
+            type: 'pie',
+            z: 1,
+            tooltip: {
+              show: false,
+            },
+            color: ['transparent'],
+            left: 0,
+            right: 0,
+            top: 0,
+            bottom: '20%',
+            // 边框大小
+            radius: '100%',
+            emphasis: {
+              disabled: true
+            },
+            labelLine: {
+              show: false
+            },
+            data: [
+              {
+                value: 0,
+                itemStyle: {
+                  normal: {
+                    borderWidth: 1,
+                    borderColor: '#d0d0d0'
+                  }
+                }
+              }
+            ]
+          },
+          {
+            name: '矛盾化解情况',
+            type: 'pie',
+            z: 2,
+            radius: '90%',
+            bottom: '20%',
+            label: {
+              formatter: '{b} {c}%'
+            },
+            color: ['#ffcfa8', '#70d9da', '#cdbfe8'],
+            data: [
+              { name: '已化解', value: 60, },
+              { name: '已钝化', value: 30, },
+              { name: '处置中', value: 10, }
+            ]
+          }
+        ]
+      },
+
+      option3: {
+        tooltip: {
+          trigger: 'axis'
+        },
+        textStyle: {
+          color: '#000'
+        },
+        grid: {
+          top: 0,
+          left: 0,
+          right: '5%',
+          bottom: 0,
+          containLabel: true
+        },
+        xAxis: [
+          {
+            type: 'value',
+            axisLine: {
+              show: true,
+              lineStyle: {
+                color: 'rgba(0, 0, 0, 0.05)'
+              }
+            },
+            splitLine: {
+              show: true,
+              lineStyle: {
+                color: 'rgba(0, 0, 0, 0.05)'
+              }
+            },
+            // 坐标轴刻度
+            axisTick: {
+              show: false
+            },
+            axisLabel: {
+              formatter: '{value}%',
+              textStyle: {
+                color: '#ccc'
+              }
+            }
+          },
+          {
+            axisLine: {
+              show: true,
+              lineStyle: {
+                color: 'rgba(0, 0, 0, 0.05)'
+              }
+            },
+          }
+        ],
+        yAxis: {
+          type: 'category',
+          axisLine: {
+            show: true,
+            lineStyle: {
+               color: 'rgba(0, 0, 0, 0.05)'
+            }
+          },
+          splitLine: {
+            show: false,
+          },
+          axisLabel: {
+            interval: 0
+          },
+          axisTick: {
+            show: false
+          },
+          data: ['高风险', '中风险', '低风险', '自控', '存档']
+        },
+        series: [
+          {
+            type: 'bar',
+            color: '#3366ff',
+
+            itemStyle: {
+              normal: {
+                label: {
+                  show: true,
+                  color: '#cccccc',
+                  formatter: '{c}%'
+                },
+                formatter: function(params) {
+                  if (params.value > 0) {
+                    return params.value
+                  } else {
+                    return ' '
+                  }
+                },
+              }
+            },
+            data: [5, 10, 40, 20, 25]
+          }
+        ]
+      },
+
+      option4: {
+        series: [
+          {
+            type: 'gauge',
+            radius: '100%',
+            axisLine: {
+              lineStyle: {
+                color: [
+                  [0.2, '#1eb2ff'],
+                  [0.5, '#ff9900'],
+                  [1, '#cc3300']
+                ]
+              }
+            },
+            pointer: {
+              showAbove: true,
+              width: 2,
+              itemStyle: {
+                color: 'inherit'
+              }
+            },
+            anchor: {
+              show: true,
+              showAbove: true,
+              icon: 'circle',
+              itemStyle: {
+                color: 'inherit'
+              }
+            },
+            axisTick: {
+              show: false
+            },
+            splitLine: {
+              distance: -30,
+              length: 30,
+              lineStyle: {
+                color: 'transparent',
+                width: 1
+              }
+            },
+            axisLabel: {
+              color: '#000',
+              distance: 10
+            },
+            title: {
+              offsetCenter: [0, '60%'],
+              fontSize: calcfontSize(14)
+            },
+            detail: {
+              offsetCenter: [0, '90%'],
+              formatter: '{value}%',
+              color: 'inherit',
+              fontSize: calcfontSize(14)
+            },
+            data: [
+              {
+                name: '在控率',
+                value: 90
+              }
+            ]
+          }
+        ]
+      },
+
+      option5: {
+        textStyle: {
+          color: '#9ba9c1'
+        },
+        tooltip: {
+          trigger: 'axis'
+        },
+        grid: {
+          top: '25%',
+          left: 0,
+          right: 0,
+          bottom: 0,
+          containLabel: true
+        },
+        xAxis: {
+          axisLine: {
+            lineStyle: {
+              color: '#ccccff'
+            }
+          },
+          splitLine: {
+            show: false,
+            lineStyle: {
+               color: '#ccccff'
+            }
+          },
+          axisLabel: {
+            interval: 0
+          },
+          // 坐标轴刻度
+          axisTick: {
+            show: false
+          },
+          type: 'category',
+          data: ['在控', '临控', '在京', '在宁', '下落不明', '失控']
+        },
+        yAxis: {
+          type: 'value',
+          name: '人数',
+          axisLine: {
+            show: true,
+            lineStyle: {
+               color: '#ccccff'
+            }
+          },
+          splitLine: {
+            show: false
+          }
+        },
+        series: [
+          {
+            type: 'bar',
+            color: '#784af6',
+            barWidth: 16,
+            itemStyle: {
+              borderRadius: 20
+            },
+            data: [
+              {
+                value: 2196,
+              },
+              {
+                value: 154,
+              },
+              {
+                value: 2000,
+                itemStyle: {
+                  color: {
+                    type: 'linear',
+                    x: 0,
+                    y: 0,
+                    x2: 0,
+                    y2: 1,
+                    colorStops: [{
+                        offset: 0, color: '#ed3369' // 0% 处的颜色
+                    }, {
+                        offset: 1, color: '#784af6' // 100% 处的颜色
+                    }]
+                  }
+                }
+              },
+              {
+                value: 30,
+              },
+              {
+                value: 200,
+                itemStyle: {
+                  color: {
+                    type: 'linear',
+                    x: 0,
+                    y: 0,
+                    x2: 0,
+                    y2: 1,
+                    colorStops: [{
+                        offset: 0, color: '#ed3369' // 0% 处的颜色
+                    }, {
+                        offset: 1, color: '#784af6' // 100% 处的颜色
+                    }]
+                  }
+                }
+              },
+              {
+                value: 0,
+              }
+            ]
+          }
+        ]
+      },
+
+      option6: {
+        series: [
+          {
+            type: 'gauge',
+            startAngle: 90,
+            endAngle: -270,
+            pointer: {
+              show: false
+            },
+            progress: {
+              show: true,
+              overlap: false,
+              roundCap: true,
+              clip: false,
+              itemStyle: {
+                color: '#ff8638'
+              }
+            },
+            axisLine: {
+              show: true,
+              lineStyle: {
+                // width: 40
+                color: [[1, 'rgba(255, 255, 255, 0.4)']],
+                shadowColor: 'rgba(255, 134, 56, 0.4)',
+                shadowBlur: 8
+              },
+            },
+            splitLine: {
+              show: false,
+              distance: 0,
+              length: 10
+            },
+            axisTick: {
+              show: false
+            },
+            axisLabel: {
+              show: false,
+              distance: 50
+            },
+            title: {
+              fontSize: calcfontSize(18),
+              offsetCenter: ['0%', '-20%'],
+              fontWeight: 'bolder'
+            },
+            detail: {
+              fontSize: calcfontSize(14),
+              color: '#7a8598',
+              formatter: '{value}%',
+              offsetCenter: ['0%', '25%']
+            },
+            data: [
+              {
+                name: '一级',
+                value: 0.5,
+              }
+            ],
+          }
+        ]
+      },
+
+      option7: {
+        series: [
+          {
+            type: 'gauge',
+            startAngle: 90,
+            endAngle: -270,
+            pointer: {
+              show: false
+            },
+            progress: {
+              show: true,
+              overlap: false,
+              roundCap: true,
+              clip: false,
+              itemStyle: {
+                color: '#5daeff'
+              }
+            },
+            axisLine: {
+              show: true,
+              lineStyle: {
+                // width: 40
+                color: [[1, 'rgba(255, 255, 255, 0.4)']],
+                shadowColor: 'rgba(93, 174, 255, 0.4)',
+                shadowBlur: 8
+              },
+            },
+            splitLine: {
+              show: false,
+              distance: 0,
+              length: 10
+            },
+            axisTick: {
+              show: false
+            },
+            axisLabel: {
+              show: false,
+              distance: 50
+            },
+            title: {
+              fontSize: calcfontSize(18),
+              offsetCenter: ['0%', '-20%'],
+              fontWeight: 'bolder'
+            },
+            detail: {
+              fontSize: calcfontSize(14),
+              color: '#7a8598',
+              formatter: '{value}%',
+              offsetCenter: ['0%', '25%']
+            },
+            data: [
+              {
+                name: '二级',
+                value: 4.5,
+              }
+            ],
+          }
+        ]
+      },
+
+      option8: {
+        series: [
+          {
+            type: 'gauge',
+            startAngle: 90,
+            endAngle: -270,
+            pointer: {
+              show: false
+            },
+            progress: {
+              show: true,
+              overlap: false,
+              roundCap: true,
+              clip: false,
+              itemStyle: {
+                color: '#4ddb7d'
+              }
+            },
+            axisLine: {
+              show: true,
+              lineStyle: {
+                // width: 40
+                color: [[1, 'rgba(255, 255, 255, 0.4)']],
+                shadowColor: 'rgba(77, 219, 125, 0.4)',
+                shadowBlur: 8
+              },
+            },
+            splitLine: {
+              show: false,
+              distance: 0,
+              length: 10
+            },
+            axisTick: {
+              show: false
+            },
+            axisLabel: {
+              show: false,
+              distance: 50
+            },
+            title: {
+              fontSize: calcfontSize(18),
+              offsetCenter: ['0%', '-20%'],
+              fontWeight: 'bolder'
+            },
+            detail: {
+              fontSize: calcfontSize(14),
+              color: '#7a8598',
+              formatter: '{value}%',
+              offsetCenter: ['0%', '25%']
+            },
+            data: [
+              {
+                name: '三级',
+                value: 5,
+              }
+            ],
+          }
+        ]
+      },
+
+      option9: {
+        series: [
+          {
+            type: 'gauge',
+            startAngle: 90,
+            endAngle: -270,
+            pointer: {
+              show: false
+            },
+            progress: {
+              show: true,
+              overlap: false,
+              roundCap: true,
+              clip: false,
+              itemStyle: {
+                color: '#ffe3ae'
+              }
+            },
+            axisLine: {
+              show: true,
+              lineStyle: {
+                // width: 40
+                color: [[1, 'rgba(255, 255, 255, 0.4)']],
+                shadowColor: 'rgba(255, 227, 174, 0.8)',
+                shadowBlur: 8
+              },
+            },
+            splitLine: {
+              show: false,
+              distance: 0,
+              length: 10
+            },
+            axisTick: {
+              show: false
+            },
+            axisLabel: {
+              show: false,
+              distance: 50
+            },
+            title: {
+              fontSize: calcfontSize(18),
+              offsetCenter: ['0%', '-20%'],
+              fontWeight: 'bolder'
+            },
+            detail: {
+              fontSize: calcfontSize(14),
+              color: '#7a8598',
+              formatter: '{value}%',
+              offsetCenter: ['0%', '25%']
+            },
+            data: [
+              {
+                name: '自控',
+                value: 50,
+              }
+            ],
+          }
+        ]
+      },
+
+      option10: {
+        series: [
+          {
+            type: 'gauge',
+            startAngle: 90,
+            endAngle: -270,
+            pointer: {
+              show: false
+            },
+            progress: {
+              show: true,
+              overlap: false,
+              roundCap: true,
+              clip: false,
+              itemStyle: {
+                color: '#38280c'
+              }
+            },
+            axisLine: {
+              show: true,
+              lineStyle: {
+                // width: 40
+                color: [[1, 'rgba(255, 255, 255, 0.4)']],
+                shadowColor: 'rgba(56, 40, 12, 0.25)',
+                shadowBlur: 8
+              },
+            },
+            splitLine: {
+              show: false,
+              distance: 0,
+              length: 10
+            },
+            axisTick: {
+              show: false
+            },
+            axisLabel: {
+              show: false,
+              distance: 50
+            },
+            title: {
+              fontSize: calcfontSize(18),
+              offsetCenter: ['0%', '-20%'],
+              fontWeight: 'bolder'
+            },
+            detail: {
+              fontSize: calcfontSize(14),
+              color: '#7a8598',
+              formatter: '{value}%',
+              offsetCenter: ['0%', '25%']
+            },
+            data: [
+              {
+                name: '存档',
+                value: 40,
+              }
+            ],
+          }
+        ]
+      },
+
+
+      option11: {
+        tooltip: {
+          trigger: 'axis',
+          axisPointer: {
+            type: 'cross',
+            crossStyle: {
+              color: '#999'
+            }
+          }
+        },
+        textStyle: {
+          color: '#000'
+        },
+        color: ['#ff9900', '#33a3ff'],
+        grid: {
+          top: '20%',
+          left: 0,
+          right: 0,
+          bottom: 0,
+          containLabel: true
+        },
+        legend: {
+          textStyle: {
+            color: '#000'
+          },
+          top: 0,
+          right: 0,
+          icon: 'rect',
+          data: ['人员', '矛盾事件']
+        },
+        xAxis: [
+          {
+            type: 'category',
+            // axisLabel: {
+            //   interval: 0
+            // },
+            data: ['澄江街道', '华士镇', '青阳镇', '高新区', '临港经济开发区', '南闸街道', '云亭街道', '夏港街道', '申港街道', '利港街道', '璜土镇', '月城镇', '徐霞客镇', '周庄镇', '新桥镇', '长泾镇', '顾山镇', '祝塘镇']
+          },
+        ],
+        yAxis: [
+          {
+            type: 'value',
+            alignTicks: true,
+            axisLine: {
+              show: true,
+              lineStyle: {
+                color: '#33ffff'
+              }
+            },
+            splitLine: {
+              lineStyle: {
+                color: '#33ffff'
+              }
+            },
+            axisLabel: {
+              formatter: '{value}'
+            }
+          },
+          {
+            type: 'value',
+            alignTicks: true,
+            axisLine: {
+              show: true,
+              lineStyle: {
+                color: '#33ffff'
+              }
+            },
+            splitLine: {
+              lineStyle: {
+                color: '#33ffff'
+              }
+            },
+            axisLabel: {
+              formatter: '{value}%'
+            }
+          }
+        ],
+        series: [
+          {
+            name: '人员',
+            type: 'bar',
+            barWidth: 5,
+            barGap: 0,
+            data: [
+              83, 75, 12, 60, 73, 87, 13, 10, 96, 2, 57, 31, 30, 43, 80, 30, 83, 80
+            ]
+          },
+          {
+            name: '矛盾事件',
+            type: 'bar',
+            barWidth: 5,
+            barGap: 0,
+            data: [
+              67, 21, 23, 12, 49, 19, 20, 17, 94, 15, 87, 14, 12, 32, 12, 12, 82, 82
+            ]
+          },
+          {
+            name: '占比',
+            type: 'line',
+            yAxisIndex: 1,
+            top: 0,
+            lineStyle: {
+              color: 'transparent'
+            },
+            symbolSize: 0,
+            tooltip: {
+              show: false
+            },
+            data: [
+              7, 8, 9, 6, 6, 8, 7, 8, 8, 5, 5, 9, 9, 1, 1, 1, 1, 1
+            ]
+          }
+        ]
+      }
+    }
+
+    function initChart(index) {
+      var dom = document.getElementById(`chart${index}`)
+
+      if (!dom) return
+
+      var chart = echarts.init(dom)
+
+      return chart
+    }
+
+    function handleTableScroll() {
+      var $table = $('.table1')
+      var $first = $table.find('.tbody .tr:first')
+      var $height = $first.height()
+
+      $first.animate({
+        marginTop: -$height + 'px'
+      }, 500, function() {
+        $first.css({ marginTop: 0 }).appendTo('.table1 .tbody')
+      })
+    }
+    function handleTable1Scroll() {
+      var $table = $('.table2')
+      var $first = $table.find('.tbody .tr:first')
+      var $height = $first.height()
+
+      $first.animate({
+        marginTop: -$height + 'px'
+      }, 500, function() {
+        $first.css({ marginTop: 0 }).appendTo('.table2 .tbody')
+      })
+    }
+
+    window.onload = function() {
+      // 动态设置全局字号
+      setRootFontSize()
+
+      // 表格循环滚动
+      window.setInterval(handleTableScroll, 2000)
+      window.setInterval(handleTable1Scroll, 2000)
+
+      // 图表渲染
+      // 矛盾总数
+      var chart1 = initChart(1)
+      if (chart1) {
+        chart1.setOption(chartOptions.option1)
+        window.addEventListener('resize', chart1.resize)
+      }
+
+      // 矛盾化解情况
+      var chart2 = initChart(2)
+      if (chart2) {
+        chart2.setOption(chartOptions.option2)
+        window.addEventListener('resize', chart2.resize)
+      }
+
+      // 矛盾风险分布
+      var chart3 = initChart(3)
+      if (chart3) {
+        chart3.setOption(chartOptions.option3)
+        window.addEventListener('resize', chart3.resize)
+      }
+
+      // 涉稳人员
+      var chart4 = initChart(4)
+      if (chart4) {
+        chart4.setOption(chartOptions.option4)
+        window.addEventListener('resize', chart4.resize)
+      }
+
+      // 人员在控状态
+      var chart5 = initChart(5)
+      if (chart5) {
+        chart5.setOption(chartOptions.option5)
+        window.addEventListener('resize', chart5.resize)
+      }
+
+      // 人员风险分布 一级
+      var chart6 = initChart(6)
+      if (chart6) {
+        chart6.setOption(chartOptions.option6)
+        window.addEventListener('resize', chart6.resize)
+      }
+      // 人员风险分布 二级
+      var chart7 = initChart(7)
+      if (chart7) {
+        chart7.setOption(chartOptions.option7)
+        window.addEventListener('resize', chart7.resize)
+      }
+      // 人员风险分布 三级
+      var chart8 = initChart(8)
+      if (chart8) {
+        chart8.setOption(chartOptions.option8)
+        window.addEventListener('resize', chart8.resize)
+      }
+      // 人员风险分布 自控
+      var chart9 = initChart(9)
+      if (chart9) {
+        chart9.setOption(chartOptions.option9)
+        window.addEventListener('resize', chart9.resize)
+      }
+      // 人员风险分布 存档
+      var chart10 = initChart(10)
+      if (chart10) {
+        chart10.setOption(chartOptions.option10)
+        window.addEventListener('resize', chart10.resize)
+      }
+
+      // 风险区域分布
+      var chart11 = initChart(11)
+      if (chart11) {
+        chart11.setOption(chartOptions.option11)
+        window.addEventListener('resize', chart11.resize)
+      }
+    }
+  </script>
+</body>
+</html>

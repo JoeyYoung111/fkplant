@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="informationSpecial">
+	<typeAlias alias="informationSpecial" type="com.szrj.business.model.information.InformationSpecial"/>
+	
+	<!-- 新增 -->
+	<insert id="add" parameterClass="informationSpecial">
+		INSERT INTO I_INFORMATION_SPECIAL_T(
+			specialName,departmentid,validflag,addoperator,addtime,count
+		)VALUES(
+			'$specialName$',$departmentid$,1,'$addoperator$','$addtime$',0
+		)
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+	
+	<!-- 查询 -->
+	<select id="searchRadio_count" parameterClass="informationSpecial" resultClass="Integer">
+		select count(id) from i_information_special_t
+		where validflag > 0 and departmentid = $departmentid$
+	</select>
+	<select id="searchRadio" parameterClass="informationSpecial" resultClass="informationSpecial">
+		select * from i_information_special_t
+		where validflag > 0 and departmentid = $departmentid$
+	</select>
+	
+	<!-- 修改 -->
+	<update id="update" parameterClass="informationSpecial">
+		update i_information_special_t set specialName='$specialName$',
+		updateoperator='$updateoperator$',updatetime='$updatetime$' 
+		where id = $id$
+	</update>
+	
+	<!-- 修改count值 -->
+	<update id="addcount" parameterClass="int">
+		update i_information_special_t set count = count+1
+		where id = $id$
+	</update>
+	<update id="reducecount" parameterClass="int">
+		update i_information_special_t set count = count-1
+		where id = $id$
+	</update>
+	
+	
+</sqlMap>

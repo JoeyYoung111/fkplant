@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+        
+ <sqlMap namespace="informationsend">
+ 	<typeAlias alias="informationsend" type="com.szrj.business.model.information.InformationSend"/>
+ 	
+ 	<!-- 新增 -->
+ 	<insert id="add" parameterClass="informationsend">
+ 		INSERT INTO I_INFORMATION_SEND_T
+ 		(informationid,receiveid,topflag,hideflag,followflag,
+ 		validflag,addoperator,addtime,memo,specialid,pizhuid,ytpizhuid)
+ 		VALUES
+ 		($informationid$,$receiveid$,$topflag$,$hideflag$,$followflag$,
+ 		1,'$addoperator$','$addtime$','$memo$',0,0,0)
+ 		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+ 	</insert>
+ 	
+ 	<!-- 查询 -->
+ 	<select id="searchInformationsend_count" parameterClass="informationsend" resultClass="Integer">
+ 		SELECT COUNT(a.ID)
+ 		FROM I_INFORMATION_SEND_T a
+ 		LEFT JOIN I_INFORMATION_T b on a.informationid = b.id
+ 		WHERE a.VALIDFLAG > 0 
+ 		<dynamic prepend="">
+ 			<isNotEqual prepend="AND" property="receiveid" compareValue="0">
+ 				a.receiveid = $receiveid$
+ 			</isNotEqual>
+ 			<isNotEmpty prepend="AND" property="starttime">
+ 				a.addtime >= '$starttime$'
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="endtime">
+ 				'$endtime$' >= a.addtime
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="tuihuistarttime">
+ 				a.tuihuitime > '$tuihuistarttime$'
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="tuihuiendtime">
+ 				'$tuihuiendtime$' >= a.tuihuitime
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="infotitle">
+ 				(b.infotitle like '%$infotitle$%')
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="infocontent">
+ 				(b.infocontent like '%$infocontent$%')
+ 			</isNotEmpty>
+ 			<isNotEqual prepend="AND" property="departmentid" compareValue="0">
+ 				b.departmentid = $departmentid$
+ 			</isNotEqual>
+ 			<isNotEmpty prepend="AND" property="infostate">
+ 				b.infostate = '$infostate$'
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="urgentflag">
+ 				b.urgentflag = '$urgentflag$'
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="infosource">
+ 				b.infosource = '$infosource$'
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="infotype">
+ 				b.infotype = '$infotype$'
+ 			</isNotEmpty>
+ 			<isNotEqual prepend="AND" property="specialid" compareValue="0">
+ 				a.specialid = $specialid$
+ 			</isNotEqual>
+ 			<isNotEqual prepend="AND" property="gatherid" compareValue="0">
+ 				b.gatherid = $gatherid$
+ 			</isNotEqual>
+ 			<isNotEqual prepend="AND" property="annotationid" compareValue="0">
+ 				b.annotationid = $annotationid$
+ 			</isNotEqual>
+ 			<isNotEqual prepend="AND" property="validflag" compareValue="0">
+ 				a.validflag >= $validflag$
+ 			</isNotEqual>
+ 			<isNotEqual prepend="AND" property="validflag2" compareValue="0">
+ 				$validflag2$ > a.validflag
+ 			</isNotEqual>
+ 			<isNotEqual prepend="AND" property="followflag" compareValue="0">
+ 				a.followflag = $followflag$
+ 			</isNotEqual>
+ 		</dynamic>
+ 	</select>
+ 	<!-- 模糊查询 -->
+ 	<select id="searchInformationsend" parameterClass="informationsend" resultClass="informationsend">
+ 		SELECT a.*,b.infoid,b.infooperate,b.infotitle,b.infocontent,b.submitunit,b.submitunitid,b.otherunitids,b.otherunit,
+ 		b.infosource,b.infotype,b.infostate,b.urgentflag,b.isclear,b.pointaddress1,b.pointaddress2,b.reviewer,b.issuer,b.attachments,
+ 		b.gatherid,b.annotationid,b.departmentid,c.departname,d.departname as receivename,g.specialName,
+ 		CONCAT(e.addtime,'   ',e.content) as gongzuopizhu,CONCAT(f.addtime,'   ',f.content) as yuantoupizhu
+ 		FROM I_INFORMATION_SEND_T a
+ 		LEFT JOIN I_INFORMATION_T b on a.informationid = b.id
+ 		LEFT JOIN sys_department_t c on b.departmentid = c.id
+ 		LEFT JOIN sys_department_t d on a.receiveid = d.id
+ 		left join i_information_annotation_t e on a.pizhuid = e.id
+ 		left join i_information_annotation_t f on a.ytpizhuid = f.id
+ 		left join i_information_special_t g on a.specialid = g.id
+ 		WHERE a.VALIDFLAG > 0 
+ 		<dynamic prepend="">
+ 			<isNotEqual prepend="AND" property="receiveid" compareValue="0">
+ 				a.receiveid = $receiveid$
+ 			</isNotEqual>
+ 			<isNotEmpty prepend="AND" property="starttime">
+ 				a.addtime >= '$starttime$'
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="endtime">
+ 				'$endtime$' >= a.addtime
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="tuihuistarttime">
+ 				a.tuihuitime > '$tuihuistarttime$'
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="tuihuiendtime">
+ 				'$tuihuiendtime$' >= a.tuihuitime
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="infotitle">
+ 				(b.infotitle like '%$infotitle$%')
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="infocontent">
+ 				(b.infocontent like '%$infocontent$%')
+ 			</isNotEmpty>
+ 			<isNotEqual prepend="AND" property="departmentid" compareValue="0">
+ 				b.departmentid = $departmentid$
+ 			</isNotEqual>
+ 			<isNotEmpty prepend="AND" property="infostate">
+ 				b.infostate = '$infostate$'
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="urgentflag">
+ 				b.urgentflag = '$urgentflag$'
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="infosource">
+ 				b.infosource = '$infosource$'
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="infotype">
+ 				b.infotype = '$infotype$'
+ 			</isNotEmpty>
+ 			<isNotEqual prepend="AND" property="specialid" compareValue="0">
+ 				a.specialid = $specialid$
+ 			</isNotEqual>
+ 			<isNotEqual prepend="AND" property="gatherid" compareValue="0">
+ 				b.gatherid = $gatherid$
+ 			</isNotEqual>
+ 			<isNotEqual prepend="AND" property="annotationid" compareValue="0">
+ 				b.annotationid = $annotationid$
+ 			</isNotEqual>
+ 			<isNotEqual prepend="AND" property="validflag" compareValue="0">
+ 				a.validflag >= $validflag$
+ 			</isNotEqual>
+ 			<isNotEqual prepend="AND" property="validflag2" compareValue="0">
+ 				$validflag2$ > a.validflag
+ 			</isNotEqual>
+ 			<isNotEqual prepend="AND" property="followflag" compareValue="0">
+ 				a.followflag = $followflag$
+ 			</isNotEqual>
+ 		</dynamic>
+ 		order by a.topflag desc,a.id desc
+ 	</select>
+ 	
+ 	<!-- 根据id查询 -->
+ 	<select id="getById" parameterClass="int" resultClass="informationsend">
+ 		SELECT a.*,b.infoid,b.infooperate,b.infotitle,b.infocontent,b.submitunit,b.submitunitid,b.otherunitids,b.otherunit,
+ 		b.infosource,b.infotype,b.infostate,b.urgentflag,b.isclear,b.pointaddress1,b.pointaddress2,b.pointaddress3,b.reviewer,b.issuer,b.attachments,
+ 		b.gatherid,b.annotationid,b.departmentid,c.departname
+ 		FROM I_INFORMATION_SEND_T a
+ 		LEFT JOIN I_INFORMATION_T b on a.informationid = b.id
+ 		LEFT JOIN sys_department_t c on b.departmentid = c.id
+ 		WHERE a.VALIDFLAG > 0 and a.id = $id$
+ 	</select>
+ 	
+ 	<!-- 删除 -->
+ 	<update id="cancel" parameterClass="int">
+ 		UPDATE I_INFORMATION_SEND_T SET VALIDFLAG = 0 WHERE id = $id$
+ 	</update>
+ 	
+ 	<!-- 修改 -->
+ 	<update id="pizhuid" parameterClass="informationsend">
+ 		UPDATE I_INFORMATION_SEND_T SET pizhuid = $pizhuid$ where id = $id$
+ 	</update>
+ 	<update id="ytpizhuid" parameterClass="informationsend">
+ 		UPDATE I_INFORMATION_SEND_T SET ytpizhuid = $ytpizhuid$ where id = $id$
+ 	</update>
+ 	<update id="updatetopflag" parameterClass="informationsend">
+ 		UPDATE I_INFORMATION_SEND_T SET topflag = $topflag$ where id=$id$
+ 	</update>
+ 	<update id="updatehideflag" parameterClass="informationsend">
+ 		UPDATE I_INFORMATION_SEND_T SET hideflag = $hideflag$ where id=$id$
+ 	</update>
+ 	<update id="updatefollowflag" parameterClass="informationsend">
+ 		UPDATE I_INFORMATION_SEND_T SET followflag = $followflag$ where id=$id$
+ 	</update>
+ 	<update id="updateValidflag" parameterClass="informationsend">
+ 		UPDATE I_INFORMATION_SEND_T SET validflag = $validflag$
+ 		<dynamic prepend="">
+ 			<isNotEmpty prepend="," property="tuihuireason">
+ 				tuihuireason = '$tuihuireason$'
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="," property="tuihuitime">
+ 				tuihuitime = '$tuihuitime$'
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="," property="signoper">
+ 				signoper = '$signoper$'
+ 			</isNotEmpty>
+ 			<isNotEqual prepend="," property="signoperid" compareValue="0">
+ 				signoperid = $signoperid$
+ 			</isNotEqual>
+ 			<isNotEmpty prepend="," property="signtime">
+ 				signtime = '$signtime$'
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="," property="feedbackoper">
+ 				feedbackoper = '$feedbackoper$'
+ 			</isNotEmpty>
+ 			<isNotEqual prepend="," property="feedbackoperid" compareValue="0">
+ 				feedbackoperid = $feedbackoperid$
+ 			</isNotEqual>
+ 			<isNotEmpty prepend="," property="feedbacktime">
+ 				feedbacktime = '$feedbacktime$'
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="," property="feedbackcontent">
+ 				feedbackcontent = '$feedbackcontent$'
+ 			</isNotEmpty>
+ 		</dynamic>
+ 		where id=$id$
+ 	</update>
+ 	<update id="changespecialid" parameterClass="informationsend">
+ 		UPDATE I_INFORMATION_SEND_T SET specialid = $specialid$ where id = $id$
+ 	</update>
+ 	
+ 	<select id="searchAdd" parameterClass="int" resultClass="informationsend">
+ 		select a.informationid,c.departname as receivename
+ 		from I_INFORMATION_SEND_T a
+ 		left join sys_department_t c on a.receiveid = c.id
+ 		where informationid = $informationid$
+ 	</select>
+ 	
+ 	<!-- 查询 -->
+ 	<select id="searchcountByflag" parameterClass="informationsend" resultClass="Integer">
+ 		SELECT COUNT(a.ID)
+ 		FROM I_INFORMATION_SEND_T a
+ 		LEFT JOIN I_INFORMATION_T b on a.informationid = b.id
+ 		WHERE a.VALIDFLAG > 0 
+ 		<dynamic prepend="">
+ 			<isNotEmpty prepend="AND" property="starttime">
+ 				a.addtime >= '$starttime$'
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="endtime">
+ 				'$endtime$' >= a.addtime
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="validflag">
+ 				a.validflag = '$validflag$'
+ 			</isNotEmpty>
+ 		</dynamic>
+ 	</select>
+ </sqlMap>

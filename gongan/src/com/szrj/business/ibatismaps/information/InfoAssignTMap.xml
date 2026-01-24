@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="infoassign">
+	<typeAlias alias="infoassign" type="com.szrj.business.model.information.InfoAssign"/>
+
+	<!-- 新增 -->
+	<insert id="add" parameterClass="infoassign">
+		insert into i_information_assign_t(
+			informationid,assigntitle,assigncontent,signdepartment,signdepartids,instructions,
+			judgeopinion,requirements,issuer,category,urgentflag,signlimit,feedbacklimit,
+			attachments,validflag,addoperator,departmentid,contactnumber,addtime,memo,slimit,flimit
+		)values(
+			$informationid$,'$assigntitle$','$assigncontent$','$signdepartment$','$signdepartids$','$instructions$',
+			'$judgeopinion$','$requirements$','$issuer$','$category$','$urgentflag$','$signlimit$','$feedbacklimit$',
+			'$attachments$',1,'$addoperator$','$departmentid$','$contactnumber$','$addtime$','$memo$','$slimit$','$flimit$'
+		)
+		<selectKey resultClass="Integer" keyProperty="id">select last_insert_id() as id</selectKey>
+	</insert>
+
+	<!-- 查询 -->
+	<select id="search_infoassign_count" parameterClass="infoassign" resultClass="int">
+		select count(id) from i_information_assign_t
+		where validflag > 0 
+		<dynamic prepend="">
+			<isNotEqual prepend="AND" property="departmentid" compareValue="0">
+				departmentid = $departmentid$
+			</isNotEqual>
+			<isNotEqual prepend="AND" property="informationid" compareValue="0">
+				informationid = $informationid$
+			</isNotEqual>
+			<isNotEmpty prepend="AND" property="assigntitle">
+				(assigntitle like '%$assigntitle$%')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="urgentflag">
+				urgentflag = '$urgentflag$'
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	
+	<select id="search_infoassign" parameterClass="infoassign" resultClass="infoassign">
+		select a.*,b.departname as departmentname from i_information_assign_t a
+		left join sys_department_t b on a.departmentid = b.id
+		where a.validflag > 0
+		<dynamic prepend="">
+			<isNotEqual prepend="AND" property="departmentid" compareValue="0">
+				a.departmentid = $departmentid$
+			</isNotEqual>
+			<isNotEqual prepend="AND" property="informationid" compareValue="0">
+				a.informationid = $informationid$
+			</isNotEqual>
+			<isNotEmpty prepend="AND" property="assigntitle">
+				(a.assigntitle like '%$assigntitle$%')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="urgentflag">
+				a.urgentflag = '$urgentflag$'
+			</isNotEmpty>
+		</dynamic>
+		order by id desc
+	</select>
+
+	<select id="getById" parameterClass="int" resultClass="infoassign">
+		select a.*,b.departname as departmentname from i_information_assign_t a
+		left join sys_department_t b on a.departmentid = b.id
+		where a.id = $id$
+	</select>
+
+	<!-- 修改 -->
+	<update id="update" parameterClass="infoassign">
+		update i_information_assign_t set instructions='$instructions$',judgeopinion='$judgeopinion$',
+		requirements='$requirements$',category='$category$',urgentflag='$urgentflag$',signlimit='$signlimit$',
+		feedbacklimit='$feedbacklimit$',slimit='$slimit$',flimit='$flimit$',signdepartment='$signdepartment$',
+		signdepartids='$signdepartids$',attachments='$attachments$'
+		where id = $id$
+	</update>
+
+	<update id="cancel" parameterClass="int">
+		update i_information_assign_t set validflag = 0 where id = $id$
+	</update>
+
+
+</sqlMap>

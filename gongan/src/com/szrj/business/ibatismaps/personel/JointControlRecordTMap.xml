@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="jointcontrolrecord">
+	<typeAlias alias="jointcontrolrecord" type="com.szrj.business.model.personel.JointControlRecord"/>
+	<!-- 新增 -->
+	<insert id="add" parameterClass="jointcontrolrecord">
+		INSERT INTO p_jointcontrol_record_t
+		(personnelid,jointorigin,infodate,infotype,infomemo,information,cardnumber1,togethername1,cardnumber2,togethername2,cardnumber3,togethername3,cardnumber4,togethername4,cardnumber5,togethername5,
+		grouptype,groupname,groupid,vehicletype,vehicleinfo,attachments,validflag,addoperator,addtime,memo)
+		VALUES
+		($personnelid$,'$jointorigin$','$infodate$','$infotype$','$infomemo$','$information$','$cardnumber1$','$togethername1$','$cardnumber2$','$togethername2$','$cardnumber3$','$togethername3$',
+		'$cardnumber4$','$togethername4$','$cardnumber5$','$togethername5$',
+		'$grouptype$','$groupname$','$groupid$','$vehicletype$','$vehicleinfo$','$attachments$',1,'$addoperator$','$addtime$','$memo$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+  <update id="update" parameterClass="jointcontrolrecord">
+		UPDATE p_jointcontrol_record_t
+		SET jointorigin = '$jointorigin$',infodate='$infodate$',infotype='$infotype$',
+		infomemo='$infomemo$',information='$information$',cardnumber1='$cardnumber1$',togethername1='$togethername1$',
+		cardnumber2='$cardnumber2$',togethername2='$togethername2$',cardnumber3='$cardnumber3$',togethername3='$togethername3$',
+		cardnumber4='$cardnumber4$',togethername4='$togethername4$',cardnumber5='$cardnumber5$',togethername5='$togethername5$',
+		grouptype='$grouptype$',groupname='$groupname$',groupid='$groupid$',vehicletype='$vehicletype$',vehicleinfo='$vehicleinfo$',
+		attachments='$attachments$',updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	  <!-- 删除 -->
+	<update id="cancel" parameterClass="jointcontrolrecord">
+		UPDATE p_jointcontrol_record_t
+		SET validflag=0,
+		updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	<select id="searchJointControlRecord_count" parameterClass="jointcontrolrecord" resultClass="Integer">
+		  SELECT  count(1)
+			FROM 	p_personnel_t t1,	p_jointcontrol_record_t t2
+			WHERE	t1.validflag > 0 
+			AND t2.validflag> 0 
+			AND t1.id = t2.personnelid
+			AND  t2.personnelid	=$personnelid$
+			<dynamic prepend="">
+				<isNotEqual prepend="AND" property="wenvisitid" compareValue="0">
+					t2.wenvisitid IN (0,$wenvisitid$)
+		        </isNotEqual>
+			</dynamic>
+	</select>
+	<select id="searchJointControlRecord" parameterClass="jointcontrolrecord" resultClass="jointcontrolrecord">
+	  SELECT  t2.*
+			FROM 	p_personnel_t t1,	p_jointcontrol_record_t t2
+			WHERE	t1.validflag > 0 
+			AND t2.validflag> 0 
+			AND t1.id = t2.personnelid
+			AND  t2.personnelid	=$personnelid$
+			<dynamic prepend="">
+				<isNotEqual prepend="AND" property="wenvisitid" compareValue="0">
+					t2.wenvisitid IN (0,$wenvisitid$)
+		        </isNotEqual>
+			</dynamic>
+		ORDER BY DATE_FORMAT(t2.infodate,'%Y-%m-%d %h:%i:%m') desc
+	</select>
+	
+	<select id="getjointcontrolrecordrById" parameterClass="int" resultClass="jointcontrolrecord">
+		SELECT A.*, GROUP_CONCAT( ft2.fileName ORDER BY ft2.id SEPARATOR ',' ) AS attachmentsname
+		FROM p_jointcontrol_record_t A
+		LEFT JOIN sys_file_t ft2 ON FIND_IN_SET(ft2.id, A.attachments)
+		WHERE A.validflag > 0 AND A.id = $id$
+		GROUP BY A.id
+	</select>
+	<!-- 关联 -->
+	<update id="updateWenVisit" parameterClass="jointControlRecord">
+		UPDATE p_jointcontrol_record_t
+		SET wenvisitid=$wenvisitid$
+		WHERE id = $id$
+	</update>
+	<!-- 解除关联 -->
+	<update id="unlinkWenVisit" parameterClass="int">
+		UPDATE p_jointcontrol_record_t
+		SET wenvisitid=0
+		WHERE wenvisitid = $wenvisitid$
+	</update>
+	
+	<!-- 政法委 -->
+	<select id="searchJointControlRecord_count_zfw" parameterClass="jointcontrolrecord" resultClass="Integer">
+		  SELECT  count(1)
+			FROM 	p_personnel_t t1,	zfw_p_jointcontrol_record_t t2
+			WHERE	t1.validflag > 0 
+			AND t2.validflag> 0 
+			AND t1.id = t2.personnelid
+			AND  t2.personnelid	=$personnelid$
+			<dynamic prepend="">
+				<isNotEqual prepend="AND" property="wenvisitid" compareValue="0">
+					t2.wenvisitid IN (0,$wenvisitid$)
+		        </isNotEqual>
+			</dynamic>
+	</select>
+	<select id="searchJointControlRecord_zfw" parameterClass="jointcontrolrecord" resultClass="jointcontrolrecord">
+		SELECT  t2.*
+			FROM 	p_personnel_t t1,	zfw_p_jointcontrol_record_t t2
+			WHERE	t1.validflag > 0 
+			AND t2.validflag> 0 
+			AND t1.id = t2.personnelid
+			AND  t2.personnelid	=$personnelid$
+			<dynamic prepend="">
+				<isNotEqual prepend="AND" property="wenvisitid" compareValue="0">
+					t2.wenvisitid IN (0,$wenvisitid$)
+		        </isNotEqual>
+			</dynamic>
+		ORDER BY DATE_FORMAT(t2.infodate,'%Y-%m-%d %h:%i:%m') desc
+	</select>
+	
+	<select id="getJointControlRecordByid_zfw" parameterClass="int" resultClass="jointcontrolrecord">
+		SELECT A.*, GROUP_CONCAT( ft2.fileName ORDER BY ft2.id SEPARATOR ',' ) AS attachmentsname
+		FROM zfw_p_jointcontrol_record_t A
+		LEFT JOIN zfw_sys_file_t ft2 ON FIND_IN_SET(ft2.id, A.attachments)
+		WHERE A.validflag > 0 AND A.id = $id$
+		GROUP BY A.id
+	</select>
+	
+	<update id="update_zfw" parameterClass="jointcontrolrecord">
+		UPDATE zfw_p_jointcontrol_record_t
+		SET validflag = $validflag$
+		WHERE id = $id$
+	</update>
+</sqlMap>

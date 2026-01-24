@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="kongcontrolpower">
+	<typeAlias alias="basicMsg" type="com.szrj.business.model.BasicMsg"/>
+	<typeAlias alias="personnel" type="com.szrj.business.model.personel.Personnel"/>
+	<typeAlias alias="kongcontrolpower" type="com.szrj.business.model.personel.KongControlPower"/>
+	<typeAlias alias="kongpublicresume" type="com.szrj.business.model.personel.KongPublicResume"/>
+	<typeAlias alias="kongpublicrelation" type="com.szrj.business.model.personel.KongPublicRelation"/>
+	<typeAlias alias="kongbackground" type="com.szrj.business.model.personel.KongBackground"/>
+	
+	<!-- 新增   公共/秘密管控力量-->
+	<insert id="addKongControlPower" parameterClass="kongcontrolpower">
+		INSERT INTO p_kong_controlpower_t
+		(personnelid,forcetype,personname,birthdate,sexes,interesting,speciality,partyduty,duty,nickname,education,telephone,address,lifeplace,workunit,records,actualstate,purposetask,validflag,addoperator,addtime,memo)
+		VALUES
+		($personnelid$,$forcetype$,'$personname$','$birthdate$','$sexes$','$interesting$','$speciality$','$partyduty$','$duty$','$nickname$','$education$','$telephone$','$address$','$lifeplace$',
+		'$workunit$','$records$','$actualstate$','$purposetask$',1,'$addoperator$','$addtime$','$memo$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+   <!-- 修改   公共/秘密管控力量-->
+	<update id="updateKongControlPower" parameterClass="kongcontrolpower">
+		UPDATE p_kong_controlpower_t
+		SET personname='$personname$',birthdate='$birthdate$',sexes='$sexes$',interesting='$interesting$',
+		speciality='$speciality$',partyduty='$partyduty$',duty='$duty$',nickname='$nickname$',
+		education='$education$',telephone='$telephone$',address='$address$',lifeplace='$lifeplace$',
+		workunit='$workunit$',records='$records$',actualstate='$actualstate$',purposetask='$purposetask$',
+		updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	<!-- 删除 公共/秘密管控力量-->
+	<update id="cancelKongControlPower" parameterClass="kongcontrolpower">
+		UPDATE p_kong_controlpower_t
+		SET validflag=0,
+		updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	<!--查询 公共/秘密管控力量-->
+	<select id="searchKongControlPower_count" parameterClass="kongcontrolpower" resultClass="Integer">
+		   SELECT count(1)	  FROM	  p_personnel_t t1,	p_kong_controlpower_t t2
+			WHERE 	t1.validflag > 0 	AND t1.id = t2.personnelid	AND t2.validflag > 0  
+			AND t2.personnelid = $personnelid$ 
+			AND t2.forcetype=$forcetype$
+	</select>
+	<select id="searchKongControlPower" parameterClass="kongcontrolpower" resultClass="kongcontrolpower">
+	         SELECT t2.*	  FROM	  p_personnel_t t1,	p_kong_controlpower_t t2
+			WHERE 	t1.validflag > 0 	AND t1.id = t2.personnelid	AND t2.validflag > 0
+			AND t2.personnelid = $personnelid$ 
+			AND t2.forcetype=$forcetype$
+	</select>
+	<select id="exportKongcontrolpower" parameterClass="kongcontrolpower" resultClass="kongcontrolpower">
+	         SELECT t2.*	  FROM	  p_personnel_t t1,	p_kong_controlpower_t t2
+			WHERE 	t1.validflag > 0 	AND t1.id = t2.personnelid	AND t2.validflag > 0 AND t2.forcetype=$forcetype$
+			<dynamic prepend="" >
+				<isNotEqual prepend="AND" property="personnelid" compareValue="0">
+					t2.personnelid = $personnelid$ 
+				</isNotEqual>
+				<isNotEmpty prepend="AND" property="ids">
+					t2.id in ($ids$)
+				</isNotEmpty>
+			</dynamic>
+	</select>
+	<select id="getKongControlPowerById" parameterClass="int" resultClass="kongcontrolpower">
+		SELECT *
+		FROM p_kong_controlpower_t
+		WHERE validflag > 0 AND id = $id$
+	</select>
+	<select id="exportPublicrelation" parameterClass="kongpublicrelation" resultClass="kongpublicrelation">
+		select *
+		from p_kong_public_relation_t
+		where controlpowerid=#controlpowerid# and validflag>0 and relationtype=#relationtype# limit 4
+	</select>
+	<select id="exportPublicresume" parameterClass="kongpublicrelation" resultClass="kongpublicresume">
+		select * from(
+		select * from p_kong_public_resume_t
+		where controlpowerid=#controlpowerid# and validflag>0
+		order by endtime desc limit 5)A
+		order by A.endtime
+	</select>
+    <!--	*************************************************公共管控力量    个人简历*************************************************-->
+	<!-- 新增   公共/秘密管控力量-->
+	<insert id="addKongPublicResume" parameterClass="kongpublicresume">
+		INSERT INTO p_kong_public_resume_t
+		(controlpowerid,starttime,endtime,workdetails,validflag,addoperator,addtime,memo)
+		VALUES
+		($controlpowerid$,'$starttime$','$endtime$','$workdetails$',1,'$addoperator$','$addtime$','$memo$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+   <!-- 修改   公共/秘密管控力量-->
+	<update id="updateKongPublicResume" parameterClass="kongpublicresume">
+		UPDATE p_kong_public_resume_t
+		SET 	starttime='$starttime$',endtime='$endtime$',workdetails='$workdetails$',
+		updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	<!-- 删除 公共/秘密管控力量-->
+	<update id="cancelKongPublicResume" parameterClass="kongpublicresume">
+		UPDATE p_kong_public_resume_t
+		SET validflag=0,
+		updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	<!--查询 公共/秘密管控力量-->
+	<select id="searchKongPublicResume_count" parameterClass="kongpublicresume" resultClass="Integer">
+		    SELECT count(1)	  FROM	  p_kong_controlpower_t t1,	p_kong_public_resume_t t2
+			WHERE 	t1.validflag > 0 	AND  t1.id = t2.controlpowerid 	AND t2.validflag > 0 
+			AND t2.controlpowerid = $controlpowerid$ 
+	</select>
+	<select id="searchKongPublicResume" parameterClass="kongpublicresume" resultClass="kongpublicresume">
+	         SELECT t2.*	  FROM	  p_kong_controlpower_t t1,	p_kong_public_resume_t t2
+			WHERE 	t1.validflag > 0 	AND  t1.id = t2.controlpowerid 	AND t2.validflag > 0 
+			AND t2.controlpowerid = $controlpowerid$ 
+	</select>
+	<select id="searchZbPublicResume_count" parameterClass="kongpublicresume" resultClass="Integer">
+		    SELECT count(1)	  FROM	  p_kong_public_resume_t t2
+			WHERE t2.validflag > 0 
+			AND t2.controlpowerid = $controlpowerid$ 
+	</select>
+	<select id="searchZbPublicResume" parameterClass="kongpublicresume" resultClass="kongpublicresume">
+	         SELECT t2.*	  FROM	 p_kong_public_resume_t t2
+			WHERE 	t2.validflag > 0 
+			AND t2.controlpowerid = $controlpowerid$ 
+	</select>
+	<select id="getKongPublicResumeById" parameterClass="int" resultClass="kongpublicresume">
+		SELECT *
+		FROM p_kong_public_resume_t
+		WHERE validflag > 0 AND id = $id$
+	</select>
+	
+	  <!--	*************************************************公共管控力量    家庭关系/社会关系*************************************************-->
+	<!-- 新增   公共/秘密管控力量-->
+	<insert id="addKongPublicRelation" parameterClass="kongpublicrelation">
+		INSERT INTO p_kong_public_relation_t
+		(controlpowerid,relationtype,appellation,relationname,politicalposition,workdetails,validflag,addoperator,addtime,memo)
+		VALUES
+		($controlpowerid$,$relationtype$,'$appellation$','$relationname$','$politicalposition$','$workdetails$',1,'$addoperator$','$addtime$','$memo$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+   <!-- 修改   公共/秘密管控力量-->
+	<update id="updateKongPublicRelation" parameterClass="kongpublicrelation">
+		UPDATE p_kong_public_relation_t
+		SET 	appellation='$appellation$',relationname='$relationname$',politicalposition='$politicalposition$',workdetails='$workdetails$',
+		updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	<!-- 删除 公共/秘密管控力量-->
+	<update id="cancelKongPublicRelation" parameterClass="kongpublicrelation">
+		UPDATE p_kong_public_relation_t
+		SET validflag=0,
+		updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	<!--查询 公共/秘密管控力量-->
+	<select id="searchKongPublicRelation_count" parameterClass="kongpublicrelation" resultClass="Integer">
+		    SELECT count(1)	  FROM	  p_kong_controlpower_t t1,	p_kong_public_relation_t t2
+			WHERE 	t1.validflag > 0 	AND  t1.id = t2.controlpowerid 	AND t2.validflag > 0 
+			AND t2.controlpowerid = $controlpowerid$ and relationtype= $relationtype$
+	</select>
+	<select id="searchKongPublicRelation" parameterClass="kongpublicrelation" resultClass="kongpublicrelation">
+	         SELECT t2.*	  FROM	  p_kong_controlpower_t t1,	p_kong_public_relation_t t2
+			WHERE 	t1.validflag > 0 	AND  t1.id = t2.controlpowerid 	AND t2.validflag > 0 
+			AND t2.controlpowerid = $controlpowerid$ and relationtype= $relationtype$
+	</select>
+	<select id="getKongPublicRelationById" parameterClass="int" resultClass="kongpublicrelation">
+		SELECT *
+		FROM p_kong_public_relation_t
+		WHERE validflag > 0 AND id = $id$
+	</select>
+	
+     <!--	*************************************************背景审查*************************************************-->
+	<!-- 新增 -->
+	<insert id="addKongBackground" parameterClass="kongbackground">
+		INSERT INTO p_kong_background_t
+		(personnelid,datatype,checktime,checktype,checkresume,attachments,validflag,addoperator,addtime,updateoperator,updatetime,memo)
+		VALUES
+		($personnelid$,$datatype$,'$checktime$','$checktype$','$checkresume$','$attachments$',1,'$addoperator$','$addtime$','$addoperator$','$addtime$','$memo$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+   <!-- 修改   -->
+	<update id="updateKongBackground" parameterClass="kongbackground">
+		UPDATE p_kong_background_t
+		SET 	checktime='$checktime$',checktype='$checktype$',checkresume='$checkresume$',attachments='$attachments$',memo='$memo$',
+		updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	<!-- 删除 -->
+	<update id="cancelKongBackground" parameterClass="kongbackground">
+		UPDATE p_kong_background_t
+		SET validflag=0,
+		updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	<!--查询-->
+	<select id="searchKongBackground_count" parameterClass="kongbackground" resultClass="Integer">
+		    SELECT count(1)	  FROM	  p_personnel_t t1,	p_kong_background_t t2
+			WHERE 	t1.validflag > 0 	AND t1.id = t2.personnelid	AND t2.validflag > 0  
+			AND t2.personnelid = $personnelid$ and t2.datatype= $datatype$
+	</select>
+	<select id="searchKongBackground" parameterClass="kongbackground" resultClass="kongbackground">
+	         SELECT t2.*  FROM	  p_personnel_t t1,	p_kong_background_t t2
+			WHERE 	t1.validflag > 0 	AND t1.id = t2.personnelid	AND t2.validflag > 0  
+			AND t2.personnelid = $personnelid$ and t2.datatype= $datatype$
+	</select>
+	<select id="getKongBackgroundById" parameterClass="int" resultClass="kongbackground">
+		SELECT *
+		FROM p_kong_background_t
+		WHERE validflag > 0 AND id = $id$
+	</select>
+	<select id="getNewKongBackground" parameterClass="kongbackground" resultClass="kongbackground">
+		SELECT t2.updatetime as checktime,CONCAT(t2.checktype,'-',t2.checktime) as checktype  FROM	  p_personnel_t t1,	p_kong_background_t t2
+		WHERE 	t1.validflag > 0 	AND t1.id = t2.personnelid	AND t2.validflag > 0  
+		AND t2.personnelid = $personnelid$ and t2.datatype= $datatype$
+		order by t2.updatetime LIMIT 3
+	</select>
+</sqlMap>

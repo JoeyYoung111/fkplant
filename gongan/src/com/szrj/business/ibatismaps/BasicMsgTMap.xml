@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="basicMsg">
+	<typeAlias alias="basicMsg" type="com.szrj.business.model.BasicMsg"/>
+	<!-- 新增 -->
+	<insert id="add" parameterClass="basicMsg">
+		INSERT INTO sys_basic_msg_t
+		(basicName,validflag,basicType,parentid,addoperator,addtime,memo,sort)
+		VALUES
+		('$basicName$',$validflag$,$basicType$,$parentid$,'$addoperator$','$addtime$','$memo$',$sort$)
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+   <!-- 删除 -->
+	<update id="cancel" parameterClass="int">
+		UPDATE sys_basic_msg_t
+		SET validflag = 0
+		WHERE id = $id$
+	</update>
+	<!-- 修改 -->
+	<update id="update" parameterClass="basicMsg">
+		UPDATE sys_basic_msg_t
+		SET basicName = '$basicName$',memo='$memo$',sort=$sort$
+		<dynamic prepend="" >
+			<isNotEqual prepend="," property="parentid" compareValue="0">
+				parentid = $parentid$
+	        </isNotEqual>
+        </dynamic>
+		WHERE id = $id$
+	</update>
+	<select id="searchBasicMsg_count" parameterClass="basicMsg" resultClass="Integer">
+		SELECT COUNT(id)
+		FROM sys_basic_msg_t
+		WHERE validflag > 0
+		<dynamic prepend="" >
+			<isNotEqual prepend="AND" property="basicType" compareValue="0">
+				basicType = $basicType$
+            </isNotEqual>
+            <isNotEqual prepend="AND" property="validflag" compareValue="0">
+				validflag = $validflag$
+            </isNotEqual>
+            <isNotEmpty prepend="AND" property="basicName">
+				(basicName like '%$basicName$%')
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	<select id="searchBasicMsg" parameterClass="basicMsg" resultClass="basicMsg">
+		SELECT b1.*,b2.basicName AS parentName
+		FROM sys_basic_msg_t b1
+		LEFT JOIN sys_basic_msg_t b2 ON b1.parentid=b2.id
+		WHERE b1.validflag > 0
+		<dynamic prepend="">
+			<isNotEqual prepend="AND" property="basicType" compareValue="0">
+				b1.basicType = $basicType$
+            </isNotEqual>
+            <isNotEqual prepend="AND" property="validflag" compareValue="0">
+				b1.validflag = $validflag$
+            </isNotEqual>
+            <isNotEmpty prepend="AND" property="basicName">
+				(b1.basicName like '%$basicName$%')
+			</isNotEmpty>
+		</dynamic>
+		ORDER BY b1.sort,b1.id
+	</select>
+	<select id="getById" parameterClass="int" resultClass="basicMsg">
+		SELECT *
+		FROM sys_basic_msg_t
+		WHERE validflag > 0 AND id = $id$
+	</select>
+	<select id="getByMemo" parameterClass="String" resultClass="basicMsg">
+		SELECT *
+		FROM sys_basic_msg_t
+		WHERE validflag > 0 AND memo = '$memo$'
+	</select>
+	<select id="getBMByType" parameterClass="int" resultClass="basicMsg">
+		SELECT b.*,b2.basicName AS parentName
+		FROM  sys_basic_msg_t b  
+		LEFT JOIN sys_basic_msg_t b2 ON b.parentid=b2.id
+		WHERE b.validflag > 0  and  b.basicType=$basicType$
+		order by b.basicName='汉族' desc,b.basicName='维吾尔族' desc,b.basicName='哈萨克族' desc,b.basicName='柯尔克孜族' desc,b.basicName='蒙古族' desc,b.sort,b.id
+	</select>
+	<!-- 查询父类下子类的信息-->
+	<select id="getBMByparenttype" parameterClass="basicMsg" resultClass="basicMsg">
+		SELECT *
+		FROM sys_basic_msg_t
+		WHERE validflag > 0 AND basicType = $basicType$ and parentid=$parentid$
+		order by id
+	</select>
+	
+	<!-- 查询每个类型下的名称 -->
+	<select id="getnameBytype" parameterClass="basicMsg" resultClass="basicMsg">
+		SELECT *
+		FROM sys_basic_msg_t
+		WHERE validflag > 0 AND basicType = $basicType$  and  basicName='$basicName$'
+		order by id
+	</select>
+	
+	<!-- 根据父类id查子类信息-->
+	<select id="getBMByParentIdToJSON" parameterClass="int" resultClass="basicMsg">
+		SELECT *
+		FROM sys_basic_msg_t
+		WHERE validflag > 0 and parentid > 0 and parentid=$parentid$
+		order by id
+	</select>
+	
+	<!-- 名称查重 -->
+	<select id="getBasicNameExit" parameterClass="basicMsg" resultClass="int">
+		SELECT IFNULL(id,COUNT(id))
+		FROM sys_basic_msg_t
+		WHERE validflag > 0 and basicType=$basicType$ and basicName='$basicName$'
+	</select>
+	
+	<!-- 根据id查询basicName -->
+	<select id="getBasicNamesById" parameterClass="String" resultClass="basicMsg">
+		select id,basicName from sys_basic_msg_t where id in $idlist$
+	</select>
+	
+	<select id="selectChemicalName" parameterClass="int" resultClass="basicMsg">
+		select a.id,concat(a.basicName,'(',b.basicName,')') as basicName
+		from c_company_t c
+		left join sys_basic_msg_t a on find_in_set(a.id,c.managetype)
+		left join sys_basic_msg_t b on a.parentid = b.id
+		where c.id = $id$ and a.parentid != 0 and a.validflag > 0
+	</select>
+	
+	<select id="getBMByParentBasicNameToJSON" parameterClass="String" resultClass="basicMsg">
+		SELECT id,basicName
+		FROM sys_basic_msg_t
+		WHERE validflag > 0 and parentid > 0 and parentid in (
+			select id from sys_basic_msg_t where basicName in $basicNameList$
+		)
+		order by id
+	</select>
+	
+	<select id="basicMsgQueryChildren" parameterClass="java.util.HashMap" resultClass="String">
+		select basicMsgQueryChildren(#parrentId#) from dual
+	</select>
+	
+	<select id="getMsgByid" parameterClass="String" resultClass="basicMsg">
+		select * from 
+		sys_basic_msg_t 
+		where FIND_IN_SET(id,'$idString$')
+	</select>
+</sqlMap>

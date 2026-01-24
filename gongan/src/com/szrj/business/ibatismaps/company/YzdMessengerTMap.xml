@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+        
+<sqlMap namespace="messenger">
+	<typeAlias alias="messenger" type="com.szrj.business.model.company.YzdMessenger"/>
+
+	<!-- 新增 -->
+	<insert id="add" parameterClass="messenger">
+		INSERT INTO C_YZD_MESSENGER_T
+		(companyid,personname,sexes,education,cardnumber,nation,telephone,homeplace,lifeplace,
+		validflag,addoperator,addtime,memo)
+		VALUES
+		($companyid$,'$personname$','$sexes$','$education$','$cardnumber$','$nation$','$telephone$','$homeplace$','$lifeplace$',
+		1,'$addoperator$','$addtime$','$memo$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+	
+	<!-- 查询 -->
+	<select id="searchMessenger_count" parameterClass="messenger" resultClass="Integer">
+		SELECT COUNT(ID)
+		FROM C_YZD_MESSENGER_T
+		WHERE VALIDFLAG > 0
+		<dynamic>
+			<isNotEqual prepend="AND" property="companyid" compareValue="0">
+				companyid = $companyid$
+			</isNotEqual>
+			<isNotEmpty prepend="AND" property="personname">
+				(personname like '%$personname$%')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="cardnumber">
+				cardnumber = '$cardnumber$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="telephone">
+				telephone = '$telephone$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="sexes">
+				sexes = '$sexes$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="education">
+				education = '$education$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="nation">
+				nation = '$nation$'
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	<!-- 模糊查询 -->
+	<select id="searchMessenger" parameterClass="messenger" resultClass="messenger">
+		SELECT * FROM
+		C_YZD_MESSENGER_T
+		WHERE VALIDFLAG > 0
+		<dynamic>
+			<isNotEqual prepend="AND" property="companyid" compareValue="0">
+				companyid = $companyid$
+			</isNotEqual>
+			<isNotEmpty prepend="AND" property="personname">
+				(personname like '%$personname$%')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="cardnumber">
+				cardnumber = '$cardnumber$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="telephone">
+				telephone = '$telephone$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="sexes">
+				sexes = '$sexes$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="education">
+				education = '$education$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="nation">
+				nation = '$nation$'
+			</isNotEmpty>
+		</dynamic>
+		ORDER BY ID
+	</select>
+	
+	<!-- 根据id查询 -->
+	<select id="getById" parameterClass="int" resultClass="messenger">
+		SELECT * FROM C_YZD_MESSENGER_T WHERE VALIDFLAG > 0 AND id = $id$
+	</select>
+	
+	<!-- 修改 -->
+	<update id="update" parameterClass="messenger">
+		update c_yzd_messenger_t set personname = '$personname$',sexes='$sexes$',education='$education$',
+		cardnumber='$cardnumber$',nation='$nation$',telephone='$telephone$',homeplace='$homeplace$',
+		lifeplace='$lifeplace$',updateoperator='$updateoperator$',updatetime='$updatetime$',memo='$memo$',companyid = $companyid$
+		where id = $id$
+	</update>
+	
+	<!-- 删除 -->
+	<update id="cancel" parameterClass="int">
+		UPDATE C_YZD_MESSENGER_T SET VALIDFLAG = 0 WHERE id = $id$
+	</update>
+
+</sqlMap>

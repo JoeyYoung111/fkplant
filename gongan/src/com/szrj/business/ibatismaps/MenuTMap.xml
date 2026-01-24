@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="menu">
+	<typeAlias alias="menu" type="com.szrj.business.model.Menu"/>
+	
+	<!-- 根据菜单信息查询（分页） -->
+	<select id="searchMenu_count" parameterClass="menu" resultClass="Integer">
+		SELECT COUNT(m1.id)
+		FROM sys_menu_t m1,sys_menu_t m2
+		WHERE m1.validflag > 0 AND m2.validflag > 0 AND m1.parentid = m2.id AND m1.parentid > 0
+		<dynamic prepend="">
+			<isNotEmpty prepend="AND" property="menuname">
+				m1.menuname like '%$menuname$%'
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	<select id="searchMenu" parameterClass="menu" resultClass="menu">
+		SELECT m1.*,m2.menuname AS parentname
+		FROM sys_menu_t m1,sys_menu_t m2
+		WHERE m1.validflag > 0 AND m2.validflag > 0 AND m1.parentid = m2.id AND m1.parentid > 0
+		<dynamic prepend="">
+			<isNotEmpty prepend="AND" property="menuname">
+				m1.menuname like '%$menuname$%'
+			</isNotEmpty>
+		</dynamic>
+		ORDER BY m2.orderno,m1.parentid,m1.orderno
+	</select>
+	<select id="searchMenu1"  resultClass="menu" parameterClass="menu" >
+		SELECT *
+		FROM sys_menu_t 
+		WHERE validflag > 0 
+		<dynamic prepend="">
+			<isNotEmpty prepend="AND" property="menuname">
+				menuname like '%$menuname$%'
+			</isNotEmpty>
+		</dynamic>
+		ORDER BY orderno
+	</select>
+	<!-- 根据用户查询该用户的主菜单 -->
+	<select id="getZhuMenuByUser" parameterClass="int" resultClass="menu">
+		SELECT m.*
+		FROM sys_menu_t m
+		WHERE m.id IN (
+			SELECT m2.parentid
+			FROM sys_role_menu_t rm,sys_menu_t m2
+			WHERE rm.menuid = m2.id AND rm.roleid = $roleid$ AND rm.validflag > 0  AND m2.validflag > 0
+			GROUP BY m2.parentid
+		)
+		ORDER BY m.orderno
+	</select>
+	<!-- 根据ID获取菜单信息 -->
+	<select id="getById" parameterClass="int" resultClass="menu">
+		SELECT m1.*,m2.menuname AS parentname
+		FROM(
+		SELECT *
+		FROM sys_menu_t
+		WHERE id = $id$)m1 LEFT JOIN sys_menu_t m2 ON m1.parentid = m2.id
+	</select>
+	<!-- 获取所有主菜单 -->
+	<select id="getZhuMenu" resultClass="menu">
+		SELECT *
+		FROM sys_menu_t
+		WHERE parentid = 0 AND validflag > 0
+		ORDER BY orderno
+	</select>
+	
+	<!-- 新增 -->
+	<insert id="add" parameterClass="menu">
+		INSERT INTO sys_menu_t
+		(menuname,parentid,url,icon,orderno,menutype,validflag,addoperator,addtime,buttons)
+		VALUES
+		('$menuname$',$parentid$,'$url$','$icon$',$orderno$,$menutype$,1,'$addoperator$','$addtime$','$buttons$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+	
+	<!-- 删除 -->
+	<update id="cancel" parameterClass="int">
+		UPDATE sys_menu_t
+		SET validflag = 0
+		WHERE id = $id$
+	</update>
+	
+	<!-- 修改 -->
+	<update id="update" parameterClass="menu">
+		UPDATE sys_menu_t
+		SET menuname = '$menuname$',parentid = $parentid$,url = '$url$',orderno = $orderno$,icon='$icon$',addoperator='$addoperator$',addtime='$addtime$',
+		buttons='$buttons$'
+		WHERE id = $id$
+	</update>
+	
+    <!-- 根据角色ID查询该角色拥有的功能 -->
+	<select id="getMenu" parameterClass="int" resultClass="menu">
+		SELECT m.*,rm.bn AS bnname,m2.menuname AS parentname
+		FROM sys_role_menu_t rm,sys_menu_t m,sys_menu_t m2
+		WHERE rm.roleid = $roleid$ AND rm.validflag > 0 AND rm.menuid = m.id AND m.parentid = m2.id
+		ORDER BY m2.orderno
+	</select>
+	<!-- 获取所有使用中的主菜单 -->
+	<select id="getAllZhu" resultClass="menu">
+		SELECT *
+		FROM sys_menu_t
+		WHERE validflag > 0 AND menutype = 1
+		ORDER BY orderno
+	</select>
+	<!-- wangting  根据当前登录人获取权限主菜单 -->
+	<select id="getRoleZhuMenu" resultClass="menu" parameterClass="int">
+		SELECT   t.id,t.MENUNAME,t.icon,t.URL,t.buttons  FROM   sys_menu_t t
+        WHERE t.validflag > 0  
+	    and t.ID IN (
+		SELECT DISTINCT(m.parentid)
+		FROM
+			sys_menu_t m,sys_role_menu_t rm
+		WHERE
+			rm.roleid IN (SELECT	r.roleid FROM sys_role_user_t r
+				WHERE r.userid =  $userid$	and r.validflag > 0)
+		  AND rm.menuid = m.id  and rm.validflag > 0
+	    ) order by t.ORDERNO
+	</select>
+	<!-- wangting  根据当前登录人获取权限主菜单下权限子菜单 -->
+	<select id="getRoleZiMenu" resultClass="menu" parameterClass="menu">
+			SELECT  m.MENUNAME,m.parentid,m.URL,m.id,rm.buttons
+		    FROM
+			sys_menu_t m,
+			sys_role_menu_t rm
+		    WHERE
+			rm.menuid = m.id  and m.validflag > 0 and rm.validflag > 0  	AND m.orderNo>0
+		    AND m.parentid = $parentid$
+		    AND rm.roleid IN (SELECT	r.roleid FROM sys_role_user_t r
+						WHERE r.userid =  $id$	and r.validflag > 0)
+		    GROUP BY m.MENUNAME,m.parentid,m.URL
+		    ORDER BY m.ORDERNO
+	</select>
+	<select id="searchbuttons"   resultClass="String">
+		SELECT buttons  	FROM sys_buttons_t   order by id
+	</select>
+	
+</sqlMap>

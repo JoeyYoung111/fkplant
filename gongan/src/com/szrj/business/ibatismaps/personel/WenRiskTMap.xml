@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+        
+<sqlMap namespace="wenRisk">
+	<typeAlias alias="wenRisk" type="com.szrj.business.model.personel.WenRisk"/>
+	<select id="getByPersonnelid" parameterClass="int" resultClass="wenRisk">
+		SELECT A.*,
+			IFNULL(GROUP_CONCAT(ft2.id ORDER BY ft2.id desc SEPARATOR ','),'') AS videoattachments,
+			GROUP_CONCAT(ft2.fileName ORDER BY ft2.id desc SEPARATOR ',') AS videosname,
+			GROUP_CONCAT(ft2.fileallName ORDER BY ft2.id desc SEPARATOR ',') AS videosallname,
+			GROUP_CONCAT(IFNULL(ft2.addTime,'') ORDER BY ft2.id desc SEPARATOR ',') AS videosaddtime
+		FROM (SELECT rt.id,rt.personnelid,rt.conflictdetails,rt.riskappeal,rt.validflag,rt.addoperator,rt.addtime,rt.updateoperator,rt.updatetime,rt.memo,rt.videoattachments AS old_videoattachments,
+				IFNULL(GROUP_CONCAT(ft1.id ORDER BY ft1.id desc  SEPARATOR ','),'') AS fileattachments,
+				GROUP_CONCAT(ft1.fileName ORDER BY ft1.id desc  SEPARATOR ',') AS filesname,
+				GROUP_CONCAT(IFNULL(ft1.addTime,'') ORDER BY ft1.id desc SEPARATOR ',') AS filesaddtime
+				FROM p_wen_risk_t rt
+				LEFT JOIN sys_file_t ft1 ON FIND_IN_SET(ft1.id,rt.fileattachments)
+				WHERE rt.validflag =2 AND rt.personnelid = $personnelid$ GROUP BY rt.id ORDER BY addtime DESC LIMIT 1) A
+		LEFT JOIN sys_file_t ft2 ON FIND_IN_SET(ft2.id,A.old_videoattachments)
+		GROUP BY A.id
+	</select>
+	<select id="searchWenRisk_count" parameterClass="wenRisk" resultClass="Integer">
+		SELECT COUNT(rt.id)
+		FROM p_wen_risk_t rt
+		WHERE rt.validflag >0 AND rt.personnelid = $personnelid$
+	</select>
+	<select id="searchWenRisk" parameterClass="wenRisk" resultClass="wenRisk">
+		SELECT A.*,
+			IFNULL(GROUP_CONCAT(ft2.id ORDER BY ft2.id desc SEPARATOR ','),'') AS videoattachments,
+			GROUP_CONCAT(ft2.fileName ORDER BY ft2.id desc SEPARATOR ',') AS videosname,
+			GROUP_CONCAT(ft2.fileallName ORDER BY ft2.id desc SEPARATOR ',') AS videosallname,
+			GROUP_CONCAT(IFNULL(ft2.addTime,'') ORDER BY ft2.id desc SEPARATOR ',') AS videosaddtime
+		FROM (SELECT rt.id,rt.personnelid,rt.conflictdetails,rt.riskappeal,rt.validflag,rt.addoperator,rt.addtime,rt.updateoperator,rt.updatetime,rt.memo,rt.videoattachments AS old_videoattachments,
+				IFNULL(GROUP_CONCAT(ft1.id ORDER BY ft1.id desc  SEPARATOR ','),'') AS fileattachments,
+				GROUP_CONCAT(ft1.fileName ORDER BY ft1.id desc  SEPARATOR ',') AS filesname,
+				GROUP_CONCAT(IFNULL(ft1.addTime,'') ORDER BY ft1.id desc SEPARATOR ',') AS filesaddtime
+				FROM p_wen_risk_t rt
+				LEFT JOIN sys_file_t ft1 ON FIND_IN_SET(ft1.id,rt.fileattachments)
+				WHERE rt.validflag >0 AND rt.personnelid = $personnelid$ GROUP BY rt.id) A
+		LEFT JOIN sys_file_t ft2 ON FIND_IN_SET(ft2.id,A.old_videoattachments)
+		GROUP BY A.id
+		ORDER BY A.id desc
+	</select>
+	
+	<!-- 新增 -->
+	<insert id="add" parameterClass="wenRisk">
+		INSERT INTO p_wen_risk_t
+		(personnelid,conflictdetails,riskappeal,
+		fileattachments,videoattachments,
+		validflag,addoperator,addtime,memo)
+		VALUES
+		($personnelid$,'$conflictdetails$','$riskappeal$',
+		'$fileattachments$','$videoattachments$',
+		$validflag$,'$addoperator$','$addtime$','$memo$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+	<!-- 修改 -->
+	<update id="update" parameterClass="wenRisk">
+		UPDATE p_wen_risk_t
+		SET validflag=$validflag$,
+		updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	
+	<select id="getByPersonnelid_zfw" parameterClass="int" resultClass="wenRisk">
+		SELECT A.*,
+			IFNULL(GROUP_CONCAT(ft2.id ORDER BY ft2.id desc SEPARATOR ','),'') AS videoattachments,
+			GROUP_CONCAT(ft2.fileName ORDER BY ft2.id desc SEPARATOR ',') AS videosname,
+			GROUP_CONCAT(ft2.fileallName ORDER BY ft2.id desc SEPARATOR ',') AS videosallname,
+			GROUP_CONCAT(IFNULL(ft2.addTime,'') ORDER BY ft2.id desc SEPARATOR ',') AS videosaddtime
+		FROM (SELECT rt.id,rt.personnelid,rt.conflictdetails,rt.riskappeal,rt.validflag,rt.addoperator,rt.addtime,rt.updateoperator,rt.updatetime,rt.memo,rt.videoattachments AS old_videoattachments,
+				IFNULL(GROUP_CONCAT(ft1.id ORDER BY ft1.id desc  SEPARATOR ','),'') AS fileattachments,
+				GROUP_CONCAT(ft1.fileName ORDER BY ft1.id desc  SEPARATOR ',') AS filesname,
+				GROUP_CONCAT(IFNULL(ft1.addTime,'') ORDER BY ft1.id desc SEPARATOR ',') AS filesaddtime
+				FROM zfw_p_wen_risk_t rt
+				LEFT JOIN zfw_sys_file_t ft1 ON FIND_IN_SET(ft1.id,rt.fileattachments)
+				WHERE rt.validflag =2 AND rt.personnelid = $personnelid$ GROUP BY rt.id ORDER BY addtime DESC LIMIT 1) A
+		LEFT JOIN zfw_sys_file_t ft2 ON FIND_IN_SET(ft2.id,A.old_videoattachments)
+		GROUP BY A.id
+	</select>
+	
+	<select id="searchWenRisk_count_zfw" parameterClass="wenRisk" resultClass="Integer">
+		SELECT COUNT(rt.id)
+		FROM zfw_p_wen_risk_t rt
+		WHERE rt.validflag >0 AND rt.personnelid = $personnelid$
+	</select>
+	<select id="searchWenRisk_zfw" parameterClass="wenRisk" resultClass="wenRisk">
+		SELECT A.*,
+			IFNULL(GROUP_CONCAT(ft2.id ORDER BY ft2.id desc SEPARATOR ','),'') AS videoattachments,
+			GROUP_CONCAT(ft2.fileName ORDER BY ft2.id desc SEPARATOR ',') AS videosname,
+			GROUP_CONCAT(ft2.fileallName ORDER BY ft2.id desc SEPARATOR ',') AS videosallname,
+			GROUP_CONCAT(IFNULL(ft2.addTime,'') ORDER BY ft2.id desc SEPARATOR ',') AS videosaddtime
+		FROM (SELECT rt.id,rt.personnelid,rt.conflictdetails,rt.riskappeal,rt.validflag,rt.addoperator,rt.addtime,rt.updateoperator,rt.updatetime,rt.memo,rt.videoattachments AS old_videoattachments,
+				IFNULL(GROUP_CONCAT(ft1.id ORDER BY ft1.id desc  SEPARATOR ','),'') AS fileattachments,
+				GROUP_CONCAT(ft1.fileName ORDER BY ft1.id desc  SEPARATOR ',') AS filesname,
+				GROUP_CONCAT(IFNULL(ft1.addTime,'') ORDER BY ft1.id desc SEPARATOR ',') AS filesaddtime
+				FROM zfw_p_wen_risk_t rt
+				LEFT JOIN zfw_sys_file_t ft1 ON FIND_IN_SET(ft1.id,rt.fileattachments)
+				WHERE rt.validflag >0 AND rt.personnelid = $personnelid$ GROUP BY rt.id) A
+		LEFT JOIN zfw_sys_file_t ft2 ON FIND_IN_SET(ft2.id,A.old_videoattachments)
+		GROUP BY A.id
+		ORDER BY A.id desc
+	</select>
+</sqlMap>

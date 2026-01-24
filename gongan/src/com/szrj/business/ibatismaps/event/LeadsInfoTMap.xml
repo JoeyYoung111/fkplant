@@ -1,0 +1,152 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="leadsInfo">
+	<typeAlias alias="leadsInfo" type="com.szrj.business.model.event.LeadsInfo"/>
+	
+	<select id="search_count" parameterClass="leadsInfo" resultClass="Integer">
+		select count(*)
+		from e_leadsinfo_t
+		where validflag>0 and cdtid=$cdtid$
+		<isNotEqual prepend="AND" property="workinfoid" compareValue="0">
+			workinfoid = #workinfoid#
+		</isNotEqual>
+	</select>
+	<select id="search" parameterClass="leadsInfo" resultClass="leadsInfo">
+		select *
+		from e_leadsinfo_t
+		where validflag>0 and cdtid=$cdtid$
+		<isNotEqual prepend="AND" property="workinfoid" compareValue="0">
+			workinfoid = #workinfoid#
+		</isNotEqual>
+		order by ldate desc
+	</select>
+	
+	<!-- 综合查询 -->
+	<select id="searchSynthetic_count" parameterClass="leadsInfo" resultClass="Integer">
+		select count(*)
+		from e_leadsinfo_t li
+		LEFT JOIN e_contradictioninfo_t ct
+		on li.cdtid=ct.id
+		where li.validflag>0 and ct.validflag>0
+		<isNotEmpty prepend="AND" property="cdtname">
+			ct.cdtname like '%$cdtname$%'
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="cdtlevel">
+			ct.cdtlevel like '%$cdtlevel$%'
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="sql">
+			($sql$)
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="ltitle">
+			li.ltitle like '%$ltitle$%'
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="lpointto">
+			li.lpointto like '%$lpointto$%'
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="lsource">
+			li.lsource like '%$lsource$%'
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="lcontent">
+			li.lcontent like '%$lcontent$%'
+		</isNotEmpty>
+	</select>
+	<select id="searchSynthetic" parameterClass="leadsInfo" resultClass="leadsInfo">
+		select li.*,GROUP_CONCAT(bm.basicName order by bm.id) as cdttypename,ct.cdtname,ct.cdtlevel
+		from e_leadsinfo_t li
+		LEFT JOIN e_contradictioninfo_t ct
+		on li.cdtid=ct.id
+		LEFT JOIN sys_basic_msg_t bm   
+		on FIND_IN_SET(bm.id,ct.cdttype)
+		where li.validflag>0 and ct.validflag>0
+		<isNotEmpty prepend="AND" property="cdtname">
+			ct.cdtname like '%$cdtname$%'
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="cdtlevel">
+			ct.cdtlevel like '%$cdtlevel$%'
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="sql">
+			($sql$)
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="ltitle">
+			li.ltitle like '%$ltitle$%'
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="lpointto">
+			li.lpointto like '%$lpointto$%'
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="lsource">
+			li.lsource like '%$lsource$%'
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="lcontent">
+			li.lcontent like '%$lcontent$%'
+		</isNotEmpty>
+		GROUP BY li.id
+	</select>
+	
+	<!-- 新增 -->
+	<insert id="add" parameterClass="leadsInfo">
+		INSERT INTO e_leadsinfo_t
+		(cdtid,ldate,ltitle,lsource,lpointto,lcontent,czqkgs,conneteventid,validflag,addoperatorid,addoperator,addtime,memo,xscz,workinfoid,attachments)
+		VALUES
+		($cdtid$,'$ldate$','$ltitle$','$lsource$','$lpointto$','$lcontent$','$czqkgs$',$conneteventid$,$validflag$,$addoperatorid$,
+		'$addoperator$','$addtime$','$memo$','$xscz$',$workinfoid$,'$attachments$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+	<!-- 删除 -->
+	<update id="cancel" parameterClass="leadsInfo">
+		UPDATE e_leadsinfo_t
+		SET validflag = 0,updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	<!-- 修改 -->
+	<update id="update" parameterClass="leadsInfo">
+		UPDATE e_leadsinfo_t
+		SET ldate='$ldate$',ltitle='$ltitle$',lsource='$lsource$',lpointto='$lpointto$',lcontent='$lcontent$',czqkgs='$czqkgs$',conneteventid=$conneteventid$,
+		updateoperator='$updateoperator$',updatetime='$updatetime$',memo='$memo$',xscz='$xscz$',attachments='$attachments$'
+		WHERE id = $id$
+	</update>
+	<!-- 根据ID获取 -->
+	<select id="getById" parameterClass="int" resultClass="leadsInfo">
+		select A.*,GROUP_CONCAT(sf.fileName order by sf.id) as filenames,GROUP_CONCAT(sf.id order by sf.id) as fileids      
+		from(SELECT l.*,e.etitle as conneteventname
+		FROM e_leadsinfo_t l
+		left join e_eventsinfo_t e on e.id=l.conneteventid
+		WHERE l.validflag > 0 AND l.id = $id$)A   
+		LEFT JOIN sys_file_t sf on FIND_IN_SET(sf.id,A.attachments)   GROUP BY A.id 
+	</select>
+	
+	<!-- 政法委 -->
+	<select id="search_count_zfw" parameterClass="leadsInfo" resultClass="Integer">
+		select count(*)
+		from zfw_e_leadsinfo_t
+		where validflag>0 and cdtid=$cdtid$
+		<isNotEqual prepend="AND" property="workinfoid" compareValue="0">
+			workinfoid = #workinfoid#
+		</isNotEqual>
+	</select>
+	<select id="search_zfw" parameterClass="leadsInfo" resultClass="leadsInfo">
+		select *
+		from zfw_e_leadsinfo_t
+		where validflag>0 and cdtid=$cdtid$
+		<isNotEqual prepend="AND" property="workinfoid" compareValue="0">
+			workinfoid = #workinfoid#
+		</isNotEqual>
+		order by ldate desc
+	</select>
+	
+	<select id="getById_zfw" parameterClass="int" resultClass="leadsInfo">
+		select A.*,GROUP_CONCAT(sf.fileName order by sf.id) as filenames,GROUP_CONCAT(sf.id order by sf.id) as fileids      
+		from(SELECT l.*,e.etitle as conneteventname
+		FROM zfw_e_leadsinfo_t l
+		left join zfw_e_eventsinfo_t e on e.id=l.conneteventid
+		WHERE l.validflag > 0 AND l.id = $id$)A   
+		LEFT JOIN zfw_sys_file_t sf on FIND_IN_SET(sf.id,A.attachments)   GROUP BY A.id
+	</select>
+	
+	<update id="update_zfw" parameterClass="int">
+		UPDATE zfw_e_leadsinfo_t
+		SET validflag = $validflag$
+		WHERE id = $id$
+	</update>
+</sqlMap>

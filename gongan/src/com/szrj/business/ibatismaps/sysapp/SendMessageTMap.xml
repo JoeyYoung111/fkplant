@@ -1,0 +1,45 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="sendMessage">
+	<typeAlias alias="sendMessage" type="com.szrj.business.model.sysapp.SendMessage"/>
+	
+	<select id="search_count" parameterClass="sendMessage" resultClass="Integer">
+		select count(*)
+		from s_sendmessage_t
+		where 1=1
+		<isNotEmpty prepend="AND" property="smstext">
+			smstext like '%$smstext$%'
+		</isNotEmpty>
+		<isNotEqual prepend="AND" property="smstype" compareValue="0">
+			smstype = #smstype#
+		</isNotEqual>
+		order by sendtime desc
+	</select>
+	<select id="search" parameterClass="sendMessage" resultClass="sendMessage">
+		select sdm.*,GROUP_CONCAT(u.staffName) as usernames,GROUP_CONCAT(d.departname) as departnames
+		from s_sendmessage_t sdm
+		LEFT JOIN sys_user_t u
+		on FIND_IN_SET(u.id,sdm.receiveids) and sdm.sendflag=2
+		LEFT JOIN sys_department_t d
+		on FIND_IN_SET(d.id,sdm.receiveids) and sdm.sendflag=1
+		<isNotEmpty prepend="AND" property="smstext">
+			sdm.smstext like '%$smstext$%'
+		</isNotEmpty>
+		<isNotEqual prepend="AND" property="smstype" compareValue="0">
+			sdm.smstype = #smstype#
+		</isNotEqual>
+		GROUP BY sdm.id
+		order by sdm.sendtime desc
+	</select>
+	
+	<!-- 新增 -->
+	<insert id="add" parameterClass="sendMessage">
+		INSERT INTO s_sendmessage_t
+		(smstype,smstext,sendFlag,receiveids,sendtime,sendoperator,sendoperatorid)
+		VALUES
+		($smstype$,'$smstext$',$sendFlag$,'$receiveids$','$sendtime$','$sendoperator$',$sendoperatorid$)
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+</sqlMap>

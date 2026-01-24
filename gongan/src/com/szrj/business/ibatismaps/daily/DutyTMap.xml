@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+        
+<sqlMap namespace="duty">
+	<typeAlias alias="duty" type="com.szrj.business.model.daily.Duty"/>
+	<typeAlias alias="secret" type="com.szrj.business.model.daily.Secret"/>
+	<select id="getByIdOrDepartid" parameterClass="duty" resultClass="duty">
+		SELECT *
+		FROM d_duty_t
+		WHERE validflag > 0
+		<dynamic prepend="">
+			<isNotEqual prepend="AND" property="id" compareValue="0">
+	        	id=$id$
+	        </isNotEqual>
+			<isNotEqual prepend="AND" property="departid" compareValue="0">
+	        	departid=$departid$
+	        </isNotEqual>
+		</dynamic>
+	</select>
+	<select id="getAllDuty" resultClass="duty">
+		SELECT *
+		FROM d_duty_t
+		WHERE validflag > 0
+		ORDER BY id
+	</select>
+	<!-- 修改 -->
+	<update id="update" parameterClass="duty">
+		UPDATE d_duty_t
+		SET $field$='$fieldString$',
+		updateoperator='$updateoperator$',updatetime='$updatetime$',memo='$memo$'
+		WHERE id = $id$
+	</update>
+<!--	<update id="update" parameterClass="duty">-->
+<!--		UPDATE d_duty_t-->
+<!--		SET dp_leader='$dp_leader$',kong_leader='$kong_leader$',kong_police='$kong_police$',-->
+<!--		wen_leader='$wen_leader$',wen_police='$wen_police$',wen_fu_police='$wen_fu_police$',-->
+<!--		du_leader='$du_leader$',du_fu_police='$du_fu_police$',-->
+<!--		updateoperator='$updateoperator$',updatetime='$updatetime$',memo='$memo$'-->
+<!--		WHERE id = $id$-->
+<!--	</update>-->
+	
+	<select id="getSecret" resultClass="secret">
+		SELECT *
+		FROM d_secret_t
+		WHERE validflag > 0 and id=1
+	</select>
+	<!-- 修改 -->
+	<update id="updateSecret" parameterClass="secret">
+		UPDATE d_secret_t
+		SET secret_text='$secret_text$',
+		updateoperator='$updateoperator$',updatetime='$updatetime$',memo='$memo$'
+		WHERE id = $id$
+	</update>
+</sqlMap>

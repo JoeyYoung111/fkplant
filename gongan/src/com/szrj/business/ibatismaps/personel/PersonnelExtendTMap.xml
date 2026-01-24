@@ -1,0 +1,381 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+        
+<sqlMap namespace="personnelExtend">
+	<typeAlias alias="personnelExtend" type="com.szrj.business.model.personel.PersonnelExtend"/>
+	<typeAlias alias="labelinfo" type="com.szrj.business.model.personel.Labelinfo"/>
+	<typeAlias alias="personnel" type="com.szrj.business.model.personel.Personnel"/>
+	<typeAlias alias="relation" type="com.szrj.business.model.personel.Relation"/>
+	<resultMap id="exportPersonnel" class="personnel">
+		<result property="personname" column="personname"/>
+		<result property="cardnumber" column="cardnumber"/>
+		<result property="sexes" column="sexes"/>
+		<result property="usedname" column="usedname"/>
+		<result property="nickname" column="nickname"/>
+		<result property="marrystatus" column="marrystatus"/>
+		<result property="nation" column="nation"/>
+		<result property="soldierstatus" column="soldierstatus"/>
+		<result property="heathstatus" column="heathstatus"/>
+		<result property="politicalposition" column="politicalposition"/>
+		<result property="faith" column="faith"/>
+		<result property="education" column="education"/>
+		<result property="persontype" column="persontype"/>
+		<result property="houseplace" column="houseplace"/>
+		<result property="housepolice" column="housepolice"/>
+		<result property="homeplace" column="homeplace"/>
+		<result property="homepolice" column="homepolice"/>
+		<result property="workplace" column="workplace"/>
+		<result property="workpolice" column="workpolice"/>
+		<result property="feature" column="feature"/>
+		<result property="speciality" column="speciality"/>
+		<result property="records" column="records"/>
+		<result property="personheight" column="personheight"/>
+		<result property="netskillhabit" column="netskillhabit"/>
+	</resultMap>
+	<resultMap id="exportRelation" class="relation">
+		<result property="telnumber" column="telnumber"/>
+		<result property="telephone" column="telephone"/>
+		<result property="relatedwifi" column="relatedwifi"/>
+		<result property="relatedvehicle" column="relatedvehicle"/>
+		<result property="bankaccount" column="bankaccount"/>
+		<result property="netidentity" column="netidentity"/>
+		<result property="netpayment" column="netpayment"/>
+		<result property="relatedhouse" column="relatedhouse"/>
+		<result property="relatedlegal" column="relatedlegal"/>
+		<result property="relateddriver" column="relateddriver"/>
+		<result property="relatedpassport" column="relatedpassport"/>
+	</resultMap>
+	<resultMap class="personnelExtend" id="exportPersonnelExtend" groupBy="personnelid">
+		<result property="addtime" column="addtime" />
+		<result property="addoperator" column="addoperator" />
+		<result property="jointcontrollevel" column="jointcontrollevel" />
+		<result property="incontrollevel" column="incontrollevel" />
+		<result property="unitname1" column="unitname1" />
+		<result property="policename1" column="policename1" />
+		<result property="policephone1" column="policephone1" />
+		<result property="unitname2" column="unitname2" />
+		<result property="policename2" column="policename2" />
+		<result property="policephone2" column="policephone2"/>
+		
+		<result property="exportPersonnel" resultMap="personnelExtend.exportPersonnel"/>
+		<result property="exportRelation" resultMap="personnelExtend.exportRelation"/>
+	</resultMap>
+	<select id="getById" parameterClass="int" resultClass="personnelExtend">
+		SELECT
+			t.*,
+			dt1.departname AS unitname1,
+			ut1.staffName AS policename1,
+			dt2.departname AS unitname2,
+			ut2.staffName AS policename2,
+			IFNULL( GROUP_CONCAT( mt.attributelabel ORDER BY mt.id SEPARATOR '   , ' ), '' )  AS personlabelname
+		FROM
+			p_personnel_extend_t t
+		LEFT JOIN p_personnel_t pt ON t.personnelid=pt.id
+		LEFT JOIN sys_department_t dt1 ON pt.jdunit1 = dt1.id
+		LEFT JOIN sys_user_t ut1 ON pt.jdpolice1 = ut1.id
+		LEFT JOIN sys_department_t dt2 ON pt.jdunit2 = dt2.id
+		LEFT JOIN sys_user_t ut2 ON pt.jdpolice2 = ut2.id
+		LEFT JOIN p_attributelabel_t mt ON ( FIND_IN_SET( mt.id, t.attributelabels ) and mt.validflag>0) 
+		WHERE
+			t.validflag > 0 
+			AND t.ID = $id$ 
+	</select>
+	<select id="getByPersonnelid" parameterClass="personnelExtend" resultClass="personnelExtend">
+		SELECT
+			t.*,
+			dt1.departname AS unitname1,
+			ut1.staffName AS policename1,
+			dt2.departname AS unitname2,
+			ut2.staffName AS policename2
+			,IFNULL( GROUP_CONCAT( mt.attributelabel ORDER BY mt.id SEPARATOR '  ,   ' ), '' ) AS personlabelname 
+		FROM
+			p_personnel_extend_t t
+		LEFT JOIN p_personnel_t pt ON t.personnelid=pt.id
+		LEFT JOIN sys_department_t dt1 ON pt.jdunit1 = dt1.id
+		LEFT JOIN sys_user_t ut1 ON pt.jdpolice1 = ut1.id
+		LEFT JOIN sys_department_t dt2 ON pt.jdunit2 = dt2.id
+		LEFT JOIN sys_user_t ut2 ON pt.jdpolice2 = ut2.id
+		LEFT JOIN p_attributelabel_t mt ON ( FIND_IN_SET( mt.id, t.attributelabels ) and mt.validflag>0) 
+		WHERE
+			t.validflag > 0 
+			AND t.personnelid = $personnelid$ 
+			AND t.personlabelid=$personlabelid$
+	</select>
+	
+	<select id="searchPersonnelExtend_count" parameterClass="personnelExtend" resultClass="Integer">
+		SELECT COUNT(a.id) FROM (SELECT gt.id
+		FROM p_personnel_extend_t gt
+		LEFT JOIN p_personnel_t pt ON gt.personnelid=pt.id
+		LEFT JOIN sys_user_t ut ON pt.jdpolice1=ut.id
+		<isNotEmpty prepend="" property="telnumber">
+		LEFT JOIN p_relation_telnumber_t rtt ON (rtt.personnelid=pt.id AND rtt.validflag>0)
+		</isNotEmpty>
+		WHERE gt.validflag > 0 AND pt.validflag>0
+		<dynamic prepend="">
+			<isNotEmpty prepend="AND" property="cardnumber">
+				pt.cardnumber like '%$cardnumber$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="personname">
+				pt.personname like '%$personname$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="telnumber">
+				rtt.telnumber like '%$telnumber$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="homeplace">
+				pt.homeplace like '%$homeplace$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="labelsql">
+				$labelsql$
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="unitname1">
+				FIND_IN_SET(pt.jdunit1,'$unitname1$')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="policename1">
+				ut.staffName like '%$policename1$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="jointcontrollevel">
+				gt.jointcontrollevel = '$jointcontrollevel$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="country">
+				gt.country like '%$country$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="incontrollevel">
+				gt.incontrollevel = '$incontrollevel$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="persontype">
+				pt.persontype = '$persontype$'
+			</isNotEmpty>
+			<isNotEqual prepend="AND" property="personlabelid" compareValue="0">
+				gt.personlabelid=$personlabelid$
+	        </isNotEqual>
+			<isNotEqual prepend="AND" property="unitFilter" compareValue="0">
+				(pt.jdunit1 = $unitFilter$ or pt.jdunit2 = $unitFilter$)
+				
+	        </isNotEqual>
+			<isNotEqual prepend="AND" property="personFilter" compareValue="0">
+				(pt.jdpolice1 = $personFilter$ or pt.jdpolice2 = $personFilter$)
+			
+	        </isNotEqual>
+	     </dynamic>
+		GROUP BY gt.id) a
+	</select>
+	<select id="searchPersonnelExtend" parameterClass="personnelExtend" resultClass="personnelExtend">
+		SELECT gt.*,pt.cardnumber,pt.personname,pt.homeplace,pt.persontype,pt.sexes,pt.pphone1,
+		IFNULL(dt.departname,'') AS unitname1,IFNULL(ut.staffName,'') AS policename1,
+		pt.zslabel1  AS unitname2,pt.zslabel2 AS pphone2,
+	    IFNULL( GROUP_CONCAT(mt.personlabel order by mt.id  SEPARATOR ','), '' ) AS policename2
+		FROM p_personnel_extend_t gt
+		LEFT JOIN p_personnel_t pt ON gt.personnelid=pt.id
+		LEFT JOIN sys_department_t dt ON pt.jdunit1=dt.id
+		LEFT JOIN sys_user_t ut ON pt.jdpolice1=ut.id
+		<isNotEmpty prepend="" property="telnumber">
+		LEFT JOIN p_relation_telnumber_t rtt ON (rtt.personnelid=pt.id AND rtt.validflag>0)
+		</isNotEmpty>
+		LEFT JOIN p_personlabel_t mt ON (FIND_IN_SET(mt.id,pt.personlabel) AND mt.validflag=0  )
+		WHERE gt.validflag > 0 AND pt.validflag > 0
+		<dynamic prepend="">
+			<isNotEmpty prepend="AND" property="cardnumber">
+				pt.cardnumber like '%$cardnumber$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="personname">
+				pt.personname like '%$personname$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="telnumber">
+				rtt.telnumber like '%$telnumber$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="homeplace">
+				pt.homeplace like '%$homeplace$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="labelsql">
+				$labelsql$
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="unitname1">
+				FIND_IN_SET(pt.jdunit1,'$unitname1$')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="policename1">
+				ut.staffName like '%$policename1$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="jointcontrollevel">
+				gt.jointcontrollevel = '$jointcontrollevel$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="country">
+				gt.country like '%$country$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="incontrollevel">
+				gt.incontrollevel = '$incontrollevel$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="persontype">
+				pt.persontype = '$persontype$'
+			</isNotEmpty>
+			<isNotEqual prepend="AND" property="personlabelid" compareValue="0">
+				gt.personlabelid=$personlabelid$
+	        </isNotEqual>
+		    <isNotEqual prepend="AND" property="unitFilter" compareValue="0">
+				(pt.jdunit1 = $unitFilter$ or pt.jdunit2 = $unitFilter$)
+			
+	        </isNotEqual>
+			<isNotEqual prepend="AND" property="personFilter" compareValue="0">
+				(pt.jdpolice1 = $personFilter$ or pt.jdpolice2 = $personFilter$)
+			
+	        </isNotEqual>
+		</dynamic>
+		GROUP BY gt.id
+		ORDER BY homeplace desc,persontype desc
+	</select>
+	<select id="exportPersonnelExtend" parameterClass="personnelExtend" resultMap="personnelExtend.exportPersonnelExtend">
+		SELECT gt.*,
+		pt.personname,pt.cardnumber,
+		pt.sexes,pt.usedname,pt.nickname,
+		pt.marrystatus,pt.nation,pt.soldierstatus,
+		pt.heathstatus,pt.politicalposition,pt.faith,
+		pt.education,pt.persontype,pt.houseplace,
+		pt.housepolice,pt.homeplace,pt.homepolice,
+		pt.workplace,pt.workpolice,pt.feature,
+		pt.speciality,pt.records,
+		pt.personheight,pt.netskillhabit,
+		rt.telnumber,rt.telephone,rt.relatedwifi,
+		rt.relatedvehicle,rt.bankaccount,rt.netidentity,
+		rt.netpayment,rt.relatedhouse,rt.relatedlegal,
+		rt.relateddriver,rt.relatedpassport,
+		dt1.departname AS unitname1,ut1.staffName AS policename1,
+		dt2.departname AS unitname2,ut2.staffName AS policename2
+		FROM p_personnel_t pt
+		LEFT JOIN p_personnel_extend_t gt  ON gt.personnelid=pt.id
+		<isNotEmpty prepend="AND" property="telnumber">
+		LEFT JOIN p_relation_telnumber_t rtt ON (rtt.personnelid=pt.id AND rtt.validflag>0)
+		</isNotEmpty>
+		LEFT JOIN p_relation_t rt ON gt.personnelid=rt.personnelid
+		LEFT JOIN sys_department_t dt1 ON pt.jdunit1=dt1.id
+		LEFT JOIN sys_user_t ut1 ON pt.jdpolice1=ut1.id
+		LEFT JOIN sys_department_t dt2 ON pt.jdunit2=dt2.id
+		LEFT JOIN sys_user_t ut2 ON pt.jdpolice2=ut2.id
+		WHERE pt.validflag > 0 and pt.isrisk=1
+		<dynamic prepend="">
+			<isNotEmpty prepend="AND" property="personlabelid">
+				FIND_IN_SET($personlabelid$,pt.zslabel1)
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="cardnumber">
+				pt.cardnumber like '%$cardnumber$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="personname">
+				pt.personname like '%$personname$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="telnumber">
+				rtt.telnumber like '%$telnumber$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="homeplace">
+				pt.homeplace like '%$homeplace$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="labelsql">
+				$labelsql$
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="jointcontrollevel">
+				gt.jointcontrollevel = '$jointcontrollevel$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="country">
+				gt.country like '%$country$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="incontrollevel">
+				gt.incontrollevel = '$incontrollevel$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="persontype">
+				pt.persontype = '$persontype$'
+			</isNotEmpty>
+			<isNotEqual prepend="AND" property="unitFilter" compareValue="0">
+				pt.jdunit1 = $unitFilter$
+				OR pt.jdunit2 = $unitFilter$
+	        </isNotEqual>
+			<isNotEqual prepend="AND" property="personFilter" compareValue="0">
+				pt.jdpolice1 = $personFilter$
+				OR pt.jdpolice2 = $personFilter$
+	        </isNotEqual>
+		</dynamic>
+		GROUP BY pt.id
+	</select>
+	<!-- 新增 -->
+	<insert id="add" parameterClass="personnelExtend">
+		INSERT INTO p_personnel_extend_t
+		(personnelid,jurisdictunit1,jurisdictpolice1,policephone1,personlabelid,attributelabels,
+		validflag,addoperator,addtime,memo)
+		VALUES
+		($personnelid$,$jurisdictunit1$,$jurisdictpolice1$,'$policephone1$',$personlabelid$,'$attributelabels$',
+		$validflag$,'$addoperator$','$addtime$','$memo$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+	<!-- 删除 -->
+	<update id="cancel" parameterClass="personnelExtend">
+		UPDATE p_personnel_extend_t
+		SET validflag = 0,
+		updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	<!-- 修改 -->
+	<update id="update" parameterClass="personnelExtend">
+		UPDATE p_personnel_extend_t
+		SET incontrollevel='$incontrollevel$',jointcontrollevel='$jointcontrollevel$',attributelabels='$attributelabels$',
+		jurisdictunit1=$jurisdictunit1$,jurisdictpolice1=$jurisdictpolice1$,policephone1='$policephone1$',
+		jurisdictunit2='$jurisdictunit2$',jurisdictpolice2='$jurisdictpolice2$',policephone2='$policephone2$',
+		updateoperator='$updateoperator$',updatetime='$updatetime$',memo='$memo$'
+		WHERE id = $id$
+	</update>
+	<!-- 修改 -->
+	<update id="updateWorkExtend" parameterClass="personnelExtend">
+		UPDATE p_personnel_extend_t
+		SET vocation='$vocation$',workunit='$workunit$',workjob='$workjob$',country='$country$',birthday='$birthday$',updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	<!--***************************************** 人员标签信息 *******************************************-->
+	<select id="getLabelinfo" parameterClass="labelinfo" resultClass="labelinfo">
+		SELECT
+			t.*,
+			GROUP_CONCAT(ft1.fileName ORDER BY ft1.id SEPARATOR ',') AS filesname
+		FROM
+			p_labelinfo_t t
+		LEFT JOIN sys_file_t ft1 ON FIND_IN_SET(ft1.id,t.attachments)
+		WHERE
+			t.validflag = 2 
+			AND t.personnelid = $personnelid$ 
+			AND t.customlabelid = $customlabelid$
+		GROUP BY t.id 
+	</select>
+	<select id="searchLabelinfo_count" parameterClass="labelinfo" resultClass="Integer">
+		SELECT
+			count(t.id)
+		FROM
+			p_labelinfo_t t
+		WHERE
+			t.validflag >0 
+			AND t.personnelid = $personnelid$ 
+			AND t.customlabelid = $customlabelid$
+	</select>
+	<select id="searchLabelinfo" parameterClass="labelinfo" resultClass="labelinfo">
+		SELECT
+			t.*,
+			GROUP_CONCAT(ft1.fileName ORDER BY ft1.id SEPARATOR ',') AS filesname
+		FROM
+			p_labelinfo_t t
+		LEFT JOIN sys_file_t ft1 ON FIND_IN_SET(ft1.id,t.attachments)
+		WHERE
+			t.validflag >0 
+			AND t.personnelid = $personnelid$ 
+			AND t.customlabelid = $customlabelid$
+		GROUP BY t.id 
+		ORDER BY t.id desc
+	</select>
+	<insert id="addLabelinfo" parameterClass="labelinfo">
+		INSERT INTO p_labelinfo_t
+		(personnelid,customlabelid,labelinfo,attachments,
+		validflag,addoperator,addtime,memo)
+		VALUES
+		($personnelid$,$customlabelid$,'$labelinfo$','$attachments$',
+		$validflag$,'$addoperator$','$addtime$','$memo$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+	<update id="updateLabelinfoValidflag" parameterClass="labelinfo">
+		UPDATE p_labelinfo_t
+		SET validflag = $validflag$,
+		updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+</sqlMap>

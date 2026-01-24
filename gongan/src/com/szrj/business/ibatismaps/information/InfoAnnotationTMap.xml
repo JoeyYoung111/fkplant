@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="infoannotation">
+	<typeAlias alias="infoannotation" type="com.szrj.business.model.information.InfoAnnotation"/>
+
+	<!-- 新增 -->
+	<insert id="add" parameterClass="infoannotation">
+		insert into i_information_annotation_t(
+			sendid,informationid,annotationtype,receiveid,content,
+			validflag,addoperator,addtime,memo)
+		values(
+			$sendid$,$informationid$,$annotationtype$,$receiveid$,'$content$',
+			1,'$addoperator$','$addtime$','$memo$')
+		<selectKey resultClass="Integer" keyProperty="id">select last_insert_id() as id</selectKey>
+	</insert>
+
+	<!-- 查询最新批注 -->
+	<select id="searchinfo" parameterClass="infoannotation" resultClass="infoannotation">
+		select * from i_information_annotation_t 
+		where 1 = 1
+		<dynamic prepend="">
+			<isNotEqual prepend="AND" property="sendid" compareValue="0">
+				sendid  = $sendid$
+			</isNotEqual>
+			<isNotEqual prepend="AND" property="annotationtype" compareValue="0">
+				annotationtype = $annotationtype$
+			</isNotEqual>
+			<isNotEqual prepend="AND" property="validflag" compareValue="0">
+				validflag = $validflag$
+			</isNotEqual>
+			<isNotEqual prepend="AND" property="informationid" compareValue="0">
+				informationid  = $informationid$
+			</isNotEqual>
+		</dynamic>
+		order by addtime desc
+		<dynamic prepend="">
+			<isEqual prepend="" property="limit" compareValue="1">
+				limit $limit$
+			</isEqual>
+		</dynamic>
+	</select>
+
+	<!-- 签收 -->
+	<update id="qianshou" parameterClass="infoannotation">
+		update i_information_annotation_t set validflag=2,signoper='$signoper$',signtime='$signtime$' where id=$id$
+	</update>
+	
+	<select id="searchinfo_count" parameterClass="infoannotation" resultClass="int">
+		select count(id) from i_information_annotation_t 
+		where 1 = 1
+		<dynamic prepend="">
+			<isNotEqual prepend="AND" property="validflag" compareValue="0">
+				validflag = $validflag$
+			</isNotEqual>
+			<isNotEqual prepend="AND" property="annotationtype" compareValue="0">
+				annotationtype = $annotationtype$
+			</isNotEqual>
+			<isNotEqual prepend="AND" property="sendid" compareValue="0">
+				sendid  = $sendid$
+			</isNotEqual>
+			<isNotEqual prepend="AND" property="informationid" compareValue="0">
+				informationid  = $informationid$
+			</isNotEqual>
+		</dynamic>
+		order by addtime desc
+	</select>
+	
+	<select id="searchList" parameterClass="infoannotation" resultClass="infoannotation">
+		select * from i_information_annotation_t 
+		where 1 = 1
+		<dynamic prepend="">
+			<isNotEqual prepend="AND" property="validflag" compareValue="0">
+				validflag = $validflag$
+			</isNotEqual>
+			<isNotEqual prepend="AND" property="annotationtype" compareValue="0">
+				annotationtype = $annotationtype$
+			</isNotEqual>
+			<isNotEqual prepend="AND" property="sendid" compareValue="0">
+				sendid  = $sendid$
+			</isNotEqual>
+			<isNotEqual prepend="AND" property="informationid" compareValue="0">
+				informationid  = $informationid$
+			</isNotEqual>
+		</dynamic>
+		order by addtime desc
+	</select>
+	
+	<select id="getbyId" parameterClass="Integer" resultClass="infoannotation">
+		select a.*,b.departname as receivename 
+		from i_information_annotation_t a
+		left join sys_department_t b on a.receiveid = b.id
+		where a.id = $id$
+	</select>
+
+</sqlMap>
+
+

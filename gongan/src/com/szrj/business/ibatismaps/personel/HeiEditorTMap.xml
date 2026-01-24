@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="heieditor">
+	<typeAlias alias="basicMsg" type="com.szrj.business.model.BasicMsg"/>
+	<typeAlias alias="personnel" type="com.szrj.business.model.personel.Personnel"/>
+	<typeAlias alias="heieditor" type="com.szrj.business.model.personel.HeiEditor"/>
+	<typeAlias alias="selectModel" type="com.aladdin.model.SelectModel"/>
+	<resultMap id="exportPersonnel" class="personnel">
+		<result property="personname" column="personname"/>
+		<result property="cardnumber" column="cardnumber"/>
+		<result property="sexes" column="sexes"/>
+		<result property="usedname" column="usedname"/>
+		<result property="nickname" column="nickname"/>
+		<result property="marrystatus" column="marrystatus"/>
+		<result property="nation" column="nation"/>
+		<result property="soldierstatus" column="soldierstatus"/>
+		<result property="heathstatus" column="heathstatus"/>
+		<result property="politicalposition" column="politicalposition"/>
+		<result property="faith" column="faith"/>
+		<result property="education" column="education"/>
+		<result property="persontype" column="persontype"/>
+		<result property="houseplace" column="houseplace"/>
+		<result property="housepolice" column="housepolice"/>
+		<result property="homeplace" column="homeplace"/>
+		<result property="homepolice" column="homepolice"/>
+		<result property="workplace" column="workplace"/>
+		<result property="workpolice" column="workpolice"/>
+		<result property="feature" column="feature"/>
+		<result property="speciality" column="speciality"/>
+		<result property="records" column="records"/>
+		<result property="personheight" column="personheight"/>
+		<result property="netskillhabit" column="netskillhabit"/>
+	</resultMap>
+	<resultMap id="exportRelation" class="relation">
+		<result property="telnumber" column="telnumber"/>
+		<result property="telephone" column="telephone"/>
+		<result property="relatedwifi" column="relatedwifi"/>
+		<result property="relatedvehicle" column="relatedvehicle"/>
+		<result property="bankaccount" column="bankaccount"/>
+		<result property="netidentity" column="netidentity"/>
+		<result property="netpayment" column="netpayment"/>
+		<result property="relatedhouse" column="relatedhouse"/>
+		<result property="relatedlegal" column="relatedlegal"/>
+		<result property="relateddriver" column="relateddriver"/>
+		<result property="relatedpassport" column="relatedpassport"/>
+	</resultMap>
+	
+	<resultMap id="exportRealityShow" class="realityShow">
+		<result property="lifepattern" column="lifepattern"/>
+		<result property="healthstate" column="healthstate"/>
+		<result property="characteristic" column="characteristic"/>
+		<result property="lifehabit" column="lifehabit"/>
+	</resultMap>
+	<resultMap class="heieditor" id="exporthei" groupBy="personnelid">
+		<result property="addtime" column="addtime" />
+		<result property="addoperator" column="addoperator" />
+		<result property="incontrolleve" column="incontrolleve" />
+		<result property="editableid" column="editableid" />
+		<result property="editablename" column="editablename" />
+		
+		<result property="exportPersonnel" resultMap="heieditor.exportPersonnel"/>
+		<result property="exportRelation" resultMap="heieditor.exportRelation"/>
+		<result property="exportRealityShow" resultMap="heieditor.exportRealityShow"/>
+	</resultMap>
+	<!-- 新增 -->
+	<insert id="add" parameterClass="heieditor">
+		INSERT INTO p_hei_editor_t
+		(personnelid,incontrolleve,editableid,editablename,validflag,addoperator,addoperatorid,departmentid,addtime,memo)
+		VALUES
+		($personnelid$,$incontrolleve$,'$editableid$','$editablename$',1,'$addoperator$',$addoperatorid$,$departmentid$,'$addtime$','$memo$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+   <!-- 修改 -->
+	<update id="update" parameterClass="heieditor">
+		UPDATE p_hei_editor_t
+		SET incontrolleve = $incontrolleve$,
+		editableid='$editableid$',editablename='$editablename$',
+		updateoperator='$updateoperator$',updatetime='$updatetime$',
+		addoperatorid=$addoperatorid$,departmentid=$departmentid$
+		WHERE id = $id$
+	</update>
+	 <!-- 删除 -->
+	<update id="cancel" parameterClass="heieditor">
+		UPDATE p_hei_editor_t
+		SET validflag=0,
+		updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	<select id="searchHeiPersonnel_count" parameterClass="personnel" resultClass="Integer">
+		SELECT
+				count(1)
+			FROM
+				p_personnel_t t1,
+				p_hei_editor_t t2,
+				sys_user_t t3,
+				sys_department_t t4 
+			WHERE
+				t1.id = t2.personnelid 
+				AND t2.validflag>0
+				AND t2.addoperatorid = t3.id 
+				AND t3.departmentid = t4.id 
+				AND ( FIND_IN_SET($addoperatorid$,t2.editableid) OR t2.addoperatorid = $addoperatorid$ )
+		<dynamic prepend="" >
+			<isNotEmpty prepend="AND" property="incontrolleve">
+				t2.incontrolleve = $incontrolleve$
+            </isNotEmpty>
+           <isNotEmpty prepend="AND" property="cardnumber">
+				t1.cardnumber like '%$cardnumber$%'
+			</isNotEmpty>
+			  <isNotEmpty prepend="AND" property="personname">
+				t1.personname like '%$personname$%'
+			</isNotEmpty>
+			 <isNotEmpty prepend="AND" property="sexes">
+				t1.sexes like '%$sexes$%'
+			</isNotEmpty>
+			  <isNotEmpty prepend="AND" property="nation">
+				t1.nation like '%$nation$%'
+			</isNotEmpty>
+			 <isNotEmpty prepend="AND" property="persontype">
+				t1.persontype like '%$persontype$%'
+			</isNotEmpty>
+			  <isNotEmpty prepend="AND" property="homeplace">
+				t1.homeplace like '%$homeplace$%'
+			</isNotEmpty>
+			 <isNotEmpty prepend="AND" property="workplace">
+				t1.workplace like '%$workplace$%'
+			</isNotEmpty>
+			  <isNotEmpty prepend="AND" property="homepolice">
+				t1.homepolice like '%$homepolice$%'
+			</isNotEmpty>
+			 <isNotEmpty prepend="AND" property="workpolice">
+				t1.workpolice like '%$workpolice$%'
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	<select id="searchHeiPersonnel" parameterClass="personnel" resultClass="personnel">
+		SELECT
+				t1.*,
+				t2.id as unitFilter,
+				t2.addoperator AS jurisdictpolice,
+				t3.contactnumber AS policephone,
+				t4.departname AS jurisdictunit,
+				t2.incontrolleve as incontrolleve,
+				t2.editablename AS sqlall
+			FROM
+				p_personnel_t t1,
+				p_hei_editor_t t2,
+				sys_user_t t3,
+				sys_department_t t4 
+			WHERE
+				t1.id = t2.personnelid 
+				AND t2.validflag>0
+				AND t2.addoperatorid = t3.id 
+				AND t3.departmentid = t4.id 
+				AND ( FIND_IN_SET($addoperatorid$,t2.editableid) OR t2.addoperatorid = $addoperatorid$ )
+<!--				AND t1.id IN (-->
+<!--			SELECT DISTINCT-->
+<!--				h.personnelid -->
+<!--			FROM-->
+<!--				p_personnel_t e,-->
+<!--				p_hei_editor_t h -->
+<!--			WHERE-->
+<!--				e.id = h.personnelid -->
+<!--				and e.validflag>0-->
+<!--				and h.validflag>0-->
+<!--		        AND ( FIND_IN_SET($addoperatorid$,h.editableid) OR h.addoperatorid = $addoperatorid$ )-->
+<!--		       )		-->
+		<dynamic prepend="">
+			  <isNotEmpty prepend="AND" property="incontrolleve">
+				t2.incontrolleve = $incontrolleve$
+            </isNotEmpty>
+           <isNotEmpty prepend="AND" property="cardnumber">
+				t1.cardnumber like '%$cardnumber$%'
+			</isNotEmpty>
+			  <isNotEmpty prepend="AND" property="personname">
+				t1.personname like '%$personname$%'
+			</isNotEmpty>
+			 <isNotEmpty prepend="AND" property="sexes">
+				t1.sexes like '%$sexes$%'
+			</isNotEmpty>
+			  <isNotEmpty prepend="AND" property="nation">
+				t1.nation like '%$nation$%'
+			</isNotEmpty>
+			 <isNotEmpty prepend="AND" property="persontype">
+				t1.persontype like '%$persontype$%'
+			</isNotEmpty>
+			  <isNotEmpty prepend="AND" property="homeplace">
+				t1.homeplace like '%$homeplace$%'
+			</isNotEmpty>
+			 <isNotEmpty prepend="AND" property="workplace">
+				t1.workplace like '%$workplace$%'
+			</isNotEmpty>
+			  <isNotEmpty prepend="AND" property="homepolice">
+				t1.homepolice like '%$homepolice$%'
+			</isNotEmpty>
+			 <isNotEmpty prepend="AND" property="workpolice">
+				t1.workpolice like '%$workpolice$%'
+			</isNotEmpty>
+		</dynamic>
+		ORDER BY t1.id
+	</select>
+	<select id="getBypersonnelid" parameterClass="int" resultClass="heieditor">
+		SELECT *
+		FROM p_hei_editor_t
+		WHERE validflag > 0 AND personnelid = $personnelid$
+	</select>
+	<select id="getHeiEditorById" parameterClass="int" resultClass="heieditor">
+		SELECT *
+		FROM p_hei_editor_t
+		WHERE validflag > 0 AND id = $id$
+	</select>
+	
+	
+	<!-- 导出 -->
+	<select id="exportHeiPersonnel" parameterClass="personnel" resultMap="heieditor.exporthei">
+		SELECT gt.*,
+		pt.personname,pt.cardnumber,pt.sexes,pt.usedname,pt.nickname,pt.marrystatus,
+		pt.soldierstatus,pt.heathstatus,pt.politicalposition,pt.nation,	pt.personheight,
+	    pt.faith,pt.education,pt.persontype,pt.houseplace,pt.housepolice,pt.netskillhabit,
+		pt.homepolice,pt.workplace,pt.workpolice,pt.feature,pt.homeplace,
+		pt.speciality,pt.records,rt.telnumber,rt.telephone,rt.relatedwifi,rt.relatedvehicle,
+		rt.bankaccount,rt.netidentity,rt.netpayment,rt.relatedhouse,
+		rt.relatedlegal,rt.relateddriver,rt.relatedpassport,
+		rst.lifepattern,rst.healthstate,rst.characteristic,rst.lifehabit
+		FROM
+			p_hei_editor_t gt
+			LEFT JOIN p_personnel_t pt ON gt.personnelid = pt.id
+			LEFT JOIN p_relation_t rt ON gt.personnelid = rt.personnelid
+			LEFT JOIN p_reality_show_t rst ON ( gt.personnelid = rst.personnelid AND rst.validflag = 1 AND rst.datalabel = 2 )
+			where gt.validflag>0
+		<dynamic prepend="">
+			<isNotEmpty prepend="AND" property="cardnumber">
+				pt.cardnumber like '%$cardnumber$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="personname">
+				pt.personname like '%$personname$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="sexes">
+				pt.sexes = '$sexes$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="nation">
+				pt.nation = '$nation$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="persontype">
+				pt.persontype = '$persontype$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="homeplace">
+				pt.homeplace like '%$homeplace$%'
+			</isNotEmpty>
+		   <isNotEmpty prepend="AND" property="workplace">
+				pt.workplace like '%$workplace$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="homepolice">
+				pt.homepolice like '%$homepolice$%'
+			</isNotEmpty>
+		   <isNotEmpty prepend="AND" property="workpolice">
+				pt.workpolice like '%$workpolice$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="incontrolleve">
+				gt.incontrolleve = '$incontrolleve$'
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	
+	<select id="countDistpersonByIncontrolleve" resultClass="selectModel">
+			select A.incontrolleve,CASE A.incontrolleve WHEN 1 THEN '关注中' WHEN 2 THEN '已打击' END as text,count(k.id) as value from(
+			select 1 as incontrolleve
+			from dual
+			UNION select 2 as incontrolleve
+			from dual)A
+			LEFT JOIN p_hei_editor_t k on k.incontrolleve=A.incontrolleve  and k.validflag>0
+			LEFT JOIN p_personnel_t p on p.id=k.personnelid and p.validflag>0
+			GROUP BY A.incontrolleve
+			ORDER BY A.incontrolleve;
+		</select>
+</sqlMap>

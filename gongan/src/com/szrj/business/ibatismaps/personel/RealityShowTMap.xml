@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+        
+<sqlMap namespace="realityShow">
+	<typeAlias alias="realityShow" type="com.szrj.business.model.personel.RealityShow"/>
+	<select id="getByPersonnelid" parameterClass="realityShow" resultClass="realityShow">
+		SELECT rt.*
+		FROM p_reality_show_t rt
+		WHERE rt.validflag =2 
+		AND rt.personnelid = $personnelid$  
+		AND rt.datalabel= $datalabel$
+	</select>
+	<select id="searchRealityShow_count" parameterClass="realityShow" resultClass="Integer">
+		SELECT COUNT(rt.id)
+		FROM p_reality_show_t rt
+		WHERE rt.validflag >0 AND rt.personnelid = $personnelid$
+		AND rt.datalabel= $datalabel$
+	</select>
+	<select id="searchRealityShow" parameterClass="realityShow" resultClass="realityShow">
+		SELECT rt.*
+		FROM p_reality_show_t rt
+		WHERE rt.validflag >0 AND rt.personnelid = $personnelid$
+		AND rt.datalabel= $datalabel$
+		ORDER BY rt.id desc
+	</select>
+	
+	<!-- 新增 -->
+	<insert id="add" parameterClass="realityShow">
+		INSERT INTO p_reality_show_t
+		(personnelid,datalabel,
+		lifepattern,healthstate,
+		characteristic,lifehabit,
+		validflag,addoperator,addtime,memo)
+		VALUES
+		($personnelid$,$datalabel$,
+		'$lifepattern$','$healthstate$',
+		'$characteristic$','$lifehabit$',
+		$validflag$,'$addoperator$','$addtime$','$memo$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+	<!-- 修改 -->
+	<update id="update" parameterClass="realityShow">
+		UPDATE p_reality_show_t
+		SET validflag=$validflag$,
+		updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	
+	<!-- 政法委 -->
+	<select id="getByPersonnelid_zfw" parameterClass="realityShow" resultClass="realityShow">
+		SELECT rt.*
+		FROM zfw_p_reality_show_t rt
+		WHERE rt.validflag =2 
+		AND rt.personnelid = $personnelid$  
+		AND rt.datalabel= $datalabel$
+	</select>
+	
+	<select id="searchRealityShow_count_zfw" parameterClass="realityShow" resultClass="Integer">
+		SELECT COUNT(rt.id)
+		FROM zfw_p_reality_show_t rt
+		WHERE rt.validflag >0 AND rt.personnelid = $personnelid$
+		AND rt.datalabel= $datalabel$
+	</select>
+	<select id="searchRealityShow_zfw" parameterClass="realityShow" resultClass="realityShow">
+		SELECT rt.*
+		FROM zfw_p_reality_show_t rt
+		WHERE rt.validflag >0 AND rt.personnelid = $personnelid$
+		AND rt.datalabel= $datalabel$
+		ORDER BY rt.id desc
+	</select>
+</sqlMap>

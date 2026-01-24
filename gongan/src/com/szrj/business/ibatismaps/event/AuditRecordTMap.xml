@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="auditRecord">
+	<typeAlias alias="auditRecord" type="com.szrj.business.model.event.AuditRecord"/>
+	
+	<!-- 新增 -->
+	<insert id="add" parameterClass="auditRecord">
+		INSERT INTO e_auditrecord_t
+		(cdtid,examineman,examinetime,examineopinion,result)
+		VALUES
+		($cdtid$,'$examineman$','$examinetime$','$examineopinion$','$result$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+	
+	<select id="search_count" parameterClass="auditRecord" resultClass="Integer">
+		select count(*)
+		from e_auditrecord_t
+		where cdtid=$cdtid$
+		order by examinetime desc
+	</select>
+	<select id="search" parameterClass="auditRecord" resultClass="auditRecord">
+		select *
+		from e_auditrecord_t
+		where cdtid=$cdtid$
+		order by examinetime desc
+	</select>
+</sqlMap>

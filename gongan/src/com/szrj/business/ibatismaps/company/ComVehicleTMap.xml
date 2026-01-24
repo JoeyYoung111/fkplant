@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="vehicle">
+	<typeAlias alias="vehicle" type="com.szrj.business.model.company.Vehicle"/>
+	<typeAlias alias="selectModel" type="com.aladdin.model.SelectModel"/>
+	<!-- 新增 -->
+	<insert id="add" parameterClass="vehicle">
+		insert into v_vehicle_t
+		(companyid,companyname,vehiclecategory,vehicleno,vehiclebrand,vehiclecolor,
+		vehicletype,useNature,transportNo,allowrange,relatedtype,engineno,identificationCode,attachments,
+		validflag,addoperator,addtime,memo)
+		values
+		($companyid$,'$companyname$',$vehiclecategory$,'$vehicleno$','$vehiclebrand$','$vehiclecolor$',
+		'$vehicletype$','$useNature$','$transportNo$','$allowrange$','$relatedtype$','$engineno$','$identificationCode$','$attachments$',
+		1,'$addoperator$','$addtime$','$memo$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+	
+	<!-- 查询 -->
+	<select id="searchVehicle_count" parameterClass="vehicle" resultClass="Integer">
+		select count(id) from v_vehicle_t
+		where validflag > 0
+		<dynamic>
+			<isNotEmpty prepend="AND" property="companyname">
+				(companyname like '%$companyname$%')
+			</isNotEmpty>
+			<isNotEqual prepend="AND" property="vehiclecategory" compareValue="0">
+				vehiclecategory = $vehiclecategory$
+			</isNotEqual>
+			<isNotEmpty prepend="AND" property="vehicleno">
+				(vehicleno like '%$vehicleno$%')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="vehiclecolor">
+				(vehiclecolor like '%$vehiclecolor$%')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="vehicletype">
+				vehicletype = '$vehicletype$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="transportNo">
+				transportNo = '$transportNo$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="engineno">
+				engineno = '$engineno$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="identificationCode">
+				engineno = '$identificationCode$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="identificationCode">
+				identificationCode = '$identificationCode$'
+			</isNotEmpty>
+			<isNotEqual prepend="AND" property="companyid" compareValue="0">
+				companyid = $companyid$
+			</isNotEqual>
+		</dynamic> 
+	</select>
+	<!-- 模糊查询 -->
+	<select id="searchVehicle" parameterClass="vehicle" resultClass="vehicle">
+		select a.*,b.basicName as vehiclecategoryMsg,group_concat(c.basicName separator ',') as relatedtypeMsg
+		from (select * from v_vehicle_t where validflag > 0 
+			<dynamic>
+				<isNotEmpty prepend="AND" property="companyname">
+					(companyname like '%$companyname$%')
+				</isNotEmpty>
+				<isNotEqual prepend="AND" property="vehiclecategory" compareValue="0">
+					vehiclecategory = $vehiclecategory$
+				</isNotEqual>
+				<isNotEmpty prepend="AND" property="vehicleno">
+					(vehicleno like '%$vehicleno$%')
+				</isNotEmpty>
+				<isNotEmpty prepend="AND" property="vehiclecolor">
+					(vehiclecolor like '%$vehiclecolor$%')
+				</isNotEmpty>
+				<isNotEmpty prepend="AND" property="vehicletype">
+					vehicletype = '$vehicletype$'
+				</isNotEmpty>
+				<isNotEmpty prepend="AND" property="transportNo">
+					transportNo = '$transportNo$'
+				</isNotEmpty>
+				<isNotEmpty prepend="AND" property="engineno">
+					engineno = '$engineno$'
+				</isNotEmpty>
+				<isNotEmpty prepend="AND" property="identificationCode">
+					identificationCode = '$identificationCode$'
+				</isNotEmpty>
+				<isNotEqual prepend="AND" property="companyid" compareValue="0">
+					companyid = $companyid$
+				</isNotEqual>
+			</dynamic>
+		)a
+		left join sys_basic_msg_t b on a.vehiclecategory = b.id
+		left join sys_basic_msg_t c on find_in_set(c.id,a.relatedtype)
+		group by a.id
+	</select>
+	
+	<!-- 根据id查询 -->
+	<select id="getById" parameterClass="int" resultClass="vehicle">
+		select a.*,c.basicName as vehiclecategoryMsg,ct.companyname as CnameSearch,
+		group_concat(distinct b.basicName separator ',') as relatedtypeMsg,
+		GROUP_CONCAT(distinct d.fileName SEPARATOR ',') as filenames
+		from (select * from v_vehicle_t where validflag > 0 and id = $id$) a
+		left join sys_basic_msg_t c on a.vehiclecategory = c.id
+		left join sys_basic_msg_t b on find_in_set(b.id,a.relatedtype)
+		left join sys_file_t d on find_in_set(d.id,a.attachments)
+		left join c_company_t ct on a.companyid = ct.id
+		group by a.id
+	</select>
+	
+	<!-- 删除 -->
+	<update id="cancel" parameterClass="vehicle">
+		update v_vehicle_t set validflag = 0,updateoperator='$updateoperator$',updatetime='$updatetime$' WHERE ID = $id$
+	</update>
+	
+	<!-- 修改 -->
+	<update id="update" parameterClass="vehicle">
+		update v_vehicle_t set companyname='$companyname$',vehiclecategory=$vehiclecategory$,
+		vehicleno='$vehicleno$',vehiclebrand='$vehiclebrand$',vehiclecolor='$vehiclecolor$',
+		vehicletype='$vehicletype$',useNature='$useNature$',transportNo='$transportNo$',
+		allowrange='$allowrange$',relatedtype='$relatedtype$',engineno='$engineno$',identificationCode='$identificationCode$',
+		attachments='$attachments$',updateoperator='$updateoperator$',updatetime='$updatetime$',
+		memo='$memo$' where id = $id$
+	</update>
+
+	<update id="upVehCompanyName">
+		update v_vehicle_t set companyname='$companyname$' where companyid = $companyid$
+	</update>
+
+	<select id="checkCP" parameterClass="String" resultClass="Integer">
+		select count(1) from v_vehicle_t where validflag > 0 and vehicleno = '$vehicleno$'
+	</select>
+
+	<select id="countByVehicletype" resultClass="selectModel">
+		SELECT
+			A.vehicletype name,
+			count( v.id ) value 
+		FROM
+			( SELECT '牵引车' AS vehicletype FROM DUAL UNION SELECT '挂车' AS vehicletype FROM DUAL UNION SELECT '货车' AS vehicletype FROM DUAL ) A
+			LEFT JOIN v_vehicle_t v ON v.vehicletype LIKE CONCAT( '%', A.vehicletype, '%' ) 
+			AND v.validflag > 0 
+		GROUP BY
+			A.vehicletype 
+		ORDER BY value DESC;
+	</select>
+</sqlMap>

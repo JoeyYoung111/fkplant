@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="appButton">
+	<typeAlias alias="appButton" type="com.szrj.business.model.AppButton"/>
+	
+	<!-- 根据菜单信息查询（分页） -->
+	<select id="searchAppButton_count" parameterClass="appButton" resultClass="Integer">
+		SELECT COUNT(a1.id)
+		FROM sys_appbutton_t a1,sys_appbutton_t a2
+		WHERE a1.validflag > 0 AND a2.validflag > 0 AND a1.parentid = a2.id AND a1.parentid > 0
+		<dynamic prepend="">
+			<isNotEmpty prepend="AND" property="btnname">
+				a1.btnname like '%$btnname$%'
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	<select id="searchAppButton" parameterClass="appButton" resultClass="appButton">
+		SELECT a1.*,a2.btnname AS parentname
+		FROM sys_appbutton_t a1,sys_appbutton_t a2
+		WHERE a1.validflag > 0 AND a2.validflag > 0 AND a1.parentid = a2.id AND a1.parentid > 0
+		<dynamic prepend="">
+			<isNotEmpty prepend="AND" property="btnname">
+				a1.btnname like '%$btnname$%'
+			</isNotEmpty>
+		</dynamic>
+		ORDER BY a2.orderno,a1.parentid,a1.orderno
+	</select>
+	<!-- 新增 -->
+	<insert id="add" parameterClass="appButton">
+		INSERT INTO sys_appbutton_t
+		(btnname,parentid,icon,orderno,btntype,addoperator,addtime)
+		VALUES
+		('$btnname$',$parentid$,'$icon$',$orderno$,$btntype$,'$addoperator$','$addtime$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+	
+	<!-- 删除 -->
+	<update id="cancel" parameterClass="int">
+		UPDATE sys_appbutton_t
+		SET validflag = 0
+		WHERE id = $id$
+	</update>
+	
+	<!-- 修改 -->
+	<update id="update" parameterClass="appButton">
+		UPDATE sys_appbutton_t
+		SET btnname = '$btnname$',parentid = $parentid$,orderno = $orderno$,icon='$icon$'
+		WHERE id = $id$
+	</update>
+	
+	<select id="getZhuButton" resultClass="appButton">
+		SELECT *
+		FROM sys_appbutton_t
+		WHERE parentid = 0 AND validflag > 0
+		ORDER BY orderno
+	</select>
+	
+	<select id="searchAllAppButton"  resultClass="appButton" parameterClass="appButton" >
+		SELECT *
+		FROM sys_appbutton_t
+		WHERE validflag > 0 
+		<dynamic prepend="">
+			<isNotEmpty prepend="AND" property="btnname">
+				btnname like '%$btnname$%'
+			</isNotEmpty>
+		</dynamic>
+		ORDER BY orderno
+	</select>
+	
+	<select id="getById" parameterClass="int" resultClass="appButton">
+		SELECT a1.*,a2.btnname AS parentname FROM(
+		SELECT * FROM sys_appbutton_t
+		WHERE id = $id$)a1 LEFT JOIN sys_appbutton_t a2 ON a1.parentid = a2.id
+	</select>
+	
+	<select id="getMainMobileButton" parameterClass="int" resultClass="appButton">
+		SELECT * FROM sys_appbutton_t
+		WHERE FIND_IN_SET(id,(SELECT appbuttonIds FROM sys_role_appbutton_t where roleid=$roleid$)) and btntype=1
+	</select>
+	
+	<select id="getMobileButtonByParentid" parameterClass="appButton" resultClass="appButton">
+		SELECT * FROM sys_appbutton_t
+		WHERE parentid=$parentid$ and FIND_IN_SET(id,(select appbuttonids from sys_role_appbutton_t where roleId=$roleId$))
+	</select>
+</sqlMap>

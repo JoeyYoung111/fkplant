@@ -1,0 +1,1254 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+        
+<sqlMap namespace="personnel">
+	<typeAlias alias="personnel" type="com.szrj.business.model.personel.Personnel"/>
+	<typeAlias alias="mapModel" type="com.aladdin.model.MapModel"/>
+	<typeAlias alias="personlabel" type="com.szrj.business.model.personel.PersonLabel"/>
+	<typeAlias alias="customlabel" type="com.szrj.business.model.personel.CustomLabel"/>
+	<typeAlias alias="customtext" type="com.szrj.business.model.personel.CustomText"/>
+	<typeAlias alias="attributelabel" type="com.szrj.business.model.personel.AttributeLabel"/>
+	<typeAlias alias="zfwpersonnel" type="com.szrj.business.model.personel.Personnel"/>
+	 <parameterMap id="thismap"  class="java.util.HashMap">
+	       <parameter property="id"  jdbcType="VARCHAR"  javaType="java.lang.String" mode="IN"/>
+	  </parameterMap>
+	<select id="getById" parameterClass="int" resultClass="personnel">
+		SELECT pt.*,
+        pt.home_police_station_id AS homePoliceStationId,
+		pt.house_province AS houseProvince,
+		pt.house_city AS houseCity,
+		pt.house_county AS houseCounty,
+		pt.house_town AS houseTown,
+		pt.home_province AS homeProvince,
+		pt.home_city AS homeCity,
+		pt.home_county AS homeCounty,
+		pt.home_town AS homeTown,
+		pt.handle_unit AS handleUnit,
+		pt.handle_unit_code AS handleUnitCode,
+		pt.has_shedu_record AS hasSheduRecord,
+		pt.has_shechang_record AS hasSechangRecord,
+		pt.is_minor AS isMinor,
+		d1.departname AS jurisdictunit,d2.departname AS policephone,
+u1.staffName as jurisdictpolice,u2.staffName as incontrolleve,rt.telnumber
+		FROM p_personnel_t pt
+<!--		LEFT JOIN p_personnel_extend_t pet ON pt.id=pet.personnelid AND pet.validflag>0-->
+		LEFT JOIN sys_department_t d1 on pt.jdunit1=d1.id
+		LEFT JOIN sys_department_t d2 on pt.jdunit2=d2.id
+		LEFT JOIN sys_user_t u1 on pt.jdpolice1=u1.id
+		LEFT JOIN sys_user_t u2 on pt.jdpolice2=u2.id
+		LEFT JOIN p_relation_t rt on rt.personnelid=pt.id and rt.validflag>0
+		WHERE pt.validflag > 0 AND pt.id = $id$
+	</select>
+	<!-- 新增 -->
+	<insert id="add" parameterClass="personnel">
+		INSERT INTO p_personnel_t
+		(cardnumber,personname,personlabel,sexes,persontype,attributelabels,jdunit1,jdpolice1,pphone1,zslabel1,lslabel1,
+		jdunit2,jdpolice2,pphone2,validflag,addoperator,addoperatorid,addtime,memo,houseplace,homeplace,checkmethod,
+		records,nation,marrystatus,education,workplace)
+		VALUES
+		('$cardnumber$','$personname$','$personlabel$','$sexes$','$persontype$','$attributelabels$','$jdunit1$','$jdpolice1$',
+		'$pphone1$','$zslabel1$','$lslabel1$','$jdunit2$','$jdpolice2$','$pphone2$',$validflag$,'$addoperator$',$addoperatorid$,
+		'$addtime$','$memo$','$houseplace$','$homeplace$','$checkmethod$','$records$','$nation$','$marrystatus$','$education$','$workplace$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+	<!-- 删除 -->
+	<update id="cancel" parameterClass="personnel">
+		UPDATE p_personnel_t
+		SET validflag = 0,
+		updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	<!-- 修改 -->
+	<update id="update" parameterClass="personnel">
+		UPDATE p_personnel_t
+		SET usedname='$usedname$',nickname='$nickname$',nation='$nation$',marrystatus='$marrystatus$',
+		personheight='$personheight$',netskillhabit='$netskillhabit$',
+		education='$education$',persontype='$persontype$',soldierstatus='$soldierstatus$',
+		heathstatus='$heathstatus$',politicalposition='$politicalposition$',faith='$faith$',
+		houseplace='$houseplace$',housepolice='$housepolice$',
+		homeplace='$homeplace$',homepolice='$homepolice$',homewifi='$homewifi$',homewide='$homewide$',
+		workplace='$workplace$',workpolice='$workpolice$',workwifi='$workwifi$',workwide='$workwide$',
+		housex='$housex$',housey='$housey$',
+		homex='$homex$',homey='$homey$',
+		workx='$workx$',worky='$worky$',
+		feature='$feature$',speciality='$speciality$',records='$records$',checkmethod='$checkmethod$',
+		personlabel='$personlabel$',attributelabels='$attributelabels$',
+		maintainrate1=$maintainrate1$,maintainrate1=$maintainrate2$,
+		maintainrate1=$maintainrate3$,maintainrate1=$maintainrate4$,
+		updateoperator='$updateoperator$',updatetime='$updatetime$',memo='$memo$',
+		jdunit1='$jdunit1$',jdpolice1='$jdpolice1$',pphone1='$pphone1$',zslabel1='$zslabel1$',
+		jdunit2='$jdunit2$',jdpolice2='$jdpolice2$',pphone2='$pphone2$'
+		WHERE id = $id$
+	</update>
+	<update id="updateSK" parameterClass="personnel">
+		UPDATE p_personnel_t
+		SET personname='$personname$',usedname='$usedname$',nickname='$nickname$',nation='$nation$',marrystatus='$marrystatus$',
+		personheight='$personheight$',netskillhabit='$netskillhabit$',
+		education='$education$',persontype='$persontype$',soldierstatus='$soldierstatus$',
+		heathstatus='$heathstatus$',politicalposition='$politicalposition$',faith='$faith$',
+		houseplace='$houseplace$',housepolice='$housepolice$',
+		homeplace='$homeplace$',homepolice='$homepolice$',homewifi='$homewifi$',homewide='$homewide$',
+		workplace='$workplace$',workpolice='$workpolice$',workwifi='$workwifi$',workwide='$workwide$',
+		housex='$housex$',housey='$housey$',
+		homex='$homex$',homey='$homey$',
+		workx='$workx$',worky='$worky$',
+		feature='$feature$',speciality='$speciality$',records='$records$',checkmethod='$checkmethod$',
+		personlabel='$personlabel$',attributelabels='$attributelabels$',
+		maintainrate1=$maintainrate1$,maintainrate1=$maintainrate2$,
+		maintainrate1=$maintainrate3$,maintainrate1=$maintainrate4$,
+		updateoperator='$updateoperator$',updatetime='$updatetime$',memo='$memo$',
+		jdunit1='$jdunit1$',jdpolice1='$jdpolice1$',pphone1='$pphone1$',zslabel1='$zslabel1$',
+		jdunit2='$jdunit2$',jdpolice2='$jdpolice2$',pphone2='$pphone2$',
+		house_province='$houseProvince$',house_city='$houseCity$',house_county='$houseCounty$',house_town='$houseTown$',
+		home_province='$homeProvince$',home_city='$homeCity$',home_county='$homeCounty$',home_town='$homeTown$',
+		handle_unit='$handleUnit$',handle_unit_code='$handleUnitCode$',
+		home_police_station_id=#homePoliceStationId#,
+		house_police_station_id=#housePoliceStationId#
+		<isNotNull prepend="," property="hasSheduRecord">has_shedu_record=$hasSheduRecord$</isNotNull>
+		<isNotNull prepend="," property="hasSechangRecord">has_shechang_record=$hasSechangRecord$</isNotNull>
+		<isNotNull prepend="," property="isMinor">is_minor=$isMinor$</isNotNull>
+		WHERE id = $id$
+	</update>
+	<update id="updateSX" parameterClass="personnel">
+		UPDATE p_personnel_t
+		SET personname='$personname$',sexes='$sexes$',usedname='$usedname$',nickname='$nickname$',nation='$nation$',marrystatus='$marrystatus$',
+		personheight='$personheight$',netskillhabit='$netskillhabit$',
+		education='$education$',persontype='$persontype$',soldierstatus='$soldierstatus$',
+		heathstatus='$heathstatus$',politicalposition='$politicalposition$',faith='$faith$',
+		houseplace='$houseplace$',housepolice='$housepolice$',
+		homeplace='$homeplace$',homepolice='$homepolice$',homewifi='$homewifi$',homewide='$homewide$',
+		workplace='$workplace$',workpolice='$workpolice$',workwifi='$workwifi$',workwide='$workwide$',
+		housex='$housex$',housey='$housey$',
+		homex='$homex$',homey='$homey$',
+		workx='$workx$',worky='$worky$',
+		feature='$feature$',speciality='$speciality$',records='$records$',checkmethod='$checkmethod$',
+		personlabel='$personlabel$',attributelabels='$attributelabels$',
+		maintainrate1=$maintainrate1$,maintainrate1=$maintainrate2$,
+		maintainrate1=$maintainrate3$,maintainrate1=$maintainrate4$,
+		updateoperator='$updateoperator$',updatetime='$updatetime$',memo='$memo$',
+		jdunit1='$jdunit1$',jdpolice1='$jdpolice1$',pphone1='$pphone1$',zslabel1='$zslabel1$',
+		jdunit2='$jdunit2$',jdpolice2='$jdpolice2$',pphone2='$pphone2$'
+		WHERE id = $id$
+	</update>
+	<select id="findPersonInPersonnel" parameterClass="String" resultClass="int">
+		SELECT IFNULL(id,COUNT(id)) 
+		FROM p_personnel_t
+		WHERE validflag > 0 AND cardnumber = '$cardnumber$';
+	</select>
+	<select id="getPersonnelByCardnumber" parameterClass="String" resultClass="personnel">
+		SELECT	* 
+       	FROM	p_personnel_t 
+       	WHERE	validflag > 0 AND cardnumber =  '$cardnumber$' and isrisk = 1
+		ORDER BY id desc   LIMIT 1
+	</select>
+	<select id="getAllPersonnel_count" parameterClass="personnel" resultClass="Integer">
+		SELECT COUNT(pt.id)
+		FROM p_personnel_t pt
+<!--		LEFT JOIN p_wen_grade_t wgt ON (wgt.personnelid=pt.id AND wgt.validflag>0)-->
+<!--		LEFT JOIN p_du_extend_t det ON (det.personnelid=pt.id AND det.validflag>0)-->
+		WHERE pt.validflag>0 and pt.isrisk = 1
+		<dynamic prepend="">
+			<isNotEmpty prepend="AND" property="cardnumber">
+				pt.cardnumber like '%$cardnumber$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="personname">
+				pt.personname like '%$personname$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="marrystatus">
+				FIND_IN_SET(pt.marrystatus,'$marrystatus$')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="education">
+				FIND_IN_SET(pt.education,'$education$')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="persontype">
+				FIND_IN_SET(pt.persontype,'$persontype$')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="nation">
+				pt.nation='$nation$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="soldierstatus">
+				pt.soldierstatus='$soldierstatus$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="heathstatus">
+				pt.heathstatus='$heathstatus$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="politicalposition">
+				pt.politicalposition='$politicalposition$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="faith">
+				pt.faith='$faith$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="sqlall">
+				($sqlall$)
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	<select id="getAllPersonnel" parameterClass="personnel" resultClass="personnel">
+		SELECT A.*,GROUP_CONCAT(ppt.personlabel ORDER BY ppt.id SEPARATOR ',') AS attributelabelname
+		FROM (SELECT pt.*,GROUP_CONCAT(P.personlabel ORDER BY P.id SEPARATOR ',') AS personlabelname
+				  FROM p_personnel_t pt
+<!--				  LEFT JOIN p_wen_grade_t wgt ON (wgt.personnelid=pt.id AND wgt.validflag>0)-->
+<!--				  LEFT JOIN p_du_extend_t det ON (det.personnelid=pt.id AND det.validflag>0)-->
+				  LEFT JOIN (select 1 id,'涉稳人员' personlabel from DUAL UNION
+					 select 2 id,'涉恐人员' personlabel from DUAL UNION
+					 select 3 id,'涉黑人员' personlabel from DUAL UNION
+					 select 4 id,'涉毒人员' personlabel from DUAL) P 
+					 ON FIND_IN_SET(P.id,pt.personlabel)
+				  WHERE pt.validflag>0 and pt.isrisk = 1
+				<dynamic prepend="">
+					<isNotEmpty prepend="AND" property="cardnumber">
+						pt.cardnumber like '%$cardnumber$%'
+					</isNotEmpty>
+					<isNotEmpty prepend="AND" property="personname">
+						pt.personname like '%$personname$%'
+					</isNotEmpty>
+					<isNotEmpty prepend="AND" property="marrystatus">
+						FIND_IN_SET(pt.marrystatus,'$marrystatus$')
+					</isNotEmpty>
+					<isNotEmpty prepend="AND" property="education">
+						FIND_IN_SET(pt.education,'$education$')
+					</isNotEmpty>
+					<isNotEmpty prepend="AND" property="persontype">
+						FIND_IN_SET(pt.persontype,'$persontype$')
+					</isNotEmpty>
+					<isNotEmpty prepend="AND" property="nation">
+						pt.nation='$nation$'
+					</isNotEmpty>
+					<isNotEmpty prepend="AND" property="soldierstatus">
+						pt.soldierstatus='$soldierstatus$'
+					</isNotEmpty>
+					<isNotEmpty prepend="AND" property="heathstatus">
+						pt.heathstatus='$heathstatus$'
+					</isNotEmpty>
+					<isNotEmpty prepend="AND" property="politicalposition">
+						pt.politicalposition='$politicalposition$'
+					</isNotEmpty>
+					<isNotEmpty prepend="AND" property="faith">
+						pt.faith='$faith$'
+					</isNotEmpty>
+					<isNotEmpty prepend="AND" property="sqlall">
+						($sqlall$)
+					</isNotEmpty>
+				</dynamic>
+				GROUP BY pt.id) A
+		LEFT JOIN p_attributelabel_t pat ON (FIND_IN_SET(pat.id,A.attributelabels)>0 AND pat.validflag>0)
+		LEFT JOIN p_personlabel_t ppt ON (FIND_IN_SET(pat.id,ppt.attributelabels)>0 AND ppt.validflag>0)
+		GROUP BY A.id
+		ORDER BY if(isnull(A.zslabel1),1,0),if(length(A.zslabel1),0,1),if(FIND_IN_SET(1,A.zslabel1),0,1),A.updatetime desc
+	</select>
+	<select id="getWholePersonnel_count" parameterClass="personnel" resultClass="Integer">
+		SELECT COUNT(pt.id)
+		FROM p_personnel_t pt
+		LEFT JOIN sys_user_t ut1 ON pt.jdpolice1=ut1.id
+	  	LEFT JOIN sys_user_t ut2 ON pt.jdpolice2=ut2.id
+		WHERE pt.validflag>0 and pt.isrisk = 1
+		and ((pt.zslabel1=3 
+				and (select count(1) from p_hei_editor_t where validflag=1 
+						and ( FIND_IN_SET($addoperatorid$,editableid) OR addoperatorid = $addoperatorid$ )
+					)>0
+				)
+				or pt.zslabel1!=3
+			)
+		and ((pt.zslabel1=9 and (pt.jdpolice1=$addoperatorid$ or pt.jdpolice2=$addoperatorid$))
+				or pt.zslabel1!=9
+			)
+		<dynamic prepend="">
+			<isNotEmpty prepend="AND" property="cardnumber">
+				pt.cardnumber like '%$cardnumber$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="personname">
+				pt.personname like '%$personname$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="telnumber">
+				IFNULL((SELECT count(id) FROM p_relation_telnumber_t WHERE personnelid=pt.id AND validflag>0 AND telnumber like '%$telnumber$%'),0)>0
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="homeplace">
+				pt.homeplace like '%$homeplace$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="jdunit1">
+				(FIND_IN_SET(pt.jdunit1,'$jdunit1$') OR FIND_IN_SET(pt.jdunit2,'$jdunit1$'))
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="jdpolice1">
+				(ut1.staffName like '%$jdpolice1$%' OR ut2.staffName like '%$jdpolice1$%')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="persontype">
+				pt.persontype = '$persontype$'
+			</isNotEmpty>
+			<isNotEqual prepend="AND" property="unitFilter" compareValue="0">
+				(pt.jdunit1 = $unitFilter$  or pt.jdunit2 = $unitFilter$)
+	        </isNotEqual>
+			<isNotEqual prepend="AND" property="personFilter" compareValue="0">
+				(pt.jdpolice1 = $personFilter$ or pt.jdpolice2 = $personFilter$)
+	        </isNotEqual>
+			<isNotEmpty prepend="AND" property="sqlall">
+				($sqlall$)
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	<select id="getWholePersonnel" parameterClass="personnel" resultClass="personnel">
+		SELECT pt.*,IFNULL(dt.departname,'') AS jurisdictunit,IFNULL(ut1.staffName,'') AS jurisdictpolice
+		  FROM p_personnel_t pt
+		  LEFT JOIN sys_user_t ut1 ON pt.jdpolice1=ut1.id
+		  LEFT JOIN sys_user_t ut2 ON pt.jdpolice2=ut2.id
+		  LEFT JOIN sys_department_t dt ON pt.jdunit1=dt.id
+		  WHERE pt.validflag>0 and pt.isrisk = 1
+		  and ((pt.zslabel1=3 
+				and (select count(1) from p_hei_editor_t where validflag=1 
+						and ( FIND_IN_SET($addoperatorid$,editableid) OR addoperatorid = $addoperatorid$ )
+					)>0
+				)
+				or pt.zslabel1!=3
+			)
+		  and ((pt.zslabel1=9 and (pt.jdpolice1=$addoperatorid$ or pt.jdpolice2=$addoperatorid$))
+				or pt.zslabel1!=9
+			)
+		<dynamic prepend="">
+			<isNotEmpty prepend="AND" property="cardnumber">
+				pt.cardnumber like '%$cardnumber$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="personname">
+				pt.personname like '%$personname$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="telnumber">
+				IFNULL((SELECT count(id) FROM p_relation_telnumber_t WHERE personnelid=pt.id AND validflag>0 AND telnumber like '%$telnumber$%'),0)>0
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="homeplace">
+				pt.homeplace like '%$homeplace$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="jdunit1">
+				(FIND_IN_SET(pt.jdunit1,'$jdunit1$') OR FIND_IN_SET(pt.jdunit2,'$jdunit1$'))
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="jdpolice1">
+				(ut1.staffName like '%$jdpolice1$%' OR ut2.staffName like '%$jdpolice1$%')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="persontype">
+				pt.persontype = '$persontype$'
+			</isNotEmpty>
+			<isNotEqual prepend="AND" property="unitFilter" compareValue="0">
+				(pt.jdunit1 = $unitFilter$  or pt.jdunit2 = $unitFilter$)
+	        </isNotEqual>
+			<isNotEqual prepend="AND" property="personFilter" compareValue="0">
+				(pt.jdpolice1 = $personFilter$ or pt.jdpolice2 = $personFilter$)
+	        </isNotEqual>
+			<isNotEmpty prepend="AND" property="sqlall">
+				($sqlall$)
+			</isNotEmpty>
+		</dynamic>
+		order by
+		if(isnull(pt.zslabel1),1,0),if(length(pt.zslabel1),0,1),if(FIND_IN_SET(1,pt.zslabel1),0,1),pt.updatetime desc
+	</select>
+	
+	<select id="expandFxsjPerson"  resultClass="personnel"  parameterClass="int">
+	    select p.* ,sf.fileallName
+		from e_keypersonnel_t kp
+		LEFT JOIN p_personnel_t p on kp.personnelid = p.id and p.isrisk = 1
+		LEFT JOIN p_personnel_photo_t ph on ph.personnelid = p.id and ph.validflag>0 and defaultflag=1
+		LEFT JOIN sys_file_t sf on sf.id = ph.fileid and sf.validflag>0
+		where kp.validflag>0 and kp.cdtid=#cdtid# and p.validflag>0
+	</select>
+<!-- ******************************************人员属性标签 ********************************************************************** -->
+	<insert id="addattributelabel" parameterClass="attributelabel">
+		INSERT INTO p_attributelabel_t
+		(attributelabel,parentid,examineflag,departmentid,validflag,adddepartmentid,addoperatorid,addoperator,addtime,examineman,examinetime,memo)
+		VALUES
+		('$attributelabel$',$parentid$,$examineflag$,'$departmentid$',$validflag$,$adddepartmentid$,$addoperatorid$,'$addoperator$','$addtime$','$examineman$','$examinetime$','$memo$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+    <update id="updateattributelabel" parameterClass="attributelabel">
+		UPDATE p_attributelabel_t
+		SET attributelabel = '$attributelabel$',parentid=$parentid$,
+		memo='$memo$',departmentid='$departmentid$',
+		updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	<update id="cancelattributelabel" parameterClass="attributelabel">
+		UPDATE p_attributelabel_t
+		SET validflag = 0,
+		updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	<!-- 审核 -->
+	<update id="examineattributelabel" parameterClass="attributelabel">
+		UPDATE p_attributelabel_t
+		SET examineflag = $examineflag$,
+		examineman='$examineman$',examinetime='$examinetime$'
+		WHERE id = $id$
+	</update>
+	<select id="searchAttributeLabel"  resultClass="attributelabel">
+	   SELECT  t1.*,
+	   GROUP_CONCAT( t2.departname ORDER BY t2.id SEPARATOR ',' ) AS departname
+		FROM
+			p_attributelabel_t t1
+			LEFT JOIN sys_department_t t2 ON FIND_IN_SET(t2.id,t1.departmentid)
+		WHERE
+			t1.validflag > 0  and t1.examineflag=1 and t1.rootid!=9
+			GROUP BY
+				t1.id
+	</select>
+	<select id="searchAttributeLabelWithoutChildren"  resultClass="attributelabel">
+	   SELECT  t1.*,
+	   GROUP_CONCAT( t2.departname ORDER BY t2.id SEPARATOR ',' ) AS departname
+		FROM
+			p_attributelabel_t t1
+			LEFT JOIN sys_department_t t2 ON FIND_IN_SET(t2.id,t1.departmentid)
+		WHERE
+			t1.validflag > 0  and t1.examineflag=1 and t1.rootid!=9 and t1.parentid=0
+			GROUP BY
+				t1.id
+	</select>
+	<select id="searchAllAttributeLabel"  resultClass="attributelabel">
+	   SELECT  t1.*,
+	   GROUP_CONCAT( t2.departname ORDER BY t2.id SEPARATOR ',' ) AS departname
+		FROM
+			p_attributelabel_t t1
+			LEFT JOIN sys_department_t t2 ON FIND_IN_SET(t2.id,t1.departmentid)
+		WHERE
+			t1.validflag > 0  and t1.examineflag=1
+			GROUP BY
+				t1.id
+	</select>
+	<select id="searchAttributeLabelBySearch" parameterClass="String" resultClass="attributelabel">
+	   SELECT  t1.*,
+	   GROUP_CONCAT( t2.departname ORDER BY t2.id SEPARATOR ',' ) AS departname
+		FROM
+			p_attributelabel_t t1
+			LEFT JOIN sys_department_t t2 ON FIND_IN_SET(t2.id,t1.departmentid)
+		WHERE
+			t1.validflag > 0 and t1.examineflag=1 and t1.rootid!=9 AND t1.attributelabel LIKE CONCAT('%',#searchtext#,'%')
+			GROUP BY
+				t1.id
+	</select>
+	<select id="getAttributeLabelByid"  resultClass="attributelabel"  parameterClass="int">
+	    select *  from p_attributelabel_t where id=$id$
+	</select>
+	<select id="getAttributeLabelByids"  resultClass="attributelabel"  parameterClass="String">
+	    select *  from p_attributelabel_t where id  in  ($attributelabel$)
+	</select>
+	<select id="getAttributeLabelByParentid"  resultClass="attributelabel"  parameterClass="int">
+	    select * from p_attributelabel_t where validflag>0 and parentid=$parentid$
+	</select>
+	<!-- 警种部门负责的一级标签 -->
+	<select id="getAttributeLabelByDepartmentid"  resultClass="attributelabel"  parameterClass="attributelabel">
+	    select * from p_attributelabel_t where validflag>0 and parentid=$parentid$ and find_in_set($departmentid$,departmentid)
+	</select>
+	<select id="getChildrenLabelByParentid"  resultClass="attributelabel"  parameterClass="int">
+	    select * from p_attributelabel_t where FIND_IN_SET(id,queryChildren($parentid$)) and examineflag=1
+	</select>
+	<!-- 带根节点的递归查询 -->
+	<select id="getChildrenLabelByParentid1"  resultClass="attributelabel"  parameterClass="int">
+	    select * from p_attributelabel_t where FIND_IN_SET(id,queryChildrenWithRoot($parentid$))  and examineflag=1
+	</select>
+	
+	
+	
+	  <!--只查询未审核数据 -->
+	  <!--and FIND_IN_SET($departmentid$,(select  t.departmentid from p_attributelabel_t t where  t.id=a.rootid))-->
+	  <select id="getAttributeLabelnoexamine"  resultClass="java.lang.String"  parameterClass="attributelabel">
+	     select GROUP_CONCAT(a.id) from p_attributelabel_t a where a.examineflag=0 and a.validflag=1
+	     <dynamic prepend="">
+		     <isNotEqual prepend="AND" property="departmentid" compareValue="0">
+					FIND_IN_SET($departmentid$,(select  t.departmentid from p_attributelabel_t t where  t.id=a.rootid))
+		     </isNotEqual>
+	     </dynamic>
+	   
+	   </select>
+	  <!--反递归 查询所有上级节点 -->
+	 
+      <procedure  id="selectParentIds" resultClass="java.lang.String" parameterMap="thismap">
+          {call sp_showAttributelabelParentLst(?)};
+      </procedure>
+     <!--根据id字符串查询所有数据 -->
+	  <select id="getAttributeLabelbyids"  resultClass="attributelabel"  parameterClass="java.lang.String">
+	      select * from p_attributelabel_t   where  id  in ($ids$)
+	  </select>
+	  <select id="getAttributeLabelbyRootid"  resultClass="attributelabel"  parameterClass="int">
+	      select * from p_attributelabel_t   where  rootid=$rootid$
+	  </select>
+	
+	 <!-- 标签模块 反向递归获得顶级父节点id后，获取记录中部门信息下的所有usercode  -->
+	 <select id="getUserCodeForSendChat" parameterClass="int" resultClass="java.lang.String">
+	 	select GROUP_CONCAT(u.usercode) 
+	 	from sys_user_t u 
+	 	where FIND_IN_SET(u.departmentid,(select departmentid from p_attributelabel_t where id = $ids$))
+	 </select>
+	 
+	 <!-- 给rootid赋值 -->
+	 <update id="updaterootid" parameterClass="attributelabel">
+		UPDATE p_attributelabel_t
+		SET rootid = $rootid$
+		WHERE id = $id$
+	</update>
+	
+	
+	
+	<!-- ******************************************警种类型标签 ********************************************************************** -->
+	<insert id="addpersonlabel" parameterClass="personlabel">
+		INSERT INTO p_personlabel_t
+		(personlabel,validflag,addoperator,addtime,memo)
+		VALUES
+		('$personlabel$',$validflag$,'$addoperator$','$addtime$','$memo$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+    <update id="updatepersonlabel" parameterClass="personlabel">
+		UPDATE p_personlabel_t
+		SET personlabel = '$personlabel$',
+		updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	<update id="cancelpersonlabel" parameterClass="personlabel">
+		UPDATE p_personlabel_t
+		SET validflag = 0,
+		updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	<update id="updateattributelabels" parameterClass="personlabel">
+		UPDATE p_personlabel_t
+		SET attributelabels = '$attributelabels$',
+		updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	<select id="searchPersonLabel"  resultClass="personlabel">
+	    select *  from p_personlabel_t where validflag>0  order by id asc
+	</select>
+	<select id="getPersonLabelByid"  resultClass="personlabel"  parameterClass="int">
+	    select *  from p_personlabel_t where id=$id$
+	</select>
+	<select id="getPersonLabelsByAttributesql"  resultClass="personlabel"  parameterClass="String">
+	    select GROUP_CONCAT(id ORDER BY id) AS attributelabels,GROUP_CONCAT(personlabel ORDER BY id) AS memo from p_personlabel_t where $attributesql$
+	</select>
+	<!-- ******************************************人员自定义工作标签 ********************************************************************** -->
+	<insert id="addcustomlabel" parameterClass="customlabel">
+		INSERT INTO p_customlabel_t
+		(personlabel,parentid,customlabel,labledescription,validflag,addoperator,addtime,memo)
+		VALUES
+		($personlabel$,$parentid$,'$customlabel$','$labledescription$',$validflag$,'$addoperator$','$addtime$','$memo$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+    <update id="updatecustomlabel" parameterClass="customlabel">
+		UPDATE p_customlabel_t
+		SET customlabel = '$customlabel$',labledescription = '$labledescription$',parentid=$parentid$,
+		updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	<update id="cancelcustomlabel" parameterClass="customlabel">
+		UPDATE p_customlabel_t
+		SET validflag = 0,
+		updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	<select id="searchCustomLabel"  resultClass="customlabel" parameterClass="customlabel">
+	    select *  from p_customlabel_t where validflag>0  and  personlabel=$personlabel$
+	 </select>
+	<select id="getCustomLabelByid"  resultClass="customlabel"  parameterClass="int">
+	    select ct.*,pt.personlabel AS personlabelname
+	    from p_customlabel_t ct 
+	    LEFT JOIN p_personlabel_t pt ON pt.id=ct.personlabel AND pt.validflag>0
+	    where ct.id=$id$
+	</select>
+	<!-- ******************************************人员自定义档案 ********************************************************************** -->
+	<insert id="addcustomtext" parameterClass="customtext">
+		INSERT INTO p_customtext_t
+		(personnelid,attachments,validflag,addoperator,addtime,memo,
+		title1,text1,title2,text2,title3,text3,title4,text4,title5,text5
+		)
+		VALUES
+		($personnelid$,'$attachments$',$validflag$,'$addoperator$','$addtime$','$memo$',
+		'$title1$','$text1$','$title2$','$text2$','$title3$','$text3$','$title4$','$text4$','$title5$','$text5$'
+		)
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+    <update id="updatecustomtext" parameterClass="customtext">
+		UPDATE p_customtext_t
+		SET attachments = '$attachments$',
+		updateoperator='$updateoperator$',updatetime='$updatetime$',
+		title1='$title1$',text1='$text1$',
+		title2='$title2$',text2='$text2$',
+		title3='$title3$',text3='$text3$',
+		title4='$title4$',text4='$text4$',
+		title5='$title5$',text5='$text5$'
+		WHERE id = $id$
+	</update>
+	<update id="cancelcustomtext" parameterClass="customtext">
+		UPDATE p_customtext_t
+		SET validflag = 0,
+		updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	<select id="getCustomtextByid"  resultClass="customtext"  parameterClass="int">
+	    select ct.*,
+		GROUP_CONCAT(ft1.fileName ORDER BY ft1.id SEPARATOR ',') AS filesname
+	    from p_customtext_t ct 
+	    LEFT JOIN sys_file_t ft1 ON FIND_IN_SET(ft1.id,ct.attachments)
+	    where ct.id=$id$ and ct.validflag>0
+	    GROUP BY ct.id 
+	</select>
+	<select id="getCustomtextidBypersonnelid"  resultClass="Integer"  parameterClass="int">
+	    select ifnull(ct.id,count(ct.id))
+	    from p_customtext_t ct 
+	    where ct.personnelid=$personnelid$ and ct.validflag>0
+	</select>
+	
+	<update id="updateAllPersonLabel" parameterClass="personnel">
+		update p_personnel_t
+		set zslabel2='$zslabel2$'
+		<isNotEmpty prepend="," property="lslabel1">
+			lslabel1='$lslabel1$'
+		</isNotEmpty>
+		<isNotEmpty prepend="," property="lslabel2">
+			lslabel2='$lslabel2$'
+		</isNotEmpty>
+		where id=$id$
+	</update>
+	
+	<update id="updateCheckedPersonLabel" parameterClass="personnel">
+		update p_personnel_t
+		set zslabel1='$zslabel1$',zslabel2='$zslabel2$',lslabel1='$lslabel1$',lslabel2='$lslabel2$'
+		where id=$id$
+	</update>
+	
+	<!-- 二級标签 -->
+	<select id="getContentSendChat" parameterClass="int" resultClass="java.lang.String">
+	select CONCAT('【二级标签-新增】',addoperator,'新申请人员属性标签：',
+		(select  t.attributelabel from p_attributelabel_t t where  t.id=a.rootid),'-',attributelabel) as messagecontent
+		from p_attributelabel_t a
+		where a.validflag>0 and a.examineflag=0
+		and a.id=$id$;
+	</select>
+	
+	<!-- ******************************************从业人员 ********************************************************************** -->
+	<select id="searchCyPerson_count" parameterClass="personnel" resultClass="int">
+		select count(*)
+		from p_personnel_t p
+		where p.validflag>0 and p.isrisk=2
+		<dynamic prepend="">
+			<isNotEmpty prepend="AND" property="cardnumber">
+				p.cardnumber like '%$cardnumber$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="personname">
+				p.personname like '%$personname$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="sexes">
+				p.sexes like '%$sexes$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="nation">
+				p.nation like '%$nation$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="homeplace">
+				p.homeplace like '%$homeplace$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="workplace">
+				p.workplace like '%$workplace$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="homepolice">
+				p.homepolice like '%$homepolice$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="workpolice">
+				p.workpolice like '%$workpolice$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="cytype">
+				p.cytype like '%$cytype$%'
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	<select id="searchCyPerson" parameterClass="personnel" resultClass="personnel">
+		select A.*,count(aj.sfzh) as ajcount from(
+		select p.*,d1.departname AS jurisdictunit,u1.staffName as jurisdictpolice,count(jq.sfzh) as jqcount from
+		p_personnel_t p
+		LEFT JOIN sys_department_t d1 on p.jdunit1=d1.id
+		LEFT JOIN sys_user_t u1 on p.jdpolice1=u1.id
+		left join f_xt_xd_jqxx_new jq on jq.sfzh=p.cardnumber
+		where p.validflag>0 and p.isrisk=2
+		<dynamic prepend="">
+			<isNotEmpty prepend="AND" property="cardnumber">
+				p.cardnumber like '%$cardnumber$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="personname">
+				p.personname like '%$personname$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="sexes">
+				p.sexes like '%$sexes$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="nation">
+				p.nation like '%$nation$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="homeplace">
+				p.homeplace like '%$homeplace$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="workplace">
+				p.workplace like '%$workplace$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="homepolice">
+				p.homepolice like '%$homepolice$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="workpolice">
+				p.workpolice like '%$workpolice$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="cytype">
+				p.cytype like '%$cytype$%'
+			</isNotEmpty>
+		</dynamic>
+		group by p.id)A left join f_xt_xd_ajxx_new aj on aj.sfzh=A.cardnumber
+		group by A.id
+		order by jqcount desc,ajcount desc
+	</select>
+	<!-- 新增 -->
+	<insert id="addCyPerson" parameterClass="personnel">
+		INSERT INTO p_personnel_t
+		(cardnumber,personname,personlabel,sexes,persontype,attributelabels,jdunit1,jdpolice1,pphone1,zslabel1,lslabel1,
+		jdunit2,jdpolice2,pphone2,validflag,addoperator,addoperatorid,addtime,memo,houseplace,homeplace,checkmethod,
+		records,nation,marrystatus,education,workplace,isrisk)
+		VALUES
+		('$cardnumber$','$personname$','$personlabel$','$sexes$','$persontype$','$attributelabels$','$jdunit1$','$jdpolice1$',
+		'$pphone1$','$zslabel1$','$lslabel1$','$jdunit2$','$jdpolice2$','$pphone2$',1,'$addoperator$',$addoperatorid$,'$addtime$',
+		'$memo$','$houseplace$','$homeplace$','$checkmethod$','$records$','$nation$','$marrystatus$','$education$','$workplace$',2)
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+	
+	<!-- ******************************************治安人员 ********************************************************************** -->
+	<select id="searchZaPersonnel_count" parameterClass="personnel" resultClass="int">
+		select count(DISTINCT p.id)
+		from p_personnel_t p
+		LEFT JOIN sys_user_t u1 on p.jdpolice1=u1.id
+		LEFT JOIN p_zaperson_du_t du on p.id=du.personnelid and du.validflag=1
+		LEFT JOIN p_zaperson_chang_t ch on p.id=ch.personnelid and ch.validflag=1
+		where p.validflag>0 and p.isrisk=1 and FIND_IN_SET($zslabel1$,p.zslabel1)
+		<dynamic prepend="">
+			<isNotEmpty prepend="AND" property="cardnumber">
+				p.cardnumber like '%$cardnumber$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="personname">
+				p.personname like '%$personname$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="sexes">
+				p.sexes like '%$sexes$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="nation">
+				p.nation like '%$nation$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="homeplace">
+				p.homeplace like '%$homeplace$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="workplace">
+				p.workplace like '%$workplace$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="homepolice">
+				p.homepolice like '%$homepolice$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="workpolice">
+				p.workpolice like '%$workpolice$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="jdunit1">
+				FIND_IN_SET(p.jdunit1,'$jdunit1$')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="jdpolice1">
+				u1.staffName like '%$jdpolice1$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="persontype">
+				p.persontype = '$persontype$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="duPersonAttribute">
+				du.person_attribute = '$duPersonAttribute$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="duMethod">
+				du.du_method = '$duMethod$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="duPart">
+				du.du_part = '$duPart$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="changPersonAttribute">
+				ch.person_attribute = '$changPersonAttribute$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="changMethod">
+				ch.chang_method = '$changMethod$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="changType">
+				ch.chang_type = '$changType$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="punishDateStart">
+				(du.punish_date >= '$punishDateStart$' OR ch.punish_date >= '$punishDateStart$')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="punishDateEnd">
+				(du.punish_date &lt;= '$punishDateEnd$' OR ch.punish_date &lt;= '$punishDateEnd$')
+			</isNotEmpty>
+			<isGreaterEqual prepend="AND" property="hasSheduRecord" compareValue="0">
+				p.has_shedu_record = $hasSheduRecord$
+			</isGreaterEqual>
+			<isGreaterEqual prepend="AND" property="hasSechangRecord" compareValue="0">
+				p.has_shechang_record = $hasSechangRecord$
+			</isGreaterEqual>
+			<isGreaterEqual prepend="AND" property="isMinor" compareValue="0">
+				CASE WHEN TIMESTAMPDIFF(YEAR, STR_TO_DATE(SUBSTRING(p.cardnumber, 7, 8), '%Y%m%d'), CURDATE()) &lt; 18 THEN 1 ELSE 0 END = $isMinor$
+			</isGreaterEqual>
+			<isNotEqual prepend="AND" property="unitFilter" compareValue="0">
+				(p.jdunit1 = $unitFilter$  or p.jdunit2 = $unitFilter$)
+	        </isNotEqual>
+			<isNotEqual prepend="AND" property="personFilter" compareValue="0">
+				(p.jdpolice1 = $personFilter$ or p.jdpolice2 = $personFilter$)
+	        </isNotEqual>
+	        <isNotEmpty prepend="AND" property="sqlall">
+				$sqlall$
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	<select id="searchZaPersonnel" parameterClass="personnel" resultClass="personnel">
+		select DISTINCT p.*,
+		p.house_province AS houseProvince,
+		p.house_city AS houseCity,
+		p.house_county AS houseCounty,
+		p.house_town AS houseTown,
+		p.home_province AS homeProvince,
+		p.home_city AS homeCity,
+		p.home_county AS homeCounty,
+		p.home_town AS homeTown,
+		p.handle_unit AS handleUnit,
+		p.handle_unit_code AS handleUnitCode,
+		p.has_shedu_record AS hasSheduRecord,
+		p.has_shechang_record AS hasSechangRecord,
+		d1.departname AS jurisdictunit,u1.staffName as jurisdictpolice,
+		CASE
+			WHEN TIMESTAMPDIFF(YEAR, STR_TO_DATE(SUBSTRING(p.cardnumber, 7, 8), '%Y%m%d'), CURDATE()) &lt; 18
+			THEN 1
+			ELSE 0
+		END AS isMinor
+		from p_personnel_t p
+		LEFT JOIN sys_department_t d1 on p.jdunit1=d1.id
+		LEFT JOIN sys_user_t u1 on p.jdpolice1=u1.id
+		LEFT JOIN p_zaperson_du_t du on p.id=du.personnelid and du.validflag=1
+		LEFT JOIN p_zaperson_chang_t ch on p.id=ch.personnelid and ch.validflag=1
+		where p.validflag>0 and p.isrisk=1 and FIND_IN_SET($zslabel1$,p.zslabel1)
+		<dynamic prepend="">
+			<isNotEmpty prepend="AND" property="cardnumber">
+				p.cardnumber like '%$cardnumber$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="personname">
+				p.personname like '%$personname$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="sexes">
+				p.sexes like '%$sexes$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="nation">
+				p.nation like '%$nation$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="homeplace">
+				p.homeplace like '%$homeplace$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="workplace">
+				p.workplace like '%$workplace$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="homepolice">
+				p.homepolice like '%$homepolice$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="workpolice">
+				p.workpolice like '%$workpolice$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="jdunit1">
+				FIND_IN_SET(p.jdunit1,'$jdunit1$')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="jdpolice1">
+				u1.staffName like '%$jdpolice1$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="persontype">
+				p.persontype = '$persontype$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="duPersonAttribute">
+				du.person_attribute = '$duPersonAttribute$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="duMethod">
+				du.du_method = '$duMethod$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="duPart">
+				du.du_part = '$duPart$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="changPersonAttribute">
+				ch.person_attribute = '$changPersonAttribute$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="changMethod">
+				ch.chang_method = '$changMethod$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="changType">
+				ch.chang_type = '$changType$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="punishDateStart">
+				(du.punish_date >= '$punishDateStart$' OR ch.punish_date >= '$punishDateStart$')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="punishDateEnd">
+				(du.punish_date &lt;= '$punishDateEnd$' OR ch.punish_date &lt;= '$punishDateEnd$')
+			</isNotEmpty>
+			<isGreaterEqual prepend="AND" property="hasSheduRecord" compareValue="0">
+				p.has_shedu_record = $hasSheduRecord$
+			</isGreaterEqual>
+			<isGreaterEqual prepend="AND" property="hasSechangRecord" compareValue="0">
+				p.has_shechang_record = $hasSechangRecord$
+			</isGreaterEqual>
+			<isGreaterEqual prepend="AND" property="isMinor" compareValue="0">
+				CASE WHEN TIMESTAMPDIFF(YEAR, STR_TO_DATE(SUBSTRING(p.cardnumber, 7, 8), '%Y%m%d'), CURDATE()) &lt; 18 THEN 1 ELSE 0 END = $isMinor$
+			</isGreaterEqual>
+			<isNotEqual prepend="AND" property="unitFilter" compareValue="0">
+				(p.jdunit1 = $unitFilter$  or p.jdunit2 = $unitFilter$)
+	        </isNotEqual>
+			<isNotEqual prepend="AND" property="personFilter" compareValue="0">
+				(p.jdpolice1 = $personFilter$ or p.jdpolice2 = $personFilter$)
+	        </isNotEqual>
+	        <isNotEmpty prepend="AND" property="sqlall">
+				$sqlall$
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	
+	<update id="updateCyPersonRisk" parameterClass="personnel">
+		UPDATE p_personnel_t
+		SET zslabel1='$zslabel1$',isrisk='$isrisk$', updateoperator = '$updateoperator$', updatetime = '$updatetime$'
+		WHERE id = $id$
+	</update>
+	
+	<select id="countAllMapPersonnel" resultClass="mapModel">
+		SELECT cw.id,REPLACE(cw.name,'派出所','所') name
+		,cw.wen,cw.wen1,cw.wen2,cw.wen3
+		,ck.kong,ck.kong1,ck.kong2,ck.kong3,ck.kong4
+		,cd.du,cd.du1,cd.du2
+		from (
+				select A.id,A.departname as name
+				,count(pg.id) wen
+				,count(case when pg.jointcontrollevel='一级' then 1 end) wen1
+				,count(case when pg.jointcontrollevel='二级' then 1 end) wen2
+				,count(case when pg.jointcontrollevel='三级' then 1 end) wen3
+				from(
+						select * from sys_department_t
+						where id!=55 and id!=264 and validflag>0 and departtype=4 order by id
+					)A			
+				LEFT JOIN (
+						SELECT p.id,g.jointcontrollevel,p.jdunit1,p.jdunit2 FROM p_personnel_t p
+						LEFT JOIN  p_wen_grade_t g on p.id=g.personnelid and g.jointcontrollevel!='自控' and g.jointcontrollevel!='存档' and g.validflag>0
+						WHERE p.id=g.personnelid and p.isrisk=1 and p.validflag>0 GROUP BY p.id
+					) pg on pg.jdunit1=A.id GROUP BY A.id
+			) cw
+		LEFT JOIN(
+				select A.id,A.departname as name
+				,count(pk.id) kong
+				,count(case when pk.jointtype=1 then 1 end) kong1
+				,count(case when pk.jointtype=2 then 1 end) kong2
+				,count(case when pk.jointtype=3 then 1 end) kong3
+				,count(case when pk.jointtype=4 then 1 end) kong4 
+				from(
+					select * from sys_department_t
+					where id!=55 and id!=264 and validflag>0 and departtype=4 order by id
+				)A					
+				LEFT JOIN (
+					SELECT p.id,k.jointtype,p.jdunit1,p.jdunit2 FROM p_personnel_t p
+					LEFT JOIN p_kong_extend_t k on p.id=k.personnelid and k.incontrollevel='在控' and k.validflag>0
+					WHERE p.id=k.personnelid and p.isrisk=1 and p.validflag>0 GROUP BY p.id
+				) pk on pk.jdunit1=A.id GROUP BY A.id
+			) ck on cw.id=ck.id
+		LEFT JOIN(
+				select A.id,A.departname as name
+				,count(pd.id) du
+				,count(case when pd.personneltype in (1,3) then 1 end) du1
+				,count(case when pd.personneltype in (2,3) then 1 end) du2
+				from(
+					select * from sys_department_t
+					where id!=55 and id!=264 and validflag>0 and departtype=4 order by id
+				)A					
+				LEFT JOIN (
+					SELECT p.id,d.personneltype,p.jdunit1,p.jdunit2 FROM p_personnel_t p
+					LEFT JOIN p_du_extend_t d on p.id=d.personnelid and d.validflag>0
+					WHERE p.id=d.personnelid and p.isrisk=1 and p.validflag>0 GROUP BY p.id
+				) pd on pd.jdunit1=A.id GROUP BY A.id
+			) cd on cw.id=cd.id
+		GROUP BY cw.id
+	</select>
+	<select id="countAllTrendPersonnel" resultClass="mapModel">
+			SELECT A.addday
+			,count(case when FIND_IN_SET(1,p.zslabel1) then 1 end) wen
+			,count(case when FIND_IN_SET(2,p.zslabel1) then 2 end) kong
+			,count(case when FIND_IN_SET(3,p.zslabel1) then 3 end) hei
+			,count(case when FIND_IN_SET(4,p.zslabel1) then 4 end) du
+			from(
+				select 1 as addday
+				from dual
+				UNION select 2 as addday
+				from dual
+				UNION select 3 as addday
+				from dual
+				UNION select 4 as addday
+				from dual
+				UNION select 5 as addday
+				from dual
+				UNION select 6 as addday
+				from dual
+				UNION select 7 as addday
+				from dual
+				UNION select 8 as addday
+				from dual
+				UNION select 9 as addday
+				from dual
+				UNION select 10 as addday
+				from dual
+				UNION select 11 as addday
+				from dual
+				UNION select 12 as addday
+				from dual
+				UNION select 13 as addday
+				from dual
+				UNION select 14 as addday
+				from dual
+				UNION select 15 as addday
+				from dual
+			)A
+			LEFT JOIN p_personnel_t p on p.addtime>=DATE_SUB(CONCAT(CURDATE(),' 00:00:00') ,INTERVAL A.addday DAY) and DATE_SUB(CONCAT(CURDATE(),' 23:59:59') ,INTERVAL A.addday DAY)>p.addtime and p.validflag>0
+			GROUP BY A.addday
+			ORDER BY A.addday;
+	</select>
+	<select id="countAllpersonAndAllevent" resultClass="mapModel">
+			SELECT cw.id,REPLACE(cw.name,'派出所','所') name
+			,cw.allperson,cw.wen,cw.kong,cw.du
+			,ck.allevent,ck.event1,ck.event2,ck.event3
+			from (
+					select A.id,A.departname as name
+					,count(p.id) allperson
+					,count(case when FIND_IN_SET(1,p.zslabel1) then 1 end) wen
+					,count(case when FIND_IN_SET(2,p.zslabel1) then 1 end) kong
+					,count(case when FIND_IN_SET(4,p.zslabel1) then 1 end) du
+					from(
+							select * from sys_department_t
+							where id!=55 and id!=264 and validflag>0 and departtype=4 order by id
+						)A			
+					LEFT JOIN p_personnel_t p on p.jdunit1=A.id and p.isrisk=1 and p.validflag>0
+					GROUP BY A.id
+				) cw
+			LEFT JOIN(
+					select A.id,A.departname as name
+					,count(e.id) allevent
+					,count(case when e.cdtresult='已化解' then 1 end) event1
+					,count(case when e.cdtresult='已钝化' then 1 end) event2
+					,count(case when e.cdtresult='处置中' then 1 end) event3 
+					from(
+						select * from sys_department_t
+						where id!=55 and id!=264 and validflag>0 and departtype=4 order by id
+					)A					
+					LEFT JOIN e_contradictioninfo_t e on e.sponsor=A.id and e.isshield=0 and  e.type=1 and e.validflag>0
+			GROUP BY A.id
+				) ck on cw.id=ck.id
+			GROUP BY cw.id;
+	</select>
+	<select id="countAllAddByAddtime" resultClass="mapModel">
+			SELECT
+				D1.addday name,
+				D1.allperson,
+				D2.allevent,
+				D3.allcompany,
+				D4.allvehicle 
+			FROM
+				(
+			SELECT
+				A.addday,
+				count( p.id ) allperson 
+			FROM
+				( SELECT 0 AS addday FROM DUAL UNION SELECT 1 AS addday ) A
+				LEFT JOIN p_personnel_t p ON p.addtime >= DATE_SUB( CONCAT( CURDATE( ), ' 00:00:00' ), INTERVAL A.addday DAY ) 
+				AND DATE_SUB( CONCAT( CURDATE( ), ' 23:59:59' ), INTERVAL A.addday DAY ) > p.addtime 
+				AND p.isrisk = 1 
+				AND p.validflag > 0 
+			GROUP BY
+				A.addday 
+			ORDER BY
+				A.addday 
+				) D1
+				LEFT JOIN (
+			SELECT
+				A.addday,
+				count( e.id ) allevent 
+			FROM
+				( SELECT 0 AS addday FROM DUAL UNION SELECT 1 AS addday ) A
+				LEFT JOIN e_contradictioninfo_t e ON e.addtime >= DATE_SUB( CONCAT( CURDATE( ), ' 00:00:00' ), INTERVAL A.addday DAY ) 
+				AND DATE_SUB( CONCAT( CURDATE( ), ' 23:59:59' ), INTERVAL A.addday DAY ) > e.addtime 
+				AND e.isshield = 0 
+				AND e.type = 1 
+				AND e.validflag > 0 
+			GROUP BY
+				A.addday 
+			ORDER BY
+				A.addday 
+				) D2 ON D1.addday = D2.addday
+				LEFT JOIN (
+			SELECT
+				A.addday,
+				count( c.id ) allcompany 
+			FROM
+				( SELECT 0 AS addday FROM DUAL UNION SELECT 1 AS addday ) A
+				LEFT JOIN c_company_t c ON c.addtime >= DATE_SUB( CONCAT( CURDATE( ), ' 00:00:00' ), INTERVAL A.addday DAY ) 
+				AND DATE_SUB( CONCAT( CURDATE( ), ' 23:59:59' ), INTERVAL A.addday DAY ) > c.addtime 
+				AND c.validflag > 0 
+			GROUP BY
+				A.addday 
+			ORDER BY
+				A.addday 
+				) D3 ON D1.addday = D3.addday
+				LEFT JOIN (
+			SELECT
+				A.addday,
+				count( v.id ) allvehicle 
+			FROM
+				( SELECT 0 AS addday FROM DUAL UNION SELECT 1 AS addday ) A
+				LEFT JOIN v_vehicle_t v ON v.addtime >= DATE_SUB( CONCAT( CURDATE( ), ' 00:00:00' ), INTERVAL A.addday DAY ) 
+				AND DATE_SUB( CONCAT( CURDATE( ), ' 23:59:59' ), INTERVAL A.addday DAY ) > v.addtime 
+				AND v.validflag > 0 
+			GROUP BY
+				A.addday 
+			ORDER BY
+				A.addday 
+				) D4 ON D1.addday = D4.addday;
+	</select>
+	
+	<select id="searchZfwPersonnel_count" parameterClass="zfwpersonnel" resultClass="int">
+		select count(*) from
+		p_personnel_t_zfw zfp
+		where validflag=1
+		<dynamic prepend="">
+			<isNotEmpty prepend="AND" property="cardnumber">
+				zfp.cardnumber like '%$cardnumber$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="personname">
+				zfp.personname like '%$personname$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="persontype">
+				zfp.persontype = '%$persontype$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="homeplace">
+				zfp.homeplace like '%$homeplace$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="jdunit1">
+				(FIND_IN_SET(zfp.jdunit1,'$jdunit1$') OR FIND_IN_SET(zfp.jdunit2,'$jdunit1$'))
+			</isNotEmpty>
+			<isNotEmpty property="sortsql">
+				$sortsql$
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	
+	<select id="searchZfwPersonnel" parameterClass="zfwpersonnel" resultClass="zfwpersonnel">
+		select zfp.*,d.departname as jurisdictunit from
+		p_personnel_t_zfw zfp
+		left join sys_department_t d on d.id=zfp.jdunit1
+		where zfp.validflag=1
+		<dynamic prepend="">
+			<isNotEmpty prepend="AND" property="cardnumber">
+				zfp.cardnumber like '%$cardnumber$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="personname">
+				zfp.personname like '%$personname$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="persontype">
+				zfp.persontype = '%$persontype$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="homeplace">
+				zfp.homeplace like '%$homeplace$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="jdunit1">
+				(FIND_IN_SET(zfp.jdunit1,'$jdunit1$') OR FIND_IN_SET(zfp.jdunit2,'$jdunit1$'))
+			</isNotEmpty>
+			<isNotEmpty property="sortsql">
+				$sortsql$
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	
+	<select id="getZfwPersonById" parameterClass="int" resultClass="zfwpersonnel">
+		select *
+		from p_personnel_t_zfw
+		where id=$id$
+	</select>
+	
+	<update id="updateZfwPerson" parameterClass="zfwpersonnel">
+		UPDATE p_personnel_t_zfw
+		SET id=$id$,personname='$personname$',usedname='$usedname$',nickname='$nickname$',nation='$nation$',
+		marrystatus='$marrystatus$',personheight='$personheight$',netskillhabit='$netskillhabit$',
+		education='$education$',persontype='$persontype$',soldierstatus='$soldierstatus$',
+		heathstatus='$heathstatus$',politicalposition='$politicalposition$',faith='$faith$',
+		houseplace='$houseplace$',housepolice='$housepolice$',
+		homeplace='$homeplace$',homepolice='$homepolice$',homewifi='$homewifi$',homewide='$homewide$',
+		workplace='$workplace$',workpolice='$workpolice$',workwifi='$workwifi$',workwide='$workwide$',
+		housex='$housex$',housey='$housey$',
+		homex='$homex$',homey='$homey$',
+		workx='$workx$',worky='$worky$',
+		feature='$feature$',speciality='$speciality$',records='$records$',
+		updateoperator='$updateoperator$',updatetime='$updatetime$',memo='$memo$',validflag=$validflag$,sexes='$sexes$'
+		WHERE cardnumber='$cardnumber$'
+	</update>
+	
+	<insert id="addZfwPerson" parameterClass="personnel">
+		INSERT INTO p_personnel_t
+		(cardnumber,personname,personlabel,sexes,persontype,attributelabels,jdunit1,jdpolice1,pphone1,zslabel1,lslabel1,
+		jdunit2,jdpolice2,pphone2,validflag,addoperator,addoperatorid,addtime,memo,houseplace,homeplace,checkmethod,
+		records,nation,marrystatus,education,workplace,usedname,nickname,personheight,netskillhabit,soldierstatus,heathstatus,politicalposition,
+		faith,housepolice,homepolice,homewifi,homewide,workpolice,workwifi,workwide,housex,housey,homex,homey,workx,worky,feature,speciality)
+		VALUES
+		('$cardnumber$','$personname$','$personlabel$','$sexes$','$persontype$','$attributelabels$','$jdunit1$','$jdpolice1$',
+		'$pphone1$','$zslabel1$','$lslabel1$','$jdunit2$','$jdpolice2$','$pphone2$',$validflag$,'$addoperator$',$addoperatorid$,
+		'$addtime$','$memo$','$houseplace$','$homeplace$','$checkmethod$','$records$','$nation$','$marrystatus$','$education$','$workplace$',
+		'$usedname$','$nickname$','$personheight$','$netskillhabit$','$soldierstatus$','$heathstatus$','$politicalposition$','$faith$',
+		'$housepolice$','$housepolice$','$homewifi$','$homewide$','$workpolice$','$workwifi$','$workwide$','$housex$','$housey$',
+		'$homex$','$homey$','$workx$','$worky$','$feature$','$speciality$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+
+	<!-- 更新人员现住地址 -->
+	<update id="updateHomeAddress" parameterClass="personnel">
+		UPDATE p_personnel_t
+        SET
+            home_province = #homeProvince#,
+            home_city = #homeCity#,
+            home_county = #homeCounty#,
+            home_town = #homeTown#,
+            home_police_station_id = #homePoliceStationId#,
+            homeplace = #homeplace#,
+            homepolice = #homepolice#,
+            homex = #homex#,
+            homey = #homey#
+        WHERE id = #id#
+	</update>
+
+	<!-- 更新人员手机号码 -->
+	<update id="updatePhone" parameterClass="personnel">
+		UPDATE p_personnel_t
+		SET phone='$phone$'
+		WHERE id = $id$
+	</update>
+
+	<!-- 更新涉赌前科标记 -->
+	<update id="updateHasSheduRecord" parameterClass="personnel">
+		UPDATE p_personnel_t
+		SET has_shedu_record=$hasSheduRecord$
+		WHERE id = $id$
+	</update>
+
+	<!-- 更新涉黄前科标记 -->
+	<update id="updateHasSechangRecord" parameterClass="personnel">
+		UPDATE p_personnel_t
+		SET has_shechang_record=$hasSechangRecord$
+		WHERE id = $id$
+	</update>
+
+	<!-- 住址历史记录 -->
+	<select id="getHomeplaceHistory_count" parameterClass="int" resultClass="int">
+		SELECT COUNT(*) FROM v_homeplace_history_with_police_station WHERE personnelid = #value# AND validflag = 1
+	</select>
+	<select id="getHomeplaceHistory" parameterClass="int" resultClass="java.util.HashMap">
+		SELECT id, personnelid, province, city, county, town, police_station_name as policeStationName,
+			   detail_address as detailAddress, longitude, latitude, start_date as startDate, end_date as endDate, addtime
+		FROM v_homeplace_history_with_police_station
+		WHERE personnelid = #value# AND validflag = 1
+		ORDER BY addtime DESC
+	</select>
+
+	<!-- 电话历史记录 -->
+	<select id="getPhoneHistory_count" parameterClass="int" resultClass="int">
+		SELECT COUNT(*) FROM p_phonenum_history_t WHERE personnelid = #value# AND validflag = 1
+	</select>
+	<select id="getPhoneHistory" parameterClass="int" resultClass="java.util.HashMap">
+		SELECT id, personnelid, phone, phone_type as phoneType, operator, start_date as startDate, end_date as endDate, addtime
+		FROM p_phonenum_history_t
+		WHERE personnelid = #value# AND validflag = 1
+		ORDER BY addtime DESC
+	</select>
+</sqlMap>

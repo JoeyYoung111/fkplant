@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+        
+<sqlMap namespace="zdRole">
+	<typeAlias alias="zdRole" type="com.szrj.business.model.ZdRole"/>
+	
+	<select id="searchZdRole_count" parameterClass="zdRole" resultClass="Integer">
+		select count(*)
+		from sys_xtjzd_role r
+		left join sys_department_t d on d.id=r.xtjzdid
+		left join sys_department_t pcs on pcs.id=r.pcsid
+		where r.validflag>0
+		<dynamic prepend="">
+            <isNotEmpty prepend="AND" property="xtjzdname">
+				d.departname like '%$xtjzdname$%'
+			</isNotEmpty>
+		</dynamic>
+		order by xtjzdid
+	</select>
+	<select id="searchZdRole" parameterClass="zdRole" resultClass="zdRole">
+		select r.*,d.departname as xtjzdname,pcs.departname as pcsname
+		from sys_xtjzd_role r
+		left join sys_department_t d on d.id=r.xtjzdid
+		left join sys_department_t pcs on pcs.id=r.pcsid
+		where r.validflag>0
+		<dynamic prepend="">
+            <isNotEmpty prepend="AND" property="xtjzdname">
+				d.departname like '%$xtjzdname$%'
+			</isNotEmpty>
+		</dynamic>
+		order by xtjzdid
+	</select>
+	
+	<insert id="add" parameterClass="zdRole">
+		INSERT INTO sys_xtjzd_role
+		(xtjzdid,pcsid)
+		VALUES
+		($xtjzdid$,$pcsid$)
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+	
+	<!-- 修改 -->
+	<update id="update" parameterClass="zdRole">
+		UPDATE sys_xtjzd_role
+		SET xtjzdid = $xtjzdid$,pcsid = $pcsid$
+		WHERE id = $id$
+	</update>
+	
+	<!-- 删除 -->
+	<update id="cancel" parameterClass="int">
+		UPDATE sys_xtjzd_role
+		SET validflag = 0
+		WHERE id = $id$
+	</update>
+	
+	<select id="getById" parameterClass="int" resultClass="zdRole">
+		SELECT *
+		from sys_xtjzd_role
+		where id = $id$
+	</select>
+</sqlMap>        

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+        
+<sqlMap namespace="roleUser">
+	<typeAlias alias="roleUser" type="com.szrj.business.model.RoleUser"/>
+	<select id="getRoleUserList" parameterClass="roleUser" resultClass="roleUser">
+		SELECT u1.*,u2.staffName as userName
+		FROM sys_role_user_t u1, sys_user_t u2 
+		WHERE u1.validflag>0 AND u2.validflag>0 AND u1.userid=u2.id 
+		<dynamic prepend="" >
+            <isNotEqual prepend="AND" property="roleid" compareValue="0">
+				u1.roleid=$roleid$
+            </isNotEqual>
+            <isNotEqual prepend="AND" property="userFlag" compareValue="0">
+				u2.validflag = $userFlag$
+            </isNotEqual>
+			<isNotEqual prepend="AND" property="departmentid" compareValue="0">
+				u2.departmentid = $departmentid$
+            </isNotEqual>
+            <isNotEqual prepend="AND" property="townshipid" compareValue="0">
+				u2.townshipid = $townshipid$
+            </isNotEqual>
+		</dynamic>
+	</select>
+	
+	<select id="find" parameterClass="roleUser" resultClass="int">
+		SELECT COALESCE(id,COUNT(id))
+		FROM sys_role_user_t
+		WHERE roleid=$roleid$ AND userid=$userid$
+	</select>
+	
+	<!-- 新增 -->
+	<insert id="add" parameterClass="roleUser">
+		INSERT INTO sys_role_user_t
+		(roleid,userid,validflag,addoperator,addtime,memo)
+		VALUES
+		($roleid$,$userid$,$validflag$,'$addoperator$','$addtime$','$memo$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+	<!-- 修改 -->
+	<update id="update" parameterClass="roleUser">
+		UPDATE sys_role_user_t
+		SET validflag=$validflag$
+		WHERE id = $id$
+	</update>
+	<!-- 修改 -->
+	<update id="updateRoleid" parameterClass="roleUser">
+		UPDATE sys_role_user_t
+		SET roleid=$roleid$
+		WHERE userid = $userid$  and validflag=1
+	</update>
+	<!-- 删除 -->
+	<update id="cancel" parameterClass="int">
+		UPDATE sys_role_user_t
+		SET validflag=0
+		WHERE id = $id$
+	</update>
+</sqlMap>

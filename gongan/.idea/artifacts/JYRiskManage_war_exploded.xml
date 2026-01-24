@@ -1,0 +1,140 @@
+<component name="ArtifactManager">
+  <artifact type="exploded-war" build-on-make="true" name="JYRiskManage:war exploded">
+    <output-path>$PROJECT_DIR$/out/artifacts/JYRiskManage_war_exploded</output-path>
+    <root id="root">
+      <element id="directory" name="WEB-INF">
+        <element id="directory" name="classes">
+          <element id="module-output" name="JYRiskManage" />
+        </element>
+        <element id="directory" name="lib">
+          <element id="library" level="module" name="DCJFRAMEWORK.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="ant.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="aopalliance-1.0.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="aspectjrt.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="aspectjweaver.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="axis-ant.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="axis.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="barcode.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="c3p0-0.9.0.4.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="camel-core-1.5.0.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="cglib-nodep-2.1_3.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="ckeditor-java-core-3.5.3.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="commons-beanutils-1.8.0.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="commons-beanutils.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="commons-codec-1.10.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="commons-collections-3.2.1.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="commons-collections.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="commons-collections4-4.1.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="commons-dbcp.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="commons-digester.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="commons-discovery.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="commons-fileupload-1.2.1.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="commons-fileupload-1.2.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="commons-io-1.3.2.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="commons-io-1.4.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="commons-javaflow-20060411.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="commons-lang-2.4.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="commons-lang.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="commons-lang3-3.3.1.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="commons-logging-1.1.1.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="commons-logging.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="commons-pool.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="commons-validator.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="connector.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="datetimeformat.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="demo_helper.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="dom4j-1.6.1.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="easyexcel-2.2.11.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="easypoi-annotation-3.3.0.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="easypoi-base-3.3.0.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="easypoi-web-3.3.0.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="ehcache-1.2.3.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="ess_es_server.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="ess_japi.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="ezmorph-1.0.6.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="fckeditor-java-core-2.4.1.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="freemarker-2.3.13.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="groovy-all-1.5.5.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="hessian-3.0.20.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="httpclient-4.3.6.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="httpclient-cache-4.3.6.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="httpcore-4.3.3.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="httpmime-4.3.6.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="iText-2.1.0.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="iTextAsian.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="ibatis-2.3.0.677.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="itext2_rq.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="itextpdf-5.3.5.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="jackson-core-asl-1.8.1.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="jackson-core-lgpl-1.8.1.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="jackson-mapper-asl-1.8.1.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="jackson-mapper-lgpl-1.8.1.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="jacob.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="jai_codec.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="jai_core.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="jaxb-api.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="jaxb-impl.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="jaxrpc.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="jcommon-1.0.16.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="jdom.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="jettison-1.0.1.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="jetty-util-6.1.19.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="jofc2-1.0-0.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="json-lib-2.2.3-jdk15.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="json_simple-1.1.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="jsr173_1.0_api.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="jstl.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="jta.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="jxl-2.6.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="kafka-clients-1.0.2.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="log4j-1.2.14.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="log4j_128.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="mysql-connector-java-5.0.4-bin.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="ojdbc14.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="org.springframework.aop-3.0.0.RELEASE.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="org.springframework.asm-3.0.0.RELEASE.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="org.springframework.beans-3.0.0.RELEASE.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="org.springframework.context-3.0.0.RELEASE.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="org.springframework.context.support-3.0.0.RELEASE.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="org.springframework.core-3.0.0.RELEASE.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="org.springframework.expression-3.0.0.RELEASE.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="org.springframework.jdbc-3.0.0.RELEASE.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="org.springframework.jms-3.0.0.RELEASE.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="org.springframework.orm-3.0.0.RELEASE.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="org.springframework.test-3.0.0.RELEASE.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="org.springframework.transaction-3.0.0.RELEASE.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="org.springframework.web-3.0.0.RELEASE.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="org.springframework.web.servlet-3.0.0.RELEASE.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="parser.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="pdfbox_073.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="poi-3.15.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="poi-3.7-20101029.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="poi-ooxml-3.15.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="poi-ooxml-3.7-20101029.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="poi-ooxml-schemas-3.15.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="poi-ooxml-schemas-3.7-20101029.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="poi-scratchpad-3.15.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="poi-scratchpad-3.7-20101029.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="pushlet.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="quartz-all-1.6.5.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="saaj-api.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="slf4j-api-1.5.2.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="slf4j-jdk14-1.5.2.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="slf4j-simple-1.5.2.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="spring-kafka-1.3.11.RELEASE.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="sqljdbc.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="standard.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="struts.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="webutil.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="wsdl4j-1.5.1.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="wsdl4j.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="xbean-spring-3.4.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="xerces-2.6.2.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="xmlbeans-2.3.0.jar" module-name="JYRiskManage" />
+          <element id="library" level="module" name="xstream-1.3.1.jar" module-name="JYRiskManage" />
+        </element>
+      </element>
+      <element id="javaee-facet-resources" facet="JYRiskManage/web/Web" />
+    </root>
+  </artifact>
+</component>

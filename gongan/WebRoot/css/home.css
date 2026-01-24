@@ -1,0 +1,153 @@
+.body-bg {
+	width: 100%;
+	height: 100vh;
+	background-image: url(../images/index/home-bg.png);
+	background-size: 100% 100%;
+	background-repeat: no-repeat;
+	background-clip: border-box;
+	position: relative;
+}
+.warp{
+	height: 100vh;
+	background-image: url(../images/index/home-logo.png);
+	background-position: center center;
+	background-repeat: no-repeat;
+	background-size: 25% auto;
+}
+.nav-btn {
+	width: 350px;
+	height: 200px;
+	display: flex;
+	justify-content: flex-start;
+	align-items: center;
+	font-size: 26px;
+	font-weight: 500;
+	color: #fff;
+	transition: all ease .3s;
+}
+
+.nav-btn::before {
+	content: '';
+	display: block;
+	width: 200px;
+	height: 200px;
+	transition: all ease .3s;
+	background-position: center center;
+	background-repeat: no-repeat;
+	background-size: 100% 100%;
+}
+.nav-btn.btn1 {
+	position: absolute;
+	top: 2%;
+	left: calc(45% - 100px);
+}
+.nav-btn.btn2 {
+	position: absolute;
+	top: 20%;
+	left: calc(25% - 125px);
+}
+.nav-btn.btn3 {
+	position: absolute;
+	top: 20%;
+	left: calc(70% - 125px);
+}
+.nav-btn.btn4 {
+	position: absolute;
+	top: 50%;
+	left: calc(20% - 125px);
+}
+.nav-btn.btn5 {
+	position: absolute;
+	top: 48%;
+	left: calc(74% - 125px);
+}
+
+.nav-btn.btn1:hover {
+	color: #d828e3;
+}
+
+.nav-btn.btn2:hover {
+	color: #0786f0;
+}
+
+.nav-btn.btn3:hover {
+	color: #ff9c00;
+}
+
+.nav-btn.btn4:hover {
+	color: #00ec66;
+}
+
+.nav-btn.btn5:hover {
+	color: #7f01df;
+}
+
+.nav-btn.btn1::before {
+	background-image: url(../images/index/home-h1.png);
+}
+
+.nav-btn.btn2::before {
+	background-image: url(../images/index/home-p1.png);
+}
+
+.nav-btn.btn3::before {
+	background-image: url(../images/index/home-c1.png);
+}
+
+.nav-btn.btn4::before {
+	background-image: url(../images/index/home-l1.png);
+}
+
+.nav-btn.btn5::before {
+	background-image: url(../images/index/home-b1.png);
+}
+
+.nav-btn.btn1:hover::before {
+	background-image: url(../images/index/home-h2.png);
+}
+
+.nav-btn.btn2:hover::before {
+	background-image: url(../images/index/home-p2.png);
+}
+
+.nav-btn.btn3:hover::before {
+	background-image: url(../images/index/home-c2.png);
+}
+
+.nav-btn.btn4:hover::before {
+	background-image: url(../images/index/home-l2.png);
+}
+
+.nav-btn.btn5:hover::before {
+	background-image: url(../images/index/home-b2.png);
+}
+
+.bottom-box{
+	position: absolute;
+	bottom: 0;
+	height: 10%;
+	width: 100%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+.bottom-btn{
+	margin-right: 20px;
+	width: 150px;
+	height: 40px;
+	text-align: center;
+	line-height: 40px;
+	font-weight: 500;
+	font-size: 18px;
+	user-select: none;
+	color: #FFFFFF;
+	background-image: url(../images/index/home-btn2.png);
+	background-position: center center;
+	background-repeat: no-repeat;
+	background-size: 100% 100%;
+	transition: all ease .3s; 
+}
+.bottom-btn:hover{
+	background-image: url(../images/index/home-btn1.png);
+}
+

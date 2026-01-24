@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+        
+<sqlMap namespace="personnelPhoto">
+	<typeAlias alias="personnelPhoto" type="com.szrj.business.model.personel.PersonnelPhoto"/>
+	<select id="getById" parameterClass="int" resultClass="personnelPhoto">
+		SELECT *
+		FROM p_personnel_photo_t
+		WHERE validflag > 0 AND id = $id$
+	</select>
+	
+	<select id="getByPersonnelid" parameterClass="int" resultClass="personnelPhoto">
+		SELECT ppt.*,ft.fileName,ft.fileallName
+		FROM p_personnel_photo_t ppt
+		LEFT JOIN sys_file_t ft ON ppt.fileid=ft.id
+		WHERE ppt.validflag > 0 AND ft.validflag > 0 AND ppt.personnelid=$personnelid$
+		ORDER BY ppt.defaultflag desc,ppt.id desc
+	</select>
+	
+	
+	<!-- 新增 -->
+	<insert id="add" parameterClass="personnelPhoto">
+		INSERT INTO p_personnel_photo_t
+		(personnelid,fileid,defaultflag,
+		validflag,addoperator,addtime,memo)
+		VALUES
+		($personnelid$,$fileid$,$defaultflag$,
+		$validflag$,'$addoperator$','$addtime$','$memo$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+	<!-- 删除 -->
+	<update id="cancel" parameterClass="int">
+		UPDATE p_personnel_photo_t
+		SET validflag = 0
+		WHERE id = $id$
+	</update>
+	<!-- 修改 -->
+	<update id="update" parameterClass="personnelPhoto">
+		UPDATE p_personnel_photo_t
+		SET defaultflag=$defaultflag$,
+		updateoperator='$updateoperator$',updatetime='$updatetime$',memo='$memo$'
+		WHERE id = $id$
+	</update>
+	
+	<select id="exportByPersonnelid" parameterClass="int" resultClass="personnelPhoto">
+		SELECT ft.fileName,ft.fileallName
+		FROM p_personnel_photo_t ppt
+		LEFT JOIN sys_file_t ft ON ppt.fileid=ft.id
+		WHERE ppt.validflag > 0 AND ft.validflag > 0 
+		AND ppt.personnelid=$personnelid$ AND ppt.defaultflag =1
+	</select> 
+	
+</sqlMap>

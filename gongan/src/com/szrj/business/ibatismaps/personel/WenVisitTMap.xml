@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+        
+<sqlMap namespace="wenVisit">
+	<typeAlias alias="wenVisit" type="com.szrj.business.model.personel.WenVisit"/>
+	<select id="getById" parameterClass="int" resultClass="wenVisit">
+		SELECT A.*, GROUP_CONCAT( ft2.fileName ORDER BY ft2.id SEPARATOR ',' ) AS attachmentsname
+		FROM ( SELECT vt.*, GROUP_CONCAT( ft1.fileName ORDER BY ft1.id SEPARATOR ',' ) AS admonishfilename
+				FROM p_wen_visit_t vt LEFT JOIN sys_file_t ft1 ON FIND_IN_SET(ft1.id, vt.admonishfile) 
+				WHERE vt.validflag > 0 AND vt.id = $id$ GROUP BY vt.id ) A 
+		LEFT JOIN sys_file_t ft2 ON FIND_IN_SET(ft2.id, A.attachments)
+		GROUP BY A.id
+	</select>
+	
+	<select id="searchWenVisit_count" parameterClass="wenVisit" resultClass="Integer">
+		SELECT COUNT(vt.id)
+		FROM p_wen_visit_t vt
+		LEFT JOIN p_personnel_t pt ON vt.personnelid=pt.id
+		WHERE vt.validflag > 0 AND pt.validflag>0
+		<dynamic prepend="">
+			<isNotEqual prepend="AND" property="personnelid" compareValue="0">
+				vt.personnelid = $personnelid$
+	        </isNotEqual>
+		</dynamic>
+	</select>
+	<select id="searchWenVisit" parameterClass="wenVisit" resultClass="wenVisit">
+		SELECT vt.*
+		FROM p_wen_visit_t vt
+		LEFT JOIN p_personnel_t pt ON vt.personnelid=pt.id
+		WHERE vt.validflag > 0 AND pt.validflag>0
+		<dynamic prepend="">
+			<isNotEqual prepend="AND" property="personnelid" compareValue="0">
+				vt.personnelid = $personnelid$
+	        </isNotEqual>
+		</dynamic>
+		ORDER BY DATE_FORMAT(vt.startdate,'%Y-%m-%d %h:%i:%m') desc
+	</select>
+	<select id="getListByPersonnelid" parameterClass="int" resultClass="wenVisit">
+		SELECT vt.*
+		FROM p_wen_visit_t vt
+		LEFT JOIN p_personnel_t pt ON vt.personnelid=pt.id
+		WHERE vt.validflag > 0 AND pt.validflag>0 AND vt.personnelid = $personnelid$
+		ORDER BY DATE_FORMAT(vt.startdate,'%Y-%m-%d %h:%i:%m') desc
+	</select>
+	<!-- 新增 -->
+	<insert id="add" parameterClass="wenVisit">
+		INSERT INTO p_wen_visit_t
+		(personnelid,startdate,enddate,
+		sensitivenode,nodename,nodememo,
+		activitytype,activitymemo,
+		activitydirection,directionmemo,
+		relatedplace,placememo,placecharacter,
+		activityform,formmemo,
+		activitything,thingmemo,
+		activityprocess,acceptance,
+		traffictype,togetherperson,
+		staytype,staymemo,
+		hotelintime,hotelouttime,
+		hotelname,hotelroom,
+		hotelcode,hoteladdress,
+		findunit,handleresult,admonishfile,
+		returntype,returnvehicle,vehiclememo,
+		powerunit,personstate,
+		returncollect,returnpunish,
+		punishcontent,unitreply,attachments,
+		validflag,addoperator,addtime,memo)
+		VALUES
+		($personnelid$,'$startdate$','$enddate$',
+		$sensitivenode$,'$nodename$','$nodememo$',
+		'$activitytype$','$activitymemo$',
+		'$activitydirection$','$directionmemo$',
+		'$relatedplace$','$placememo$','$placecharacter$',
+		'$activityform$','$formmemo$',
+		'$activitything$','$thingmemo$',
+		'$activityprocess$','$acceptance$',
+		'$traffictype$','$togetherperson$',
+		'$staytype$','$staymemo$',
+		'$hotelintime$','$hotelouttime$',
+		'$hotelname$','$hotelroom$',
+		'$hotelcode$','$hoteladdress$',
+		'$findunit$','$handleresult$','$admonishfile$',
+		'$returntype$','$returnvehicle$','$vehiclememo$',
+		'$powerunit$','$personstate$',
+		'$returncollect$','$returnpunish$',
+		'$punishcontent$','$unitreply$','$attachments$',
+		$validflag$,'$addoperator$','$addtime$','$memo$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+	<!-- 删除 -->
+	<update id="cancel" parameterClass="wenVisit">
+		UPDATE p_wen_visit_t
+		SET validflag = 0,
+		updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	<!-- 修改 -->
+	<update id="update" parameterClass="wenVisit">
+		UPDATE p_wen_visit_t
+		SET startdate='$startdate$',enddate='$enddate$',
+		sensitivenode=$sensitivenode$,nodename='$nodename$',nodememo='$nodememo$',
+		activitytype='$activitytype$',activitymemo='$activitymemo$',
+		activitydirection='$activitydirection$',directionmemo='$directionmemo$',
+		relatedplace='$relatedplace$',placememo='$placememo$',placecharacter='$placecharacter$',
+		activityform='$activityform$',formmemo='$formmemo$',
+		activitything='$activitything$',thingmemo='$thingmemo$',
+		activityprocess='$activityprocess$',acceptance='$acceptance$',
+		traffictype='$traffictype$',togetherperson='$togetherperson$',
+		staytype='$staytype$',staymemo='$staymemo$',
+		hotelintime='$hotelintime$',hotelouttime='$hotelouttime$',
+		hotelname='$hotelname$',hotelroom='$hotelroom$',
+		hotelcode='$hotelcode$',hoteladdress='$hoteladdress$',
+		findunit='$findunit$',handleresult='$handleresult$',admonishfile='$admonishfile$',
+		returntype='$returntype$',returnvehicle='$returnvehicle$',vehiclememo='$vehiclememo$',
+		powerunit='$powerunit$',personstate='$personstate$',
+		returncollect='$returncollect$',returnpunish='$returnpunish$',
+		punishcontent='$punishcontent$',unitreply='$unitreply$',attachments='$attachments$',
+		updateoperator='$updateoperator$',updatetime='$updatetime$',memo='$memo$'
+		WHERE id = $id$
+	</update>
+	
+	<select id="searchWenVisit_count_zfw" parameterClass="wenVisit" resultClass="Integer">
+		SELECT COUNT(vt.id)
+		FROM zfw_p_wen_visit_t vt
+		LEFT JOIN p_personnel_t pt ON vt.personnelid=pt.id
+		WHERE vt.validflag > 0 AND pt.validflag>0
+		<dynamic prepend="">
+			<isNotEqual prepend="AND" property="personnelid" compareValue="0">
+				vt.personnelid = $personnelid$
+	        </isNotEqual>
+		</dynamic>
+	</select>
+	<select id="searchWenVisit_zfw" parameterClass="wenVisit" resultClass="wenVisit">
+		SELECT vt.*
+		FROM zfw_p_wen_visit_t vt
+		LEFT JOIN p_personnel_t pt ON vt.personnelid=pt.id
+		WHERE vt.validflag > 0 AND pt.validflag>0
+		<dynamic prepend="">
+			<isNotEqual prepend="AND" property="personnelid" compareValue="0">
+				vt.personnelid = $personnelid$
+	        </isNotEqual>
+		</dynamic>
+		ORDER BY DATE_FORMAT(vt.startdate,'%Y-%m-%d %h:%i:%m') desc
+	</select>
+	
+	<select id="getById_zfw" parameterClass="int" resultClass="wenVisit">
+		SELECT A.*, GROUP_CONCAT( ft2.fileName ORDER BY ft2.id SEPARATOR ',' ) AS attachmentsname
+		FROM ( SELECT vt.*, GROUP_CONCAT( ft1.fileName ORDER BY ft1.id SEPARATOR ',' ) AS admonishfilename
+				FROM zfw_p_wen_visit_t vt LEFT JOIN zfw_sys_file_t ft1 ON FIND_IN_SET(ft1.id, vt.admonishfile) 
+				WHERE vt.validflag > 0 AND vt.id = $id$ GROUP BY vt.id ) A 
+		LEFT JOIN zfw_sys_file_t ft2 ON FIND_IN_SET(ft2.id, A.attachments)
+		GROUP BY A.id
+	</select>
+	
+	<update id="update_zfw" parameterClass="wenVisit">
+		UPDATE zfw_p_wen_visit_t
+		SET validflag=$validflag$
+		WHERE id = $id$
+	</update>
+</sqlMap>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+        
+<sqlMap namespace="roleAppbutton">
+	<typeAlias alias="roleAppbutton" type="com.szrj.business.model.RoleAppbutton"/>
+	
+	<select id="find" parameterClass="roleAppbutton" resultClass="int">
+		SELECT COALESCE(id,COUNT(id))
+		FROM sys_role_appbutton_t
+		WHERE roleid=$roleid$
+	</select>
+	
+	<!-- 新增 -->
+	<insert id="add" parameterClass="roleAppbutton">
+		INSERT INTO sys_role_appbutton_t
+		(roleid,appbuttonIds,addoperator,addtime,memo)
+		VALUES
+		($roleid$,'$appbuttonIds$','$addoperator$','$addtime$','$memo$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+	
+	<!-- 修改 -->
+	<update id="updateAppbuttonIds" parameterClass="roleAppbutton">
+		UPDATE sys_role_appbutton_t
+		SET appbuttonIds='$appbuttonIds$',addoperator='$addoperator$',addtime='$addtime$'
+		WHERE roleid = $roleid$
+	</update>
+	
+	<select id="getRoleAppbuttonByRoleid" parameterClass="int" resultClass="roleAppbutton">
+		SELECT *
+		FROM sys_role_appbutton_t
+		WHERE roleid=$roleid$
+	</select>
+</sqlMap>

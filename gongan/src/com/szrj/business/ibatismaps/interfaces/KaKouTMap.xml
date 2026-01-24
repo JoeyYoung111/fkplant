@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="kakou">
+	<typeAlias alias="kakou" type="com.szrj.business.model.interfaces.KaKou"/>
+	<typeAlias alias="hotel" type="com.szrj.business.model.interfaces.Hotel"/>
+	<typeAlias alias="internetbar" type="com.szrj.business.model.interfaces.InternetBar"/>
+	<typeAlias alias="xdjqxx" type="com.szrj.business.model.interfaces.XdJqxx"/>
+	<typeAlias alias="xdajxx" type="com.szrj.business.model.interfaces.XdAjxx"/>
+	<typeAlias alias="personnel" type="com.szrj.business.model.personel.Personnel"/>
+	<typeAlias alias="yujing" type="com.szrj.business.model.interfaces.Yujing"/>
+    <!--轨迹信息-->
+	<select id="searchtrajectoryKK_count" parameterClass="kakou" resultClass="Integer">
+		select count(1) from f_trajectory_t t
+		where t.personcard_number = '$personcard_number$'
+		and t.data_origin='$data_origin$'
+	</select>
+	<select id="searchtrajectoryKK" parameterClass="kakou" resultClass="kakou">
+		select * from f_trajectory_t t
+		where t.personcard_number = '$personcard_number$'
+		and t.data_origin='$data_origin$'
+		order BY  STR_TO_DATE(t.appear_time,'%Y-%m-%d %H:%h:%i') desc
+	</select>
+	<select id="searchtrajectoryKK_count1" parameterClass="kakou" resultClass="kakou">
+		select count(1) count,UNIX_TIMESTAMP(now())-UNIX_TIMESTAMP(STR_TO_DATE(max(appear_time),'%Y-%m-%d %H:%i:%s')) intervaltime
+		from f_trajectory_t t   
+		where t.personcard_number = '$personcard_number$'  
+	</select>
+	<select id="searchAlltrajectoryKK_count" parameterClass="kakou" resultClass="Integer">
+		select count(1) from f_trajectory_t t
+		where t.personcard_number = '$personcard_number$'
+		<dynamic prepend="">
+			<isNotEmpty prepend="AND" property="data_origin">
+				t.data_origin='$data_origin$'
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	<select id="searchAlltrajectoryKK" parameterClass="kakou" resultClass="kakou">
+		select * from f_trajectory_t t
+		where t.personcard_number = '$personcard_number$'
+		<dynamic prepend="">
+			<isNotEmpty prepend="AND" property="data_origin">
+				t.data_origin='$data_origin$'
+			</isNotEmpty>
+		</dynamic>
+		UNION SELECT '云控' as data_origin,id_card_no as personcard_number,0 as person_name,0 as telephone_number,content as appear_address,
+		longitude,latitude,trigger_time as appear_time,0 as kakou_point,0 as driver_whether,0 as vehicle_number,0 as vehicle_direction,forewarn_time as insert_time  
+		from v_forewarn_command_jiangyin WHERE id_card_no='$personcard_number$'
+		<dynamic prepend="">
+			<isNotEmpty prepend="AND" property="data_origin">
+				'云控'='$data_origin$'
+			</isNotEmpty>
+		</dynamic>
+<!--		order BY  STR_TO_DATE(t.appear_time,'%Y-%m-%d %H:%h:%i') desc-->
+		order BY appear_time desc
+	</select>
+	<select id="gettrajectoryKKtypes" resultClass="String">
+		SELECT data_origin FROM f_trajectory_t group by data_origin
+		UNION SELECT '云控'
+	</select>
+	<!--旅馆住宿信息-->
+   <select id="searchHotel_count" parameterClass="hotel" resultClass="Integer">
+		select count(1) from f_hotel_t t
+		where t.ZJHM = '$ZJHM$'
+	</select>
+	<select id="searchHotel" parameterClass="hotel" resultClass="hotel">
+		select * from f_hotel_t t
+		where t.ZJHM = '$ZJHM$'
+		order BY  STR_TO_DATE(t.INSERT_TIME,'%Y-%m-%d %H:%h:%i') desc
+	</select>
+	<!-- 网吧上网信息-->
+	<select id="searchInternetBar_count" parameterClass="internetbar" resultClass="Integer">
+		select count(1) from f_internetbar_t t
+		where t.CERTIFICATE_CODE = '$CERTIFICATE_CODE$'
+	</select>
+	<select id="searchInternetBar" parameterClass="internetbar" resultClass="internetbar">
+		select * from f_internetbar_t t
+		where t.CERTIFICATE_CODE = '$CERTIFICATE_CODE$'
+		order BY  STR_TO_DATE(t.INSERT_TIME,'%Y-%m-%d %H:%h:%i') desc
+	</select>
+	<!-- 涉警信息-->
+	<select id="searchxdjqxx_count" parameterClass="xdjqxx" resultClass="Integer">
+		select count(1) from f_xt_xd_jqxx_new t
+		where t.sfzh = '$sfzh$'
+	</select>
+	<select id="searchxdjqxx" parameterClass="xdjqxx" resultClass="xdjqxx">
+		select * from f_xt_xd_jqxx_new t
+		where t.sfzh = '$sfzh$'
+		order BY  t.jjrqsj desc
+	</select>
+	<!-- 涉案信息-->
+	<select id="searchxdajxx_count" parameterClass="xdajxx" resultClass="Integer">
+		select count(1) from f_xt_xd_ajxx_new t
+		where t.sfzh = '$sfzh$'
+	</select>
+	<select id="searchxdajxx" parameterClass="xdajxx" resultClass="xdajxx">
+		select * from f_xt_xd_ajxx_new t
+		where t.sfzh = '$sfzh$'
+		order BY  t.slsj desc
+	</select>
+	<!-- 一标三识 -->
+	<select id="findYbssRkByCardnumber" parameterClass="String" resultClass="String">
+		SELECT IFNULL(ID,concat(COUNT(ID),'')) from f_ybss_rk where IDNUMBER='$cardnumber$' and HISTORY='0'
+	</select>
+	<select id="getYbssRkByID" parameterClass="String" resultClass="personnel">
+		SELECT IDNUMBER AS cardnumber,NAME AS personname
+		,CASE IFNULL(XB,'') WHEN 1 THEN '男' WHEN 2 THEN '女' ELSE '未确认' END AS sexes
+		,CASE IFNULL(TYPE,'') WHEN 1 THEN '常住人员' WHEN 2 THEN '暂住人员' ELSE '' END AS persontype
+		,IFNULL(CONCAT(HKSX,HKXZ),'') AS houseplace
+		,CASE IFNULL(MZ,'') 
+			WHEN '01' THEN '汉族'  	WHEN '03' THEN '回族' 		WHEN '05' THEN '维吾尔族'	WHEN '07' THEN '彝族' 		WHEN '09' THEN '布依族' 
+			WHEN '11' THEN '满族'	WHEN '13' THEN '瑶族'		WHEN '15' THEN '土家族'	WHEN '17' THEN '哈萨克族'		WHEN '19' THEN '黎族'
+			WHEN '21' THEN '佤族'   	WHEN '23' THEN '高山族'		WHEN '25' THEN '水族'	WHEN '27' THEN '纳西族'		WHEN '29' THEN '柯尔克孜族'
+			WHEN '31' THEN '达斡尔族'	WHEN '33' THEN '羌族'		WHEN '35' THEN '撒拉族'	WHEN '37' THEN '仡佬族'		WHEN '39' THEN '阿昌族'
+			WHEN '41' THEN '塔吉克族'	WHEN '43' THEN '乌孜别克族'	WHEN '45' THEN '鄂温克族'	WHEN '47' THEN '保安族'		WHEN '49' THEN '京族'
+			WHEN '51' THEN '独龙族'	WHEN '53' THEN '赫哲族'		WHEN '55' THEN '珞巴族' 	WHEN '82' THEN '亻革家人族'	WHEN '99' THEN '其他'
+			WHEN '02' THEN '蒙古族'	WHEN '04' THEN '藏族'		WHEN '06' THEN '苗族' 	WHEN '08' THEN '壮族'
+			WHEN '10' THEN '朝鲜族'	WHEN '12' THEN '侗族'		WHEN '14' THEN '白族' 	WHEN '16' THEN '哈尼族'		WHEN '18' THEN '傣族'
+			WHEN '20' THEN '傈僳族'	WHEN '22' THEN '畲族'		WHEN '24' THEN '拉祜族' 	WHEN '26' THEN '东乡族'		WHEN '28' THEN '景颇族'
+			WHEN '30' THEN '土族'	WHEN '32' THEN '仫佬族'		WHEN '34' THEN '布朗族'	WHEN '36' THEN '毛南族'		WHEN '38' THEN '锡伯族'
+			WHEN '40' THEN '普米族'	WHEN '42' THEN '怒族'		WHEN '44' THEN '俄罗斯族'	WHEN '46' THEN '德昂族'		WHEN '48' THEN '裕固族'
+			WHEN '50' THEN '塔塔尔族'	WHEN '52' THEN '鄂伦春族'		WHEN '54' THEN '门巴族'	WHEN '56' THEN '基诺族'
+			WHEN '98' THEN '外国血统、中国籍人士'
+			ELSE '' END AS nation
+		,CASE IFNULL(HYZK,'') WHEN '20' THEN '已婚' WHEN '10' THEN '未婚' WHEN '40' THEN '离婚' WHEN '30' THEN '丧偶' ELSE '其他' END AS marrystatus
+		,CASE IFNULL(WHCD,'') 
+			WHEN '11' THEN '硕士' WHEN '20' THEN '本科' WHEN '30' THEN '大专' 
+			WHEN '60' THEN '高中' WHEN '70' THEN '初中' WHEN '71' THEN '初中' WHEN '80' THEN '小学' WHEN '81' THEN '小学'
+			WHEN '40' THEN '中专' WHEN '62' THEN '中专' ELSE '其他' END AS education
+		,IFNULL(ZZDZ,'') AS homeplace
+		,IFNULL(LX,'') AS homex,IFNULL(LY,'') AS homey
+		,IFNULL(GZCS,'') AS workplace,IFNULL(DHHM,'') AS telnumber
+		from f_ybss_rk where ID='$ID$'
+	</select>
+	<!-- 预警 -->
+	<select id="findYujingByColumn" parameterClass="yujing" resultClass="Integer">
+		SELECT IFNULL(COUNT(1),0) from f_yujing_t 
+		where modelId='$modelId$' and cardnumber='$cardnumber$' and table_name='$table_name$' and exec_column='$exec_column$' and row_key='$row_key$'
+	</select>
+	<insert id="addYujing" parameterClass="yujing">
+		INSERT INTO f_yujing_t
+		(table_name,exec_column,create_time,model_title,modelId,
+		result,header,row_key,result_feedback,
+		cardnumber,result_status,addtime,updatetime)
+		VALUES
+		('$table_name$','$exec_column$','$create_time$','$model_title$','$modelId$',
+		'$result$','$header$','$row_key$','$result_feedback$',
+		'$cardnumber$','$result_status$','$addtime$','$updatetime$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+	<select id="searchYujing_count" parameterClass="yujing" resultClass="Integer">
+		select count(1) from f_yujing_t t
+		where modelId!='dw'
+		<dynamic prepend="">
+			<isNotEqual prepend="AND" property="cardnumber" compareValue="all">
+				t.cardnumber = '$cardnumber$'
+			</isNotEqual>
+			<isNotEmpty prepend="AND" property="result">
+				t.result like '%$result$%' or t.model_title like '%$result$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="result_status">
+				t.result_status='$result_status$'
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	<select id="searchYujing" parameterClass="yujing" resultClass="yujing">
+		select t.* from f_yujing_t t
+		where modelId!='dw'
+		<dynamic prepend="">
+			<isNotEqual prepend="AND" property="cardnumber" compareValue="all">
+				t.cardnumber = '$cardnumber$'
+			</isNotEqual>
+			<isNotEmpty prepend="AND" property="result">
+				t.result like '%$result$%' or t.model_title like '%$result$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="result_status">
+				t.result_status='$result_status$'
+			</isNotEmpty>
+		</dynamic>
+		order BY t.addtime desc,t.row_key
+	</select>
+	<update id="feedbackYujing" parameterClass="yujing">
+		UPDATE f_yujing_t
+		SET result_status='$result_status$',result_feedback='$result_feedback$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	<select id="getYujingById" parameterClass="int" resultClass="yujing">
+		SELECT * from f_yujing_t 
+		WHERE id = $id$
+	</select>
+</sqlMap>

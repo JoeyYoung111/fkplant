@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+        
+<sqlMap namespace="trailInformation">
+	<typeAlias alias="trailInformation" type="com.szrj.business.model.TrailInformation"/>
+	<select id="getById" parameterClass="int" resultClass="trailInformation">
+		SELECT *
+		FROM p_trail_information_t
+		WHERE validflag > 0 AND id = $id$
+	</select>
+	<!-- 新增 -->
+	<insert id="add" parameterClass="trailInformation">
+		INSERT INTO p_trail_information_t
+		(cardnumber,personname,trailtype,sexes,
+		parameter1,parameter2,parameter3,parameter4,parameter5,
+		parameter6,parameter7,parameter8,parameter9,parameter10,
+		parameter11,parameter12,parameter13,parameter14,parameter15,
+		validflag,addoperator,addtime)
+		VALUES
+		('$cardnumber$','$personname$',$trailtype$,'$sexes$',
+		'$parameter1$','$parameter2$','$parameter3$','$parameter4$','$parameter5$',
+		'$parameter6$','$parameter7$','$parameter8$','$parameter9$','$parameter10$',
+		'$parameter11$','$parameter12$','$parameter13$','$parameter14$','$parameter15$',
+		$validflag$,'$addoperator$','$addtime$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+	<!-- 删除 -->
+	<update id="cancel" parameterClass="trailInformation">
+		UPDATE p_trail_information_t
+		SET validflag = 0,
+		updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	<select id="searchTrailInformation_count" parameterClass="trailInformation" resultClass="Integer">
+		SELECT COUNT(id)
+		FROM p_trail_information_t
+		WHERE validflag>0 AND trailtype=$trailtype$
+		<dynamic prepend="">
+			<isNotEmpty prepend="AND" property="cardnumber">
+				cardnumber like '%$cardnumber$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="personname">
+				personname like '%$personname$%'
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	<select id="searchTrailInformation" parameterClass="trailInformation" resultClass="trailInformation">
+		SELECT *
+		FROM p_trail_information_t
+		WHERE validflag>0 AND trailtype=$trailtype$
+		<dynamic prepend="">
+			<isNotEmpty prepend="AND" property="cardnumber">
+				cardnumber like '%$cardnumber$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="personname">
+				personname like '%$personname$%'
+			</isNotEmpty>
+			<isNotEmpty prepend=" " property="sortsql">
+				$sortsql$
+			</isNotEmpty>
+			<isEmpty prepend=" " property="sortsql">
+				ORDER BY id desc
+			</isEmpty>
+		</dynamic>
+		
+	</select>
+	
+</sqlMap>

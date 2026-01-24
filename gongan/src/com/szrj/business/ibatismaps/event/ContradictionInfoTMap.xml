@@ -1,0 +1,676 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="contradictionInfo">
+	<typeAlias alias="contradictionInfo" type="com.szrj.business.model.event.ContradictionInfo"/>
+	<typeAlias alias="eventsInfo" type="com.szrj.business.model.event.EventsInfo"/>
+	<typeAlias alias="leadsInfo" type="com.szrj.business.model.event.LeadsInfo"/>
+	<typeAlias alias="defuseInfo" type="com.szrj.business.model.event.DefuseInfo"/>
+	<typeAlias alias="workInfo" type="com.szrj.business.model.event.WorkInfo"/>
+	<typeAlias alias="handleInfo" type="com.szrj.business.model.event.HandleInfo"/>
+	<typeAlias alias="axisEvent" type="com.aladdin.model.AxisEvent"/>
+	<typeAlias alias="zbEventInfo" type="com.szrj.business.model.event.ZbEventInfo"/>
+	<typeAlias alias="selectModel" type="com.aladdin.model.SelectModel"/>
+	
+	<resultMap id="exportEventsInfo" class="eventsInfo">
+		<result property="etitle" column="etitle"/>
+		<result property="sjgk" column="sjgk"/>
+	</resultMap>
+	
+	<resultMap id="exportLeadsInfo" class="leadsInfo">
+		<result property="ltitle" column="ltitle"/>
+		<result property="lcontent" column="lcontent"/>
+		<result property="czqkgs" column="czqkgs"/>
+	</resultMap>
+	
+	<resultMap id="exportDefuseInfo" class="defuseInfo">
+		<result property="lsqkks" column="lsqkks"/>
+	</resultMap>
+	
+	<resultMap id="exportWorkInfo" class="workInfo">
+		<result property="wcontent" column="wcontent"/>
+	</resultMap>
+	
+	<resultMap id="exportHandleInfo" class="handleInfo">
+		<result property="hcontent" column="hcontent"/>
+	</resultMap>
+	
+	<resultMap id="exportcontradiction" class="contradictionInfo" groupBy="cdtid">
+		<result property="cdtname" column="cdtname" />
+		<result property="cdtcontent" column="cdtcontent" />
+		<result property="cdtlevel" column="cdtlevel" /><!-- 籍贯 -->
+		<result property="sponsorname" column="sponsorname" />
+		<result property="typename" column="typename" />
+		<result property="ssrs" column="ssrs" />
+		<result property="sjje" column="sjje" />
+		<result property="sdpcsldxx" column="sdpcsldxx" />
+		<result property="sdpcsmjxx" column="sdpcsmjxx" />
+		<result property="zfqtmbxx" column="zfqtmbxx" />
+		<result property="jtsq" column="jtsq" />
+	
+		
+		<result property="exportEventsInfo" resultMap="contradictionInfo.exportEventsInfo"/>
+		<result property="exportLeadsInfo" resultMap="contradictionInfo.exportLeadsInfo"/>
+		<result property="exportDefuseInfo" resultMap="contradictionInfo.exportDefuseInfo"/>
+		<result property="exportWorkInfo" resultMap="contradictionInfo.exportWorkInfo"/>
+		<result property="exportHandleInfo" resultMap="contradictionInfo.exportHandleInfo"/>
+	</resultMap>
+	
+	<select id="search_count" parameterClass="contradictionInfo" resultClass="Integer">
+		select count(*)
+		from e_contradictioninfo_t A
+		where validflag>0
+		<isNotEmpty prepend="AND" property="cdtlevel">
+			A.cdtlevel like '%$cdtlevel$%'
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="rkdept">
+			A.adddepartment in ($rkdept$)
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="zbdept">
+			A.sponsor in ($zbdept$)
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="sql">
+			($sql$)
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="cdtresult">
+			A.cdtresult like '%$cdtresult$%'
+		</isNotEmpty>
+		<isNotEqual prepend="AND" property="isshield" compareValue="-1">
+			A.isshield = $isshield$
+        </isNotEqual>
+		<isNotEmpty prepend="AND" property="cdtname">
+			A.cdtname like '%$cdtname$%'
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="cdtcontent">
+			A.cdtcontent like '%$cdtcontent$%'
+		</isNotEmpty>
+		<isNotEqual prepend="AND" property="rolefilterdept" compareValue="0">
+			(A.sponsor = $rolefilterdept$ or FIND_IN_SET($rolefilterdept$,A.assistdept))
+        </isNotEqual>
+		<isNotEqual prepend="AND" property="nowstate" compareValue="0">
+			A.nowstate = $nowstate$
+		</isNotEqual>
+		<isNotEmpty prepend="AND" property="startTime">
+			STR_TO_DATE(A.addtime,'%Y-%m-%d') >= STR_TO_DATE('$startTime$','%Y-%m-%d')
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="endTime">
+			STR_TO_DATE('$endTime$','%Y-%m-%d') >= STR_TO_DATE(A.addtime,'%Y-%m-%d')
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="updatestartTime">
+			STR_TO_DATE(A.updatetime,'%Y-%m-%d') >= STR_TO_DATE('$updatestartTime$','%Y-%m-%d')
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="updateendTime">
+			STR_TO_DATE('$updateendTime$','%Y-%m-%d') >= STR_TO_DATE(A.updatetime,'%Y-%m-%d')
+		</isNotEmpty>
+		<isNotEqual prepend="AND" property="zdDeptid" compareValue="0">
+			(A.sponsor in (SELECT pcsid FROM sys_xtjzd_role where xtjzdid=$zdDeptid$))
+        </isNotEqual>
+	</select>
+	<select id="search" parameterClass="contradictionInfo" resultClass="contradictionInfo">
+		select A.*,dp.departname as sponsorname,dp1.departname AS rkdept
+	    from
+		(select ct.id,GROUP_CONCAT(bm.basicName SEPARATOR ',') as typename,ct.cdtname,ct.sponsor,
+		ct.cdtlevel,ct.addtime,ct.adddepartment,ct.cdtresult,ct.isshield,ct.cdtcontent,ct.ssrs,
+		ct.memo,ct.sfdz,ct.nowstate,ct.cdttype,ct.examineman,ct.examinetime,ct.examineopinion,ct.assistdept,ct.updatetime,ct.type,ct.cdtcode
+		from e_contradictioninfo_t ct LEFT JOIN sys_basic_msg_t bm   
+		on FIND_IN_SET(bm.id,ct.cdttype) where ct.validflag>0
+		<isNotEqual prepend="AND" property="type" compareValue="0">
+			ct.type = $type$
+		</isNotEqual>
+		<isNotEqual prepend="AND" property="unitFilter" compareValue="0">
+			ct.sponsor = #unitFilter#
+        </isNotEqual>
+		<isNotEqual prepend="AND" property="personFilter" compareValue="0">
+			ct.iswjxxy = #personFilter#
+        </isNotEqual>
+		group by ct.id)A 
+		LEFT JOIN sys_department_t dp on A.sponsor=dp.id 
+		LEFT JOIN sys_department_t dp1 ON A.adddepartment = dp1.id
+		where 1=1
+		<isNotEmpty prepend="AND" property="cdtlevel">
+			A.cdtlevel like '%$cdtlevel$%'
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="rkdept">
+			A.adddepartment in ($rkdept$)
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="zbdept">
+			A.sponsor in ($zbdept$)
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="sql">
+			($sql$)
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="cdtresult">
+			A.cdtresult like '%$cdtresult$%'
+		</isNotEmpty>
+		<isNotEqual prepend="AND" property="isshield" compareValue="-1">
+			A.isshield = $isshield$
+        </isNotEqual>
+		<isNotEmpty prepend="AND" property="cdtname">
+			A.cdtname like '%$cdtname$%'
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="cdtcontent">
+			A.cdtcontent like '%$cdtcontent$%'
+		</isNotEmpty>
+		<isNotEqual prepend="AND" property="rolefilterdept" compareValue="0">
+			(A.sponsor = $rolefilterdept$ or FIND_IN_SET($rolefilterdept$,A.assistdept))
+        </isNotEqual>
+		<isNotEqual prepend="AND" property="nowstate" compareValue="0">
+			A.nowstate = $nowstate$
+		</isNotEqual>
+		<isNotEmpty prepend="AND" property="startTime">
+			STR_TO_DATE(A.addtime,'%Y-%m-%d') >= STR_TO_DATE('$startTime$','%Y-%m-%d')
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="endTime">
+			STR_TO_DATE('$endTime$','%Y-%m-%d') >= STR_TO_DATE(A.addtime,'%Y-%m-%d')
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="updatestartTime">
+			STR_TO_DATE(A.updatetime,'%Y-%m-%d') >= STR_TO_DATE('$updatestartTime$','%Y-%m-%d')
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="updateendTime">
+			STR_TO_DATE('$updateendTime$','%Y-%m-%d') >= STR_TO_DATE(A.updatetime,'%Y-%m-%d')
+		</isNotEmpty>
+		<isNotEqual prepend="AND" property="zdDeptid" compareValue="0">
+			(A.sponsor in (SELECT pcsid FROM sys_xtjzd_role where xtjzdid=$zdDeptid$))
+        </isNotEqual>
+		<isEmpty property="sortsql">
+			order  by A.updatetime desc
+		</isEmpty>
+		<isNotEmpty property="sortsql">
+				$sortsql$,A.updatetime desc
+		</isNotEmpty>
+	</select>
+	
+	<!-- 新增 -->
+	<insert id="add" parameterClass="contradictionInfo">
+		INSERT INTO e_contradictioninfo_t
+		(cdtname,cdtcontent,cdtlevel,cdttype,cdtresult,sfdz,sfdzx,sfdzy,ssrs,sjje,isshield,nowstate,validflag,adddepartment,addoperator,addtime,
+		examineman,examinetime,examineopinion,updateoperator,updatetime,memo,assistdept,sponsor,ssdwxx,
+		sdpcsldxx,sdpcsmjxx,zfqtmbxx,yfhg,isjq,qxx,iswjxxy,xxyxx,jtsq)
+		VALUES
+		('$cdtname$','$cdtcontent$','$cdtlevel$','$cdttype$','$cdtresult$','$sfdz$','$sfdzx$','$sfdzy$','$ssrs$','$sjje$',$isshield$,1,$validflag$,$adddepartment$,'$addoperator$','$addtime$'
+		,'$examineman$','$examinetime$','$examineopinion$','$updateoperator$','$updatetime$','$memo$','$assistdept$',$sponsor$,'$ssdwxx$',
+		'$sdpcsldxx$','$sdpcsmjxx$','$zfqtmbxx$','$yfhg$',$isjq$,'$qxx$',$iswjxxy$,'$xxyxx$','$jtsq$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+	<!-- 删除 -->
+	<update id="cancel" parameterClass="contradictionInfo">
+		UPDATE e_contradictioninfo_t
+		SET validflag = 0,updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	<!-- 修改 -->
+	<update id="update" parameterClass="contradictionInfo">
+		UPDATE e_contradictioninfo_t
+		SET cdtname='$cdtname$',cdtcontent='$cdtcontent$',cdtlevel='$cdtlevel$',cdttype='$cdttype$',cdtresult='$cdtresult$',sfdz='$sfdz$',ssrs='$ssrs$',sjje='$sjje$',
+		isshield=$isshield$,nowstate=$nowstate$,examineman='$examineman$',examinetime='$examinetime$',examineopinion='$examineopinion$',
+		memo='$memo$',assistdept='$assistdept$',sponsor=$sponsor$,ssdwxx='$ssdwxx$',
+		sdpcsldxx='$sdpcsldxx$',sdpcsmjxx='$sdpcsmjxx$',zfqtmbxx='$zfqtmbxx$',yfhg='$yfhg$',isjq=$isjq$,qxx='$qxx$',iswjxxy=$iswjxxy$,
+		xxyxx='$xxyxx$',jtsq='$jtsq$',sfdzx='$sfdzx$',sfdzy='$sfdzy$'
+		WHERE id = $id$
+	</update>
+	
+	<select id="getById" parameterClass="int" resultClass="contradictionInfo">
+		SELECT *
+		FROM e_contradictioninfo_t
+		WHERE validflag > 0 AND id = $id$
+	</select>
+	
+	<select id="getCheckContradictionInfo" parameterClass="int" resultClass="contradictionInfo">
+		select B.*,dp.departname as sponsorname from
+		(select A.id,GROUP_CONCAT(sdp.departname SEPARATOR ',') as assistdept,max(A.typename) as typename,max(A.cdtname) as cdtname,MAX(A.sponsor) as sponsor,max(A.cdtlevel) as cdtlevel,
+		max(A.adddepartment) as adddepartment,max(A.cdtresult) as cdtresult,max(A.isshield) as isshield,max(A.cdtcontent) as cdtcontent,max(A.ssrs) as ssrs,
+		max(A.memo) as memo,max(A.sfdz) as sfdz,max(A.nowstate) as nowstate,max(A.sjje) as sjje
+		from(select ct.id,GROUP_CONCAT(bm.basicName SEPARATOR ',') as typename,max(ct.cdtname) as cdtname,MAX(ct.sponsor) as sponsor,max(ct.cdtlevel) as cdtlevel,
+		max(ct.adddepartment) as adddepartment,max(ct.cdtresult) as cdtresult,max(ct.isshield) as isshield,max(ct.cdtcontent) as cdtcontent,max(ct.ssrs) as ssrs,
+		max(ct.memo) as memo,max(ct.sfdz) as sfdz,max(ct.nowstate) as nowstate,max(ct.sjje) as sjje,max(ct.assistdept) as assistdept
+		from (select * from e_contradictioninfo_t where id=$id$) ct
+		LEFT JOIN sys_basic_msg_t bm   
+		on FIND_IN_SET(bm.id,ct.cdttype) where ct.validflag>0   group by ct.id)A 
+		LEFT JOIN sys_department_t sdp   
+		on FIND_IN_SET(sdp.id,A.assistdept) GROUP BY A.id)B, sys_department_t dp
+		where B.sponsor=dp.id
+	</select>
+	
+	<!-- 审查 -->
+	<update id="check" parameterClass="contradictionInfo">
+		UPDATE e_contradictioninfo_t
+		SET nowstate = $nowstate$,examineman='$examineman$',examinetime='$examinetime$',examineopinion='$examineopinion$'
+		WHERE id = $id$
+	</update>
+	
+	<select id="searchTimeaxis" parameterClass="contradictionInfo" resultClass="axisEvent">
+		SELECT a.*
+		from(
+		select  '引发涉稳事件'  AS eventtype,  etitle as eventname,fssj as eventtime,sjgk as eventdetail
+		from e_eventsinfo_t
+		where cdtid=$id$ and validflag>0 and fssj !=""
+		UNION
+		select  '情报线索信息' AS eventtype,ltitle,ldate,lcontent
+		from e_leadsinfo_t
+		where cdtid=$id$ and validflag>0 and ldate !=""
+		UNION
+		select  '稳控化解情况' AS eventtype,csgs,lsdate,lsqkks
+		from e_defuseinfo_t
+		where cdtid=$id$ and validflag>0 and lsdate !=""
+		UNION
+		select  '工作交办管理' AS eventtype,wtitle,xftime,wcontent
+		from e_workinfo_t
+		where cdtid=$id$ and validflag>0 and xftime !=""
+		UNION
+		select  '处置化解情况' AS eventtype,htitle,hdate,hcontent
+		from e_handleinfo_t
+		where cdtid=$id$ and validflag>0 and hdate !="")AS a
+		order by a.eventtime desc
+	</select>
+	
+	<select id="getDetailById" parameterClass="int" resultClass="contradictionInfo">
+		SELECT B.*,d.departname as sponsorname FROM(
+		SELECT A.*,GROUP_CONCAT(dp.departname SEPARATOR ',') as assistdeptname
+		FROM(SELECT ct.*,GROUP_CONCAT(bm.basicName SEPARATOR ',') as typename
+		FROM(SELECT * FROM e_contradictioninfo_t WHERE id = $id$)
+		ct LEFT JOIN sys_basic_msg_t bm
+		on FIND_IN_SET(bm.id,ct.cdttype)
+		)A LEFT JOIN sys_department_t dp on FIND_IN_SET(dp.id,A.assistdept))B LEFT JOIN sys_department_t d on B.sponsor=d.id
+	</select>
+	
+	<select id="searchCdtname" resultClass="String">
+		select cdtname
+		from e_contradictioninfo_t
+		where validflag>0 and type=1
+	</select>
+	
+	<select id="getCdtByPerson" parameterClass="contradictionInfo" resultClass="contradictionInfo">
+		select ct.id,ct.cdtname
+		from e_keypersonnel_t kp
+		LEFT JOIN e_contradictioninfo_t ct on ct.id=kp.cdtid
+		where kp.personnelid=#personnelid# and kp.validflag>0 and ct.validflag>0
+	</select>
+	
+	<!-- 屏蔽 -->
+	<update id="block" parameterClass="contradictionInfo">
+		UPDATE e_contradictioninfo_t
+		SET isshield = $isshield$,updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	
+	<update id="updateTime" parameterClass="contradictionInfo">
+		UPDATE e_contradictioninfo_t
+		SET updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	<select id="countByCdtresult" resultClass="selectModel">
+		SELECT A.cdtresult text,count(e.id) value from 
+			(SELECT '已化解' AS cdtresult FROM DUAL
+			UNION SELECT '已钝化' AS cdtresult FROM DUAL
+			UNION SELECT '处置中' AS cdtresult FROM DUAL) A
+		LEFT JOIN e_contradictioninfo_t e on e.cdtresult=A.cdtresult and e.isshield=0 and  e.type=1 and e.validflag>0
+		GROUP BY A.cdtresult
+		order by FIELD(text,'已化解','已钝化','处置中');
+	</select>
+	<select id="countByCdttype" resultClass="selectModel">
+		SELECT
+			A.id,
+			A.basicName name,
+			getCdttypeCount ( A.id ) value
+		FROM
+			(
+				SELECT
+					b.id,
+					b.basicName,
+					count( b2.id ) zino 
+				FROM
+					sys_basic_msg_t b
+					LEFT JOIN sys_basic_msg_t b2 ON b2.parentid = b.id 
+					AND b2.validflag > 0 
+					AND b2.basicType = 39 
+				WHERE
+					b.parentid = 0 
+					AND b.validflag > 0 
+					AND b.basicType = 39 
+				GROUP BY
+					b.id 
+				ORDER BY
+					b.sort,
+					b.id 
+			) A 
+		WHERE
+			getCdttypeCount ( A.id ) > 1 
+		ORDER BY value DESC;
+	</select>
+	<select id="countByCdtlevel" resultClass="selectModel">
+		select b.basicName text,count(e.id) value
+		from sys_basic_msg_t b	
+		LEFT JOIN e_contradictioninfo_t e ON e.cdtlevel = b.basicName 
+			AND e.isshield = 0 
+			AND e.type = 1 
+			AND e.validflag > 0
+		WHERE basicType=93
+		GROUP BY b.basicName
+		ORDER BY b.sort,b.id;
+	</select>
+	<select id="countBySsrs" resultClass="selectModel">
+		select b.basicName text,count(e.id) value
+		from sys_basic_msg_t b	
+		LEFT JOIN e_contradictioninfo_t e ON e.ssrs = b.basicName 
+			AND e.isshield = 0 
+			AND e.type = 1 
+			AND e.validflag > 0
+		WHERE basicType=43
+		GROUP BY b.basicName
+		ORDER BY b.sort,b.id;
+	</select>
+	<select id="countPersonAndEventByDepartment" resultClass="selectModel">
+		SELECT
+			d1.id,
+			REPLACE(d1.departname,'派出所','') text,
+			d1.np value,
+			count( 1 ) memo 
+		FROM
+			(
+		SELECT
+			d.id,
+			d.departname,
+			count( 1 ) np 
+		FROM
+			( SELECT id, departname FROM sys_department_t WHERE validflag > 0 AND departtype = 4 AND id != 55 GROUP BY departname ORDER BY id ) d
+			LEFT JOIN p_personnel_t p ON p.jdunit1 = d.id 
+			AND p.isrisk = 1 
+			AND p.validflag > 0 
+		GROUP BY
+			d.id 
+			) d1
+			LEFT JOIN e_contradictioninfo_t e ON e.sponsor = d1.id 
+			AND e.isshield = 0 
+			AND e.type = 1 
+			AND e.validflag > 0 
+		GROUP BY
+			d1.id;
+	</select>
+	<select id="countEventPercentByDepartment" resultClass="selectModel">
+		SELECT
+			d1.id,
+			REPLACE(d1.departname,'派出所','所') name,
+			cast(count( e.id )/(SELECT count(1) from e_contradictioninfo_t WHERE isshield = 0 AND type = 1 AND validflag > 0)*100 as DECIMAL(18,1)) value 
+		FROM
+			sys_department_t d1
+			LEFT JOIN e_contradictioninfo_t e ON e.sponsor = d1.id 
+			AND e.isshield = 0 
+			AND e.type = 1 
+			AND e.validflag > 0
+		WHERE d1.validflag > 0 AND d1.departtype = 4 AND d1.id != 55	
+		GROUP BY d1.id
+		ORDER BY d1.id;
+	</select>
+	<select id="countAllTrendEvent" resultClass="selectModel">
+		SELECT A.addmonth
+		,DATE_FORMAT(DATE_SUB(CURDATE(),INTERVAL A.addmonth MONTH),'%Y.%m') name
+		,count(e.id) value
+		from(
+			select 1 as addmonth
+			from dual
+			UNION select 2 as addmonth
+			from dual
+			UNION select 3 as addmonth
+			from dual
+			UNION select 4 as addmonth
+			from dual
+			UNION select 5 as addmonth
+			from dual
+			UNION select 6 as addmonth
+			from dual
+			UNION select 7 as addmonth
+			from dual
+			UNION select 8 as addmonth
+			from dual
+			UNION select 9 as addmonth
+			from dual
+			UNION select 10 as addmonth
+			from dual
+			UNION select 11 as addmonth
+			from dual
+			UNION select 12 as addmonth
+			from dual			
+		)A
+		LEFT JOIN e_contradictioninfo_t e ON e.addtime>=DATE_SUB(CONCAT(DATE_FORMAT(CURDATE(),'%Y-%m-01'),' 00:00:00') ,INTERVAL A.addmonth MONTH) and DATE_SUB(CONCAT(DATE_FORMAT(CURDATE(),'%Y-%m-01'),' 23:59:59') ,INTERVAL (A.addmonth-1) MONTH)>e.addtime
+		AND e.isshield = 0 
+		AND e.type = 1 
+		AND e.validflag > 0
+		GROUP BY A.addmonth
+		ORDER BY A.addmonth desc;
+	</select>
+	
+	<!-- 新增政保事件 -->
+	<insert id="addZbEvent" parameterClass="contradictionInfo">
+		INSERT INTO e_contradictioninfo_t
+		(cdtname,type,cdtlevel,cdttype,cdtresult,ssrs,sfdz,examinetime,examineopinion,cdtcontent,addtime,addoperator,nowstate,sponsor,iswjxxy,xxyxx,
+		adddepartment,validflag,updateoperator,updatetime,memo)
+		VALUES
+		('$cdtname$',2,'$cdtlevel$','$cdttype$','$cdtresult$','$ssrs$','$sfdz$','$examinetime$','$examineopinion$','$cdtcontent$','$addtime$','$addoperator$',0,$sponsor$,$iswjxxy$,'$xxyxx$',
+		$adddepartment$,$validflag$,'$updateoperator$','$updatetime$','$memo$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+	<!-- 修改政保事件 -->
+	<update id="updateZbEvent" parameterClass="contradictionInfo">
+		UPDATE e_contradictioninfo_t
+		SET cdtname='$cdtname$',type=2,cdtlevel='$cdtlevel$',cdttype='$cdttype$',cdtresult='$cdtresult$',ssrs='$ssrs$',sfdz='$sfdz$',examinetime='$examinetime$',
+		examineopinion='$examineopinion$',cdtcontent='$cdtcontent$',updateoperator='$updateoperator$',updatetime='$updatetime$',memo='$memo$'
+		WHERE id = $id$
+	</update>
+	
+	<!-- 政保事件详细信息 -->
+	<!-- 新增 -->
+	<insert id="add_ZbEventInfo" parameterClass="zbEventInfo">
+		INSERT INTO e_zbeventinfo_t
+		(datatype,cdtid,name,type,result,memo,addtime,addoperator,addoperatorid,validflag,updateoperator,updatetime)
+		VALUES
+		($datatype$,$cdtid$,'$name$','$type$','$result$','$memo$','$addtime$','$addoperator$',$addoperatorid$,$validflag$,'$updateoperator$','$updatetime$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+	
+	<!-- 查询 -->
+	<select id="search_count_ZbEventInfo" parameterClass="zbEventInfo" resultClass="Integer">
+		select count(*)
+		from e_zbeventinfo_t
+		where validflag>0 and cdtid=$cdtid$
+		<isNotEqual prepend="AND" property="datatype" compareValue="0">
+			datatype = $datatype$
+        </isNotEqual>
+	</select>
+	<select id="search_ZbEventInfo" parameterClass="zbEventInfo" resultClass="zbEventInfo">
+		select *
+		from e_zbeventinfo_t
+		where validflag>0 and cdtid=$cdtid$
+		<isNotEqual prepend="AND" property="datatype" compareValue="0">
+			datatype = $datatype$
+        </isNotEqual>
+	</select>
+	<!-- 删除 -->
+	<update id="cancel_ZbEventInfo" parameterClass="zbEventInfo">
+		UPDATE e_zbeventinfo_t
+		SET validflag = 0,updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	<!-- 修改 -->
+	<select id="getById_ZbEventInfo" parameterClass="zbEventInfo" resultClass="zbEventInfo">
+		select *
+		from e_zbeventinfo_t
+		where id=$id$
+	</select>
+	<update id="update_ZbEventInfo" parameterClass="zbEventInfo">
+		UPDATE e_zbeventinfo_t
+		SET name='$name$',type='$type$',result='$result$',memo='$memo$',updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	<select id="search_countByKeyperson" parameterClass="contradictionInfo" resultClass="int">
+		select count(*) from
+		(select *
+		from e_keypersonnel_t
+		where personnelid=$personnelid$ and validflag>0)kp
+		left join e_contradictioninfo_t ct on ct.id = kp.cdtid and ct.type=$type$
+		where ct.validflag>0
+	</select>
+	<select id="searchByKeyperson" parameterClass="contradictionInfo" resultClass="contradictionInfo">
+		select ct.* from
+		(select *
+		from e_keypersonnel_t
+		where personnelid=$personnelid$ and validflag>0)kp
+		left join e_contradictioninfo_t ct on ct.id = kp.cdtid and ct.type=$type$
+		where ct.validflag>0
+	</select>
+	
+	<select id="exportContradictionInfo" parameterClass="contradictionInfo" resultMap="exportcontradiction">
+		select ct.*,ei.etitle,ei.sjgk,li.lcontent,li.czqkgs,li.ltitle,dp.departname as sponsorname,GROUP_CONCAT(bm.basicName SEPARATOR ',') as typename,
+		di.lsqkks,wi.wcontent,hi.hcontent
+		from e_contradictioninfo_t ct   
+		left join (select * from e_eventsinfo_t where cdtid=$id$ and validflag>0 order by addtime desc limit 1) ei on ei.cdtid=ct.id   
+		left join (select * from e_leadsinfo_t where cdtid=$id$ and validflag>0 order by addtime desc limit 1) li on li.cdtid=ct.id
+		left join (select * from e_defuseinfo_t where cdtid=$id$ and validflag>0 order by addtime desc limit 1) di on di.cdtid=ct.id
+		left join (select * from e_workinfo_t where cdtid=$id$ and validflag>0 order by xftime desc limit 1) wi on wi.cdtid=ct.id
+		left join (select * from e_handleinfo_t where cdtid=$id$ and validflag>0 order by hdate desc limit 1) hi on hi.cdtid=ct.id
+		LEFT JOIN sys_department_t dp on ct.sponsor=dp.id 
+		LEFT JOIN sys_basic_msg_t bm on FIND_IN_SET(bm.id,ct.cdttype)
+		where ct.id=$id$
+	</select>
+	
+	<!-- 政法委端审核页面 -->
+	<select id="search_count_zfw" parameterClass="contradictionInfo" resultClass="Integer">
+		select count(*)
+		from e_contradictioninfo_t_zfw A
+		where validflag>0
+		<isNotEmpty prepend="AND" property="cdtlevel">
+			A.cdtlevel like '%$cdtlevel$%'
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="rkdept">
+			A.adddepartment in ($rkdept$)
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="zbdept">
+			A.sponsor in ($zbdept$)
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="sql">
+			($sql$)
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="cdtresult">
+			A.cdtresult like '%$cdtresult$%'
+		</isNotEmpty>
+		<isNotEqual prepend="AND" property="isshield" compareValue="-1">
+			A.isshield = $isshield$
+        </isNotEqual>
+		<isNotEmpty prepend="AND" property="cdtname">
+			A.cdtname like '%$cdtname$%'
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="cdtcontent">
+			A.cdtcontent like '%$cdtcontent$%'
+		</isNotEmpty>
+		<isNotEqual prepend="AND" property="rolefilterdept" compareValue="0">
+			(A.sponsor = $rolefilterdept$ or FIND_IN_SET($rolefilterdept$,A.assistdept))
+        </isNotEqual>
+		<isNotEqual prepend="AND" property="nowstate" compareValue="0">
+			A.nowstate = $nowstate$
+		</isNotEqual>
+		<isNotEmpty prepend="AND" property="startTime">
+			STR_TO_DATE(A.addtime,'%Y-%m-%d') >= STR_TO_DATE('$startTime$','%Y-%m-%d')
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="endTime">
+			STR_TO_DATE('$endTime$','%Y-%m-%d') >= STR_TO_DATE(A.addtime,'%Y-%m-%d')
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="updatestartTime">
+			STR_TO_DATE(A.updatetime,'%Y-%m-%d') >= STR_TO_DATE('$updatestartTime$','%Y-%m-%d')
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="updateendTime">
+			STR_TO_DATE('$updateendTime$','%Y-%m-%d') >= STR_TO_DATE(A.updatetime,'%Y-%m-%d')
+		</isNotEmpty>
+		<isNotEqual prepend="AND" property="zdDeptid" compareValue="0">
+			(A.sponsor in (SELECT pcsid FROM sys_xtjzd_role where xtjzdid=$zdDeptid$))
+        </isNotEqual>
+	</select>
+	<select id="search_zfw" parameterClass="contradictionInfo" resultClass="contradictionInfo">
+		select A.*,dp.departname as sponsorname,dp1.departname AS rkdept
+	    from
+		(select ct.id,GROUP_CONCAT(bm.basicName SEPARATOR ',') as typename,ct.cdtname,ct.sponsor,
+		ct.cdtlevel,ct.addtime,ct.adddepartment,ct.cdtresult,ct.isshield,ct.cdtcontent,ct.ssrs,
+		ct.memo,ct.sfdz,ct.nowstate,ct.cdttype,ct.examineman,ct.examinetime,ct.examineopinion,ct.assistdept,ct.updatetime,ct.type,ct.cdtcode
+		from e_contradictioninfo_t_zfw ct LEFT JOIN sys_basic_msg_t bm   
+		on FIND_IN_SET(bm.id,ct.cdttype) where ct.validflag>0
+		<isNotEqual prepend="AND" property="type" compareValue="0">
+			ct.type = $type$
+		</isNotEqual>
+		<isNotEqual prepend="AND" property="unitFilter" compareValue="0">
+			ct.sponsor = #unitFilter#
+        </isNotEqual>
+		<isNotEqual prepend="AND" property="personFilter" compareValue="0">
+			ct.iswjxxy = #personFilter#
+        </isNotEqual>
+		group by ct.id)A 
+		LEFT JOIN sys_department_t dp on A.sponsor=dp.id 
+		LEFT JOIN sys_department_t dp1 ON A.adddepartment = dp1.id
+		where 1=1
+		<isNotEmpty prepend="AND" property="cdtlevel">
+			A.cdtlevel like '%$cdtlevel$%'
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="rkdept">
+			A.adddepartment in ($rkdept$)
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="zbdept">
+			A.sponsor in ($zbdept$)
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="sql">
+			($sql$)
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="cdtresult">
+			A.cdtresult like '%$cdtresult$%'
+		</isNotEmpty>
+		<isNotEqual prepend="AND" property="isshield" compareValue="-1">
+			A.isshield = $isshield$
+        </isNotEqual>
+		<isNotEmpty prepend="AND" property="cdtname">
+			A.cdtname like '%$cdtname$%'
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="cdtcontent">
+			A.cdtcontent like '%$cdtcontent$%'
+		</isNotEmpty>
+		<isNotEqual prepend="AND" property="rolefilterdept" compareValue="0">
+			(A.sponsor = $rolefilterdept$ or FIND_IN_SET($rolefilterdept$,A.assistdept))
+        </isNotEqual>
+		<isNotEqual prepend="AND" property="nowstate" compareValue="0">
+			A.nowstate = $nowstate$
+		</isNotEqual>
+		<isNotEmpty prepend="AND" property="startTime">
+			STR_TO_DATE(A.addtime,'%Y-%m-%d') >= STR_TO_DATE('$startTime$','%Y-%m-%d')
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="endTime">
+			STR_TO_DATE('$endTime$','%Y-%m-%d') >= STR_TO_DATE(A.addtime,'%Y-%m-%d')
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="updatestartTime">
+			STR_TO_DATE(A.updatetime,'%Y-%m-%d') >= STR_TO_DATE('$updatestartTime$','%Y-%m-%d')
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="updateendTime">
+			STR_TO_DATE('$updateendTime$','%Y-%m-%d') >= STR_TO_DATE(A.updatetime,'%Y-%m-%d')
+		</isNotEmpty>
+		<isNotEqual prepend="AND" property="zdDeptid" compareValue="0">
+			(A.sponsor in (SELECT pcsid FROM sys_xtjzd_role where xtjzdid=$zdDeptid$))
+        </isNotEqual>
+		<isEmpty property="sortsql">
+			order  by A.updatetime desc
+		</isEmpty>
+		<isNotEmpty property="sortsql">
+				$sortsql$,A.updatetime desc
+		</isNotEmpty>
+	</select>
+	
+	<select id="getById_zfw" parameterClass="int" resultClass="contradictionInfo">
+		SELECT *
+		FROM e_contradictioninfo_t_zfw
+		WHERE validflag > 0 AND id = $id$
+	</select>
+	
+	<update id="check_zfw" parameterClass="contradictionInfo">
+		UPDATE e_contradictioninfo_t_zfw
+		SET cdtname='$cdtname$',cdtcontent='$cdtcontent$',cdtlevel='$cdtlevel$',cdttype='$cdttype$',cdtresult='$cdtresult$',sfdz='$sfdz$',ssrs='$ssrs$',sjje='$sjje$',
+		isshield=$isshield$,nowstate=$nowstate$,examineman='$examineman$',examinetime='$examinetime$',examineopinion='$examineopinion$',
+		memo='$memo$',assistdept='$assistdept$',sponsor=$sponsor$,ssdwxx='$ssdwxx$',
+		sdpcsldxx='$sdpcsldxx$',sdpcsmjxx='$sdpcsmjxx$',zfqtmbxx='$zfqtmbxx$',yfhg='$yfhg$',isjq=$isjq$,qxx='$qxx$',iswjxxy=$iswjxxy$,
+		xxyxx='$xxyxx$',jtsq='$jtsq$',sfdzx='$sfdzx$',sfdzy='$sfdzy$'
+		WHERE id = $id$
+	</update>
+</sqlMap>

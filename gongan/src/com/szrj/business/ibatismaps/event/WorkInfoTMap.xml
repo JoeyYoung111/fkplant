@@ -1,0 +1,153 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="workInfo">
+	<typeAlias alias="workInfo" type="com.szrj.business.model.event.WorkInfo"/>
+	
+	<select id="search_count" parameterClass="workInfo" resultClass="Integer">
+		select count(*)
+		from e_workinfo_t wi
+		LEFT JOIN e_contradictioninfo_t ct
+		on wi.cdtid=ct.id
+		where wi.validflag>0
+		<isNotEqual prepend="AND" property="receiverid" compareValue="0">
+			(wi.receivedeptid=$receivedeptid$ or wi.xfperid=$receiverid$)
+        </isNotEqual>
+		<isNotEqual prepend="AND" property="cdtid" compareValue="0">
+			wi.cdtid = $cdtid$
+        </isNotEqual>
+          <isNotEmpty prepend="AND" property="cdtname">
+			ct.cdtname like '%$cdtname$%'
+		</isNotEmpty>
+        <isNotEqual prepend="AND" property="wtype" compareValue="0">
+			wi.wtype = $wtype$
+        </isNotEqual>
+        <isNotEqual prepend="AND" property="nowstates" compareValue="0">
+			wi.nowstates = $nowstates$
+        </isNotEqual>
+        <isNotEmpty prepend="AND" property="startTime">
+			STR_TO_DATE(wi.xftime,'%Y-%m-%d') >= STR_TO_DATE('$startTime$','%Y-%m-%d')
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="endTime">
+			STR_TO_DATE('$endTime$','%Y-%m-%d') >= STR_TO_DATE(wi.xftime,'%Y-%m-%d')
+		</isNotEmpty>
+	</select>
+	<select id="search" parameterClass="workInfo" resultClass="workInfo">
+		select A.cdtname,A.cdtlevel,A.id,A.wtype,A.cdtid,A.wtitle,A.wcontent,A.attachments,A.receivedept,A.receivername,A.receiverid,A.xfperid,A.xfpername,A.xfperdep,A.xftime,A.qsperid,A.qspername,A.qstime,A.fkperid,A.fkname,A.fktime,A.fkcontent,
+		A.nowstates,A.validflag,CONCAT(A.wtype,'〔',A.time,'〕',A.code,'号') as code,GROUP_CONCAT(sf.id order by sf.id SEPARATOR ',') as fileids,GROUP_CONCAT(sf.fileName order by sf.id SEPARATOR ',') as filenames,CASE A.wtype when 1 then '提示单' when 2 then '交办单' when 3 then '督办单' when 4 then '建议单' end as wtypename
+		FROM (select ct.cdtname,ct.cdtlevel,wi.id,cdtid,wtitle,wcontent,attachments,receivedept,u.staffName as receivername,receiverid,xfperid,xfpername,xfperdep,xftime,qsperid,qspername,qstime,fkperid,fkname,
+		fktime,fkcontent,nowstates,wi.validflag,left(xftime,4) as time,wtype,code
+		from e_workinfo_t wi
+		LEFT JOIN e_contradictioninfo_t ct on wi.cdtid=ct.id
+		LEFT JOIN sys_user_t u on u.id=wi.receiverid
+		where wi.validflag>0
+		<isNotEqual prepend="AND" property="receiverid" compareValue="0">
+			(wi.receivedeptid=$receivedeptid$ or wi.xfperid=$receiverid$)
+        </isNotEqual>
+		<isNotEqual prepend="AND" property="cdtid" compareValue="0">
+			wi.cdtid = $cdtid$
+        </isNotEqual>
+        <isNotEmpty prepend="AND" property="cdtname">
+			ct.cdtname like '%$cdtname$%'
+		</isNotEmpty>
+        <isNotEqual prepend="AND" property="wtype" compareValue="0">
+			wi.wtype = $wtype$
+        </isNotEqual>
+        <isNotEqual prepend="AND" property="nowstates" compareValue="0">
+			wi.nowstates = $nowstates$
+        </isNotEqual>
+        <isNotEmpty prepend="AND" property="startTime">
+			STR_TO_DATE(wi.xftime,'%Y-%m-%d') >= STR_TO_DATE('$startTime$','%Y-%m-%d')
+		</isNotEmpty>
+		<isNotEmpty prepend="AND" property="endTime">
+			STR_TO_DATE('$endTime$','%Y-%m-%d') >= STR_TO_DATE(wi.xftime,'%Y-%m-%d')
+		</isNotEmpty>)A
+		LEFT JOIN sys_file_t sf
+		on FIND_IN_SET(sf.id,A.attachments)
+		GROUP BY A.id  desc
+	</select>
+	
+	<!-- 新增 -->
+	<insert id="add" parameterClass="workInfo">
+		INSERT INTO e_workinfo_t
+		(cdtid,wtype,wtitle,wcontent,attachments,receivedept,receivername,receiverid,xfperid,xfpername,xfperdep,xftime,validflag,nowstates,code,receivedeptid)
+		VALUES
+		($cdtid$,$wtype$,'$wtitle$','$wcontent$','$attachments$','$receivedept$','$receivername$',$receiverid$,$xfperid$,'$xfpername$','$xfperdep$','$xftime$',1,1,'$code$',$receivedeptid$)
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+	<!-- 删除 -->
+	<update id="cancel" parameterClass="workInfo">
+		UPDATE e_workinfo_t
+		SET validflag = 0,updateoperator='$updateoperator$',updatetime='$updatetime$'
+		WHERE id = $id$
+	</update>
+	<!-- 修改 -->
+	<update id="update" parameterClass="workInfo">
+		UPDATE e_workinfo_t
+		SET lsdate='$lsdate$',csgs='$csgs$',sflsqk='$sflsqk$',lsqkks='$lsqkks$',updateoperator='$updateoperator$',updatetime='$updatetime$',memo='$memo$'
+		WHERE id = $id$
+	</update>
+	<!-- 根据ID获取 -->
+	<select id="getById" parameterClass="int" resultClass="workInfo">
+		select B.*,ct.cdtname,ct.cdtlevel,ct.addtime,ct.addoperator,ct.sfdz,ct.ssrs,ct.sjje,ct.cdtcontent,GROUP_CONCAT(bm.basicName order by bm.id) as cdttypename,
+		sd.departname as rkdept,dp.departname as sponsorname,GROUP_CONCAT(sdp.departname SEPARATOR ',') as assistdeptname
+		from(select C.*,GROUP_CONCAT(sf1.id order by sf1.id SEPARATOR ',') as fkfileids,GROUP_CONCAT(sf1.fileName order by sf1.id SEPARATOR ',') as fkfilenames from(select A.id,A.wtype as wtypename,A.cdtid,A.wtitle,A.wcontent,A.attachments,A.fkattachments,A.receivedept,A.receivername,A.receiverid,A.xfperid,A.xfpername,A.xfperdep,A.xftime,A.qsperid,A.qspername,A.qstime,A.fkperid,A.fkname,A.fktime,A.fkcontent,
+		A.nowstates,A.validflag,CONCAT(A.wtype,'〔',A.time,'〕',A.code,'号') as code,GROUP_CONCAT(sf.id order by sf.id SEPARATOR ',') as fileids,GROUP_CONCAT(sf.fileName order by sf.id SEPARATOR ',') as filenames FROM
+		(select id,cdtid,wtitle,wcontent,attachments,receivedept,receivername,receiverid,xfperid,xfpername,xfperdep,xftime,qsperid,qspername,qstime,fkperid,fkname,fktime,fkcontent,fkattachments,
+		nowstates,validflag,left(xftime,4) as time,CASE wtype when 1 then '提示单' when 2 then '交办单' when 3 then '督办单' when 4 then '建议单' end as wtype,code
+		from e_workinfo_t where validflag>0 and id = $id$)A
+		LEFT JOIN sys_file_t sf on FIND_IN_SET(sf.id,A.attachments))C
+		LEFT JOIN sys_file_t sf1 on FIND_IN_SET(sf1.id,C.fkattachments))B
+		LEFT JOIN e_contradictioninfo_t ct on B.cdtid=ct.id
+		LEFT JOIN sys_basic_msg_t bm on FIND_IN_SET(bm.id,ct.cdttype)
+		LEFT JOIN sys_department_t sd on ct.adddepartment=sd.id
+		LEFT JOIN sys_department_t dp on ct.sponsor=dp.id
+		LEFT JOIN sys_department_t sdp on FIND_IN_SET(sdp.id,ct.assistdept)
+	</select>
+	
+	<!-- 签收 -->
+	<update id="sign" parameterClass="workInfo">
+		UPDATE e_workinfo_t
+		SET qsperid=$qsperid$,qspername='$qspername$',qstime='$qstime$',nowstates=2
+		WHERE id = $id$
+	</update>
+	
+	<!-- 反馈 -->
+	<update id="feedback" parameterClass="workInfo">
+		UPDATE e_workinfo_t
+		SET fkperid=#fkperid#,fkname=#fkname#,fktime=#fktime#,fkcontent=#fkcontent#,hjzt=#hjzt#,fkattachments=#fkattachments#,nowstates=3
+		WHERE id = #id#
+	</update>
+	
+	<!-- 各类单子数量 -->
+	<select id="getWorkInfoNum" parameterClass="workInfo" resultClass="workInfo">
+		SELECT count(*) as nums,wtype
+		from e_workinfo_t
+		where validflag>0 and cdtid=$cdtid$
+		<isNotEqual prepend="AND" property="receiverid" compareValue="0">
+			 (receiverid=$receiverid$ or xfperid=$receiverid$)
+        </isNotEqual>
+		GROUP BY wtype
+		ORDER BY wtype
+	</select>
+	
+	<select id="getMaxCode" parameterClass="workInfo" resultClass="Integer">
+		select IFNULL(MAX(cast(code as SIGNED INTEGER)),0)
+		from e_workinfo_t
+		where validflag>0 and wtype=$wtype$
+	</select>
+	
+	<select id="getFeedback" parameterClass="int" resultClass="workInfo">
+		select A.*,cd.cdtlevel,cd.cdtcontent from(
+		SELECT A.*,GROUP_CONCAT(sf.id order by sf.id SEPARATOR ',') as fileids,GROUP_CONCAT(sf.fileName order by sf.id SEPARATOR ',') as filenames from(
+		select id,wtype,fkperid,fkname,fktime,fkcontent,fkattachments,hjzt,cdtid
+		from e_workinfo_t
+		where id=#id#) A
+		LEFT JOIN sys_file_t sf
+		on FIND_IN_SET(sf.id,A.fkattachments)
+		GROUP BY A.id)A
+		LEFT JOIN e_contradictioninfo_t cd
+		on A.cdtid=cd.id
+	</select>
+</sqlMap>

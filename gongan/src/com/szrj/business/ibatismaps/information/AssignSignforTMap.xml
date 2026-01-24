@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="AssignSignfor">
+	<typeAlias alias="AssignSignfor" type="com.szrj.business.model.information.AssignSignfor"/>
+
+	<!-- 新增 -->
+	<insert id="add" parameterClass="AssignSignfor">
+		insert into i_assign_signfor_t(
+			assignid,receiveid,validflag,addoperator,addtime
+		)values(
+			$assignid$,$receiveid$,1,'$addoperator$','$addtime$'
+		)
+		<selectKey resultClass="Integer" keyProperty="id">select last_insert_id() as id</selectKey>
+	</insert>
+
+	<!-- 查询 -->
+	<select id="search_AssignSignfor_count" parameterClass="AssignSignfor" resultClass="int">
+		select count(a.id) from i_assign_signfor_t a 
+		left join i_information_assign_t b on a.assignid = b.id
+		where a.validflag > 0 
+		<dynamic prepend="">
+			<isNotEqual prepend="AND" property="assignid" compareValue="0">
+				a.assignid = $assignid$
+			</isNotEqual>
+			<isNotEqual prepend="AND" property="receiveid" compareValue="0">
+				a.receiveid = $receiveid$
+			</isNotEqual>
+			<isNotEqual prepend="AND" property="validflag" compareValue="0">
+				a.validflag = $validflag$
+			</isNotEqual>
+			<isNotEmpty prepend="AND" property="assigntitle">
+				(b.assigntitle like '%$assigntitle$%')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="assigncontent">
+				(b.assigncontent like '%$assigncontent$%')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="urgentflag">
+				b.urgentflag = '$urgentflag$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="category">
+				b.category = '$category$'
+			</isNotEmpty>
+		</dynamic>
+	</select>
+
+	<select id="search_AssignSignfor" parameterClass="AssignSignfor" resultClass="AssignSignfor">
+		select a.*,b.informationid,b.assigntitle,b.assigncontent,b.signdepartment,b.signdepartids,
+		b.instructions,b.judgeopinion,b.requirements,b.issuer,b.category,b.urgentflag,b.signlimit,
+		b.feedbacklimit,b.attachments,b.departmentid,b.contactnumber,b.memo,c.departname as departmentname
+		from i_assign_signfor_t a
+		left join i_information_assign_t b on a.assignid = b.id
+		left join sys_department_t c on b.departmentid = c.id
+		where a.validflag > 0
+		<dynamic prepend="">
+			<isNotEqual prepend="AND" property="assignid" compareValue="0">
+				a.assignid = $assignid$
+			</isNotEqual>
+			<isNotEqual prepend="AND" property="receiveid" compareValue="0">
+				a.receiveid = $receiveid$
+			</isNotEqual>
+			<isNotEqual prepend="AND" property="validflag" compareValue="0">
+				a.validflag = $validflag$
+			</isNotEqual>
+			<isNotEmpty prepend="AND" property="assigntitle">
+				(b.assigntitle like '%$assigntitle$%')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="assigncontent">
+				(b.assigncontent like '%$assigncontent$%')
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="urgentflag">
+				b.urgentflag = '$urgentflag$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="category">
+				b.category = '$category$'
+			</isNotEmpty>
+		</dynamic>
+		order by id desc
+	</select>
+	
+	<select id="getById" parameterClass="int" resultClass="AssignSignfor">
+		select a.*,b.informationid,b.assigntitle,b.assigncontent,b.signdepartment,b.signdepartids,
+		b.instructions,b.judgeopinion,b.requirements,b.issuer,b.category,b.urgentflag,b.signlimit,
+		b.feedbacklimit,b.attachments,b.departmentid,b.contactnumber,b.memo,c.departname as departmentname
+		from i_assign_signfor_t a
+		left join i_information_assign_t b on a.assignid = b.id
+		left join sys_department_t c on b.departmentid = c.id
+		where a.id = $id$
+	</select>
+	
+	<update id="update" parameterClass="AssignSignfor">
+		update i_assign_signfor_t set validflag = $validflag$
+		<dynamic prepend="">
+			<isNotEmpty prepend="," property="signoper">
+				signoper = '$signoper$'
+			</isNotEmpty>
+			<isNotEmpty prepend="," property="signtime">
+				signtime = '$signtime$'
+			</isNotEmpty>
+			<isNotEmpty prepend="," property="feedbackoper">
+				feedbackoper = '$feedbackoper$'
+			</isNotEmpty>
+			<isNotEmpty prepend="," property="feedbacktime">
+				feedbacktime = '$feedbacktime$'
+			</isNotEmpty>
+			<isNotEmpty prepend="," property="feedbackcontent">
+				feedbackcontent = '$feedbackcontent$'
+			</isNotEmpty>
+		</dynamic>
+		where id = $id$
+	</update>
+
+	<update id="cancel" parameterClass="AssignSignfor">
+		update i_assign_signfor_t set validflag = 0 where assignid = $assignid$
+		<dynamic prepend="">
+			<isNotEmpty prepend="AND" property="idlist">
+				receiveid in $idlist$
+			</isNotEmpty>
+		</dynamic>
+	</update>
+	
+	<select id="search_list" parameterClass="AssignSignfor" resultClass="AssignSignfor">
+		select a.*,b.departname as receivename from i_assign_signfor_t a
+		left join sys_department_t b on a.receiveid = b.id
+		where a.validflag > 0 
+		<dynamic prepend="">
+			<isNotEqual prepend="AND" property="assignid" compareValue="0">
+				a.assignid = $assignid$
+			</isNotEqual>
+		</dynamic>
+	</select>
+
+</sqlMap>

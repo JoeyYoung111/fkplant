@@ -1,0 +1,136 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+<%
+String path = request.getContextPath();
+String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+path+"/";
+%>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>管控文件列表</title>
+    <link rel="stylesheet" href="<c:url value="/layui/css/layui.css"/>"/>
+    <script type="text/javascript" src="<c:url value="/js/jquery-1.8.0.min.js"/>"></script>
+    <script type="text/javascript" src="<c:url value="/layui/layui.js"/>"></script>
+    <script type="text/javascript" src="<c:url value="/js/check.js"/>"></script>
+    <style>
+        .layui-form-radio {
+            padding-top:14px;
+        }
+    </style>
+</head>
+<body>
+    <input type="hidden" name="personnelid" id="personnelid" value=${param.personnelid}></input>
+    <script type="text/html" id="toolbarButton">
+        <c:if test='${param.buttons==1}'>
+            <button type="button" class="layui-btn layui-btn-sm" lay-event="add"><i class="layui-icon">&#xe654;</i>添加</button>
+            <button type="button" class="layui-btn layui-btn-sm" lay-event="update"><i class="layui-icon">&#xe642;</i>修改</button>
+            <button type="button" class="layui-btn layui-btn-sm" lay-event="cancel"><i class="layui-icon">&#xe640;</i>删除</button>
+        </c:if>
+    </script>
+    <table class="layui-hide" id="followTable" lay-filter="followTable"></table>
+
+    <script>
+    $(document).ready(function(){});
+    var locat = (window.location+'').split('/');
+    $(function(){if('main'== locat[3]){locat =  locat[0]+'//'+locat[2];}else{locat =  locat[0]+'//'+locat[2]+'/'+locat[3];};});
+    layui.config({
+        base: "<c:url value='/layui/lay/modules/'/>"
+    }).extend({
+        treetable: 'treetable-lay/treetable',
+        formSelects: 'formSelects/formSelects-v4'
+    }).use(['table','laydate','form','treeSelect'], function(){
+        var table = layui.table;
+        var laydate = layui.laydate;
+        var layer = layui.layer;
+        var form = layui.form;
+        var treeSelect = layui.treeSelect;
+        form.render();
+
+        //方法级渲染
+        table.render({
+            elem: '#followTable',
+            toolbar: true,
+            defaultToolbar: ['filter', 'exports', 'print'],
+            url: '<c:url value="/searchcontrolfiles.do?personnelid="/>'+${param.personnelid}+"&type="+${param.type},
+            method:'post',
+            toolbar: '#toolbarButton',
+            cols: [[
+                {field:'id',type:'radio',fixed:'true',align:"center"},
+                // {field: 'type', title: '类型', width: 120, align:"center"},
+                {field: 'filename', title: '文件名', width: 200, align:"center"},
+                // {field: 'attachment_id', title: '附件ID', width: 120, align:"center"},
+                {field: 'memo', title: '备注信息', align:"center"},
+                {field:'addoperator', title: '创建人', width:100, align:"center"},
+                {field:'addtime', title: '创建时间', align:"center"},
+                {field:'updateoperator', title: '最新修改人', width:100, align:"center"},
+                {field:'updatetime', title: '最新修改时间', align:"center"},
+                {title: '操作', width: 100, align:"center", templet: function(d){
+                        return '<a class="layui-btn layui-btn-xs" href="<c:url value="/downUpfile.do"/>?fileid='+d.attachment_id+'">下载</a>';
+                    }
+                }
+            ]],
+            page: true,
+            limit: 10
+        });
+
+        //监听工具栏事件
+        table.on('toolbar(followTable)', function(obj){
+            var checkStatus = table.checkStatus(obj.config.id);
+            console.log('工具栏事件',obj);
+            switch(obj.event){
+                case 'add':
+                    layer.open({
+                        type: 2,
+                        title: '添加管控文件信息',
+                        area: ['800px', '500px'],
+                        content : '<c:url value="/jsp/personel/controlfiles/add.jsp?personnelid="/>'+${param.personnelid}+"&type="+${param.type},
+                    });
+                    break;
+                case 'update':
+                    var data = JSON.stringify(checkStatus.data);
+                    var datas = JSON.parse(data);
+                    if(datas != ""){
+                        var id = datas[0].id;
+                        var index = layui.layer.open({
+                            title : "修改管控文件信息",
+                            type : 2,
+                            content : '<c:url value="/getcontrolfilesbyid.do?id="/>'+id,
+                            area: ['800px', '500px'],
+                            maxmin: true,
+                            success : function(layero, index){}
+                        })
+                    }else{
+                        layer.alert("请先选择一条要修改的数据！");
+                    }
+                    break;
+                case 'cancel':
+                    var data = JSON.stringify(checkStatus.data);
+                    var datas = JSON.parse(data);
+                    if(datas != ""){
+                        var id = datas[0].id;
+                        layer.confirm('确定删除此信息？', function(index){
+                            layer.close(index);
+                            $.getJSON(locat+"/cancelcontrolfiles.do?id="+id+'&menuid=0',{},function(data) {
+                                var str = eval('(' + data + ')');
+                                if (str.flag == 1) {
+                                    top.layer.msg("数据删除成功！");
+                                    table.reload('followTable', {});
+                                }else{
+                                    top.layer.msg("删除失败!");
+                                }
+                            });
+                        });
+                    }else{
+                        layer.alert("请先选择一条要删除的数据！");
+                    }
+                    break;
+            }
+        });
+    });
+    </script>
+</body>
+</html>

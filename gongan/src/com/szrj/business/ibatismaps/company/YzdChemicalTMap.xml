@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+        
+<sqlMap namespace="chemical">
+	<typeAlias alias="chemical" type="com.szrj.business.model.company.YzdChemical"/>
+	
+	<!-- 新增 -->
+	<insert id="add" parameterClass="chemical">
+		insert into c_yzd_chemical_t
+		(companyid,belongtype,chemicalname,purpose,chemicaltype,packingtype,validflag,addoperator,addtime,memo)
+		values
+		($companyid$,$belongtype$,'$chemicalname$','$purpose$','$chemicaltype$','$packingtype$',
+		1,'$addoperator$','$addtime$','$memo$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+	
+	<!-- 查询 -->
+	<select id="searchChemical_count" parameterClass="chemical" resultClass="Integer">
+		select count(id) from c_yzd_chemical_t where validflag > 0
+		<dynamic>
+			<isNotEqual prepend="AND" property="companyid" compareValue="0">
+				companyid = $companyid$
+			</isNotEqual>
+			<isNotEqual prepend="AND" property="belongtype" compareValue="0">
+				belongtype = $belongtype$
+			</isNotEqual>
+			<isNotEmpty prepend="AND" property="chemicalname">
+				chemicalname = '$chemicalname$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="purpose">
+				purpose = '$purpose$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="chemicaltype">
+				chemicaltype = '$chemicaltype$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="packingtype">
+				packingtype = '$packingtype$'
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	<!-- 模糊查询 -->
+	<select id="searchChemical" parameterClass="chemical" resultClass="chemical">
+		select a.*,b.basicName as belongtypemsg,c.basicName as realName
+		from c_yzd_chemical_t a
+		left join sys_basic_msg_t b on a.belongtype = b.id
+		left join sys_basic_msg_t c on a.chemicalname = c.id
+		where a.validflag > 0
+		<dynamic>
+			<isNotEqual prepend="AND" property="companyid" compareValue="0">
+				a.companyid = $companyid$
+			</isNotEqual>
+			<isNotEmpty prepend="AND" property="chemicalname">
+				(c.basicname like '%$chemicalname$%')
+			</isNotEmpty>
+			<isNotEqual prepend="AND" property="belongtype" compareValue="0">
+				a.belongtype = $belongtype$
+			</isNotEqual>
+			<isNotEmpty prepend="AND" property="purpose">
+				a.purpose = '$purpose$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="chemicaltype">
+				a.chemicaltype = '$chemicaltype$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="packingtype">
+				a.packingtype = '$packingtype$'
+			</isNotEmpty>
+		</dynamic>
+		order by a.id
+	</select>
+	
+	<!-- 根据id查询 -->
+	<select id="getById" parameterClass="int" resultClass="chemical">
+		select a.*,b.basicName as belongtypemsg,c.basicName as realName
+		from c_yzd_chemical_t a
+		left join sys_basic_msg_t b on a.belongtype = b.id
+		left join sys_basic_msg_t c on a.chemicalname = c.id
+		where a.validflag > 0 and a.id = $id$
+	</select>
+	
+	<!-- 根据companyid查询 -->
+	<select id="getChemicalJSON" parameterClass="int" resultClass="chemical">
+		select * from c_yzd_chemical_t where validflag > 0 and companyid = $companyid$
+	</select>
+	
+	<!-- 修改 -->
+	<update id="update" parameterClass="chemical">
+		update c_yzd_chemical_t set belongtype=$belongtype$,chemicalname='$chemicalname$',
+		purpose='$purpose$',chemicaltype='$chemicaltype$',packingtype='$packingtype$',
+		updateoperator='$updateoperator$',updatetime='$updatetime$',memo='$memo$'
+		<dynamic>
+			<isNotEqual prepend="," property="companyid" compareValue="0">
+				companyid = $companyid$
+			</isNotEqual>
+		</dynamic>
+		where id = $id$
+	</update>
+	
+	<!-- 删除 -->
+	<update id="cancel" parameterClass="int">
+		update c_yzd_chemical_t set validflag = 0 where id = $id$
+	</update>
+	
+	<select id="getChemicalsById" parameterClass="String" resultClass="chemical">
+		select id,chemicalname from c_yzd_chemical_t where id in $idlist$
+	</select>
+	
+</sqlMap>

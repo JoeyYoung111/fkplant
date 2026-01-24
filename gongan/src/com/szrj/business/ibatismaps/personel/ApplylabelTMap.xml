@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+        
+<sqlMap namespace="applylabel">
+	<typeAlias alias="applylabel" type="com.szrj.business.model.personel.Applylabel"/>
+	
+	<!-- 新增 -->
+	<insert id="add" parameterClass="applylabel">
+		INSERT INTO p_personnel_applylabel_t
+		(personnelid,applytype,applylabel1,applylabel2,applylabel1name,applylabel2name,validflag,adddepartmentid,
+		addoperatorid,addoperator,addtime,memo,applyreason)
+		VALUES
+		($personnelid$,$applytype$,'$applylabel1$','$applylabel2$','$applylabel1name$','$applylabel2name$',$validflag$,$adddepartmentid$,
+		$addoperatorid$,'$addoperator$','$addtime$','$memo$','$applyreason$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+	
+	<select id="search_count" parameterClass="applylabel" resultClass="Integer">
+		select count(*) from 
+		p_personnel_applylabel_t ap
+		left join p_attributelabel_t at on ap.applylabel1=at.id
+		left join p_personnel_t p on p.id = ap.personnelid
+		where ap.validflag>0 and at.validflag>0 and p.validflag>0 and ap.examineflag = #examineflag#
+		<isNotEqual prepend="AND" property="personnelid" compareValue="0">
+			ap.personnelid = #personnelid#
+		</isNotEqual>
+		<isNotEqual prepend="AND" property="addoperatorid" compareValue="0">
+			ap.addoperatorid = #addoperatorid#
+		</isNotEqual>
+		<isNotEqual prepend="AND" property="departmentid" compareValue="0">
+			FIND_IN_SET('$departmentid$',at.departmentid)
+		</isNotEqual>
+		<isNotEmpty prepend="AND" property="addoperator">
+			ap.addoperator like '%$addoperator$%'
+		</isNotEmpty>
+	</select>
+	<select id="search" parameterClass="applylabel" resultClass="applylabel">
+		select ap.*,p.cardnumber,p.personname from 
+		p_personnel_applylabel_t ap
+		left join p_attributelabel_t at on ap.applylabel1=at.id
+		left join p_personnel_t p on p.id = ap.personnelid
+		where ap.validflag>0 and at.validflag>0 and p.validflag>0
+		<isNotEqual prepend="AND" property="personnelid" compareValue="0">
+			ap.personnelid = $personnelid$
+		</isNotEqual>
+		<isNotEqual prepend="AND" property="addoperatorid" compareValue="0">
+			ap.addoperatorid = #addoperatorid#
+		</isNotEqual>
+		<isNotEqual prepend="AND" property="departmentid" compareValue="0">
+			FIND_IN_SET('$departmentid$',at.departmentid)
+		</isNotEqual>
+		<isNotEqual prepend="AND" property="examineflag" compareValue="-1">
+			ap.examineflag = $examineflag$
+		</isNotEqual>
+		<isNotEmpty prepend="AND" property="addoperator">
+			ap.addoperator like '%$addoperator$%'
+		</isNotEmpty>
+		order by ap.examineflag,ap.addtime desc
+	</select>
+	
+	<update id="check" parameterClass="applylabel">
+		UPDATE p_personnel_applylabel_t
+		SET examinemanid=$examinemanid$,examineman='$examineman$',examinetime='$examinetime$',examineflag=$examineflag$,failreason='$failreason$'
+		WHERE id = $id$
+	</update>
+	
+	<select id="getById" parameterClass="int" resultClass="applylabel">
+		select *
+		p_personnel_applylabel_t
+		from personnelid = #personnelid#
+	</select>
+	
+	<select id="getByPerson" parameterClass="applylabel" resultClass="applylabel">
+		select *
+		from p_personnel_applylabel_t
+		where personnelid=#personnelid# and applylabel1=#applylabel1# and examineflag=0
+	</select>
+</sqlMap>

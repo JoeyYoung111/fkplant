@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+        
+<sqlMap namespace="log">
+	<typeAlias alias="log" type="com.szrj.business.model.Log"/>
+	
+	<select id="searchLog_count" parameterClass="log" resultClass="Integer">
+		SELECT COUNT(l1.id)
+		FROM sys_operationlog_t l1
+		LEFT JOIN sys_menu_t m2   on l1.menuId=m2.id AND m2.validflag > 0
+		WHERE 1=1
+		<dynamic prepend="" >
+            <isNotEmpty prepend="AND" property="menuname">
+				m2.menuname like '%$menuname$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="operation">
+				l1.operation like '%$operation$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="operator">
+				l1.operator like '%$operator$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="startTime">
+				DATE_FORMAT(l1.operationTime,'%Y-%m-%d') >= '$startTime$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="endTime">
+				'$endTime$' >= DATE_FORMAT(l1.operationTime,'%Y-%m-%d')
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	<select id="searchLog" parameterClass="log" resultClass="log">
+		SELECT l1.*,IFNULL(m2.menuname,'无') menuname
+		FROM sys_operationlog_t l1
+		LEFT JOIN sys_menu_t m2   on l1.menuId=m2.id AND m2.validflag > 0
+		WHERE 1=1
+		<dynamic prepend="">
+			<isNotEmpty prepend="AND" property="menuname">
+				m2.menuname like '%$menuname$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="operation">
+				l1.operation like '%$operation$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="operator">
+				l1.operator like '%$operator$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="startTime">
+				DATE_FORMAT(l1.operationTime,'%Y-%m-%d') >= '$startTime$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="endTime">
+				'$endTime$' >= DATE_FORMAT(l1.operationTime,'%Y-%m-%d')
+			</isNotEmpty>
+		</dynamic>
+		ORDER BY l1.operationTime DESC
+	</select>
+	
+	<insert id="add" parameterClass="log">
+		INSERT INTO sys_operationlog_t
+		(menuId,operation,operator,operationTime,operationResult,memo,operatedept)
+		VALUES
+		($menuId$,'$operation$','$operator$','$operationTime$','$operationResult$','$memo$','$operatedept$')
+		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+	</insert>
+	
+	<select id="searchEventLog_count" parameterClass="log" resultClass="Integer">
+		select count(*) from
+		(SELECT l1.id,l1.operator,l1.operation,l1.menuId,l1.operationTime,l1.operationResult,l1.memo,m2.menuname,m2.parentId,l1.operatedept
+		FROM sys_operationlog_t l1,sys_menu_t m2
+		WHERE l1.menuId=m2.id AND m2.validflag > 0)A
+		left join sys_menu_t m on m.id=A.parentId
+		where m.menuName like '%$parentmenuname$%'
+		<dynamic prepend="">
+			<isNotEmpty prepend="AND" property="menuname">
+				A.menuname like '%$menuname$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="operation">
+				A.operation like '%$operation$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="operator">
+				A.operator like '%$operator$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="operatedept">
+				A.operatedept like '%$operatedept$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="startTime">
+				DATE_FORMAT(A.operationTime,'%Y-%m-%d') >= '$startTime$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="endTime">
+				'$endTime$' >= DATE_FORMAT(A.operationTime,'%Y-%m-%d')
+			</isNotEmpty>
+		</dynamic>
+	</select>
+	<select id="searchEventLog" parameterClass="log" resultClass="log">
+		select A.* from
+		(SELECT l1.id,l1.operator,l1.operation,l1.menuId,l1.operationTime,l1.operationResult,l1.memo,m2.menuname,m2.parentId,l1.operatedept
+		FROM sys_operationlog_t l1,sys_menu_t m2
+		WHERE l1.menuId=m2.id AND m2.validflag > 0)A
+		left join sys_menu_t m on m.id=A.parentId
+		where m.menuName like '%$parentmenuname$%'
+		<dynamic prepend="">
+			<isNotEmpty prepend="AND" property="menuname">
+				A.menuname like '%$menuname$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="operation">
+				A.operation like '%$operation$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="operator">
+				A.operator like '%$operator$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="operatedept">
+				A.operatedept like '%$operatedept$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="startTime">
+				DATE_FORMAT(A.operationTime,'%Y-%m-%d') >= '$startTime$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="endTime">
+				'$endTime$' >= DATE_FORMAT(A.operationTime,'%Y-%m-%d')
+			</isNotEmpty>
+		</dynamic>
+		ORDER BY A.operationTime DESC
+	</select>
+</sqlMap>        

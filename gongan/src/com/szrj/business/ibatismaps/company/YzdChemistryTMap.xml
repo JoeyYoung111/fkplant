@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="chemistry">
+	<typeAlias alias="chemistry" type="com.szrj.business.model.company.YzdChemistry"/>
+    
+    <!-- 新增 -->
+    <insert id="add" parameterClass="chemistry">
+    	INSERT INTO c_yzd_chemistry_t
+    	(companyid,personname,sexes,education,cardnumber,nation,politicalposition,
+    	school,major,telephone,station,wechat,qq,homeplace,lifeplace,
+    	validflag,addoperator,addtime,memo)
+    	VALUES
+    	($companyid$,'$personname$','$sexes$','$education$','$cardnumber$','$nation$','$politicalposition$',
+    	'$school$','$major$','$telephone$','$station$','$wechat$','$qq$','$homeplace$','$lifeplace$',
+    	1,'$addoperator$','$addtime$','$memo$')
+    	<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+    </insert>
+    
+    <!-- 查询 -->
+    <select id="searchChemistry_count" parameterClass="chemistry" resultClass="Integer">
+    	SELECT COUNT(ID) FROM C_YZD_CHEMISTRY_T
+    	WHERE VALIDFLAG > 0 
+    	<dynamic>
+    		<isNotEqual prepend="AND" property="companyid" compareValue="0">
+    			companyid = $companyid$
+    		</isNotEqual>
+    		<isNotEmpty prepend="AND" property="personname">
+    			(personname like '%$personname$%')
+    		</isNotEmpty>
+    		<isNotEmpty prepend="AND" property="sexes">
+    			sexes = '$sexes$'
+    		</isNotEmpty>
+    		<isNotEmpty prepend="AND" property="education">
+    			education = '$education$'
+    		</isNotEmpty>
+    		<isNotEmpty prepend="AND" property="telephone">
+    			telephone = '$telephone$'
+    		</isNotEmpty>
+    		<isNotEmpty prepend="AND" property="cardnumber">
+    			cardnumber = '$cardnumber$'
+    		</isNotEmpty>
+    		<isNotEmpty prepend="AND" property="politicalposition">
+    			politicalposition = '$politicalposition$'
+    		</isNotEmpty>
+    		<isNotEmpty prepend="AND" property="school">
+    			school = '$school$'
+    		</isNotEmpty>
+    		<isNotEmpty prepend="AND" property="station">
+    			station = '$station$'
+    		</isNotEmpty>
+    	</dynamic>
+    </select>
+    <!-- 模糊查询 -->
+    <select id="searchChemistry" parameterClass="chemistry" resultClass="chemistry">
+    	SELECT * FROM C_YZD_CHEMISTRY_T
+    	WHERE VALIDFLAG > 0 
+    	<dynamic>
+    		<isNotEqual prepend="AND" property="companyid" compareValue="0">
+    			companyid = $companyid$
+    		</isNotEqual>
+    		<isNotEmpty prepend="AND" property="personname">
+    			(personname like '%$personname$%')
+    		</isNotEmpty>
+    		<isNotEmpty prepend="AND" property="sexes">
+    			sexes = '$sexes$'
+    		</isNotEmpty>
+    		<isNotEmpty prepend="AND" property="education">
+    			education = '$education$'
+    		</isNotEmpty>
+    		<isNotEmpty prepend="AND" property="telephone">
+    			telephone = '$telephone$'
+    		</isNotEmpty>
+    		<isNotEmpty prepend="AND" property="cardnumber">
+    			cardnumber = '$cardnumber$'
+    		</isNotEmpty>
+    		<isNotEmpty prepend="AND" property="politicalposition">
+    			politicalposition = '$politicalposition$'
+    		</isNotEmpty>
+    		<isNotEmpty prepend="AND" property="school">
+    			school = '$school$'
+    		</isNotEmpty>
+    		<isNotEmpty prepend="AND" property="station">
+    			station = '$station$'
+    		</isNotEmpty>
+    	</dynamic>
+    	ORDER BY ID
+    </select>
+     <!-- 查询 -->
+    <select id="searchChemistry_count1" parameterClass="chemistry" resultClass="Integer">
+    	SELECT COUNT(t1.ID) 
+    	FROM
+	       C_YZD_CHEMISTRY_T t1 
+	     LEFT JOIN c_company_t t2 ON t1.companyid = t2.id  
+         WHERE
+	     t1.VALIDFLAG > 0   
+    	<dynamic>
+    		<isNotEmpty prepend="AND" property="personname">
+    			(t1.personname like '%$personname$%')
+    		</isNotEmpty>
+    		<isNotEmpty prepend="AND" property="sexes">
+    			t1.sexes = '$sexes$'
+    		</isNotEmpty>
+    		<isNotEmpty prepend="AND" property="education">
+    			t1.education = '$education$'
+    		</isNotEmpty>
+    		<isNotEmpty prepend="AND" property="telephone">
+    			t1.telephone  like '%$telephone$%'
+    		</isNotEmpty>
+    		<isNotEmpty prepend="AND" property="cardnumber">
+    			t1.cardnumber like '%$cardnumber$%'
+    		</isNotEmpty>
+    		<isNotEmpty prepend="AND" property="politicalposition">
+    			t1.politicalposition = '$politicalposition$'
+    		</isNotEmpty>
+    		<isNotEmpty prepend="AND" property="school">
+    			t1.school = '$school$'
+    		</isNotEmpty>
+    		<isNotEmpty prepend="AND" property="station">
+    			t1.station = '$station$'
+    		</isNotEmpty>
+    		<isNotEmpty prepend="AND" property="companyname">
+    			(t2.companyname like '%$companyname$%')
+    		</isNotEmpty>
+    	</dynamic>
+    </select>
+    <!-- 模糊查询 -->
+    <select id="searchChemistry1" parameterClass="chemistry" resultClass="chemistry">
+    	SELECT
+			t1.*,t2.companyname
+		FROM
+			C_YZD_CHEMISTRY_T t1
+			LEFT JOIN c_company_t t2 ON t1.companyid = t2.id 
+		WHERE
+			t1.VALIDFLAG > 0
+    	<dynamic>
+    		<isNotEmpty prepend="AND" property="personname">
+    			(t1.personname like '%$personname$%')
+    		</isNotEmpty>
+    		<isNotEmpty prepend="AND" property="sexes">
+    			t1.sexes = '$sexes$'
+    		</isNotEmpty>
+    		<isNotEmpty prepend="AND" property="education">
+    			t1.education = '$education$'
+    		</isNotEmpty>
+    		<isNotEmpty prepend="AND" property="telephone">
+    			t1.telephone  like '%$telephone$%'
+    		</isNotEmpty>
+    		<isNotEmpty prepend="AND" property="cardnumber">
+    			t1.cardnumber like '%$cardnumber$%'
+    		</isNotEmpty>
+    		<isNotEmpty prepend="AND" property="politicalposition">
+    			t1.politicalposition = '$politicalposition$'
+    		</isNotEmpty>
+    		<isNotEmpty prepend="AND" property="school">
+    			t1.school = '$school$'
+    		</isNotEmpty>
+    		<isNotEmpty prepend="AND" property="station">
+    			t1.station = '$station$'
+    		</isNotEmpty>
+    		<isNotEmpty prepend="AND" property="companyname">
+    			(t2.companyname like '%$companyname$%')
+    		</isNotEmpty>
+    	</dynamic>
+    	ORDER BY t1.ID
+    </select>
+    <!-- 根据id查询 -->
+    <select id="getById" parameterClass="int" resultClass="chemistry">
+    	SELECT * FROM C_YZD_CHEMISTRY_T WHERE VALIDFLAG > 0 AND ID = $id$
+    </select>
+    
+    <select id="getByCardnumber" parameterClass="String" resultClass="int">
+    	SELECT count(1)  FROM C_YZD_CHEMISTRY_T WHERE VALIDFLAG > 0 AND cardnumber ='$cardnumber$'
+    </select>
+    
+    <!-- 修改 -->
+    <update id="update" parameterClass="chemistry">
+    	update c_yzd_chemistry_t set personname='$personname$',sexes='$sexes$',education='$education$',cardnumber='$cardnumber$',
+    	nation='$nation$',politicalposition='$politicalposition$',school='$school$',major='$major$',telephone='$telephone$',
+    	station='$station$',wechat='$wechat$',qq='$qq$',homeplace='$homeplace$',lifeplace='$lifeplace$',
+    	updateoperator='$updateoperator$',updatetime='$updatetime$',memo='$memo$',companyid = $companyid$
+    	where id = $id$
+    </update>
+    
+    <!-- 删除 -->
+    <update id="cancel" parameterClass="chemistry">
+    	UPDATE C_YZD_CHEMISTRY_T SET VALIDFLAG = 0,updateoperator='$updateoperator$',updatetime='$updatetime$' WHERE ID = $id$
+    </update>
+    
+</sqlMap>  

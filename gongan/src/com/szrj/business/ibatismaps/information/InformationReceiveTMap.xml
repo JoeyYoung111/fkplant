@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+        
+ <sqlMap namespace="informationreceive">
+ 	<typeAlias alias="informationreceive" type="com.szrj.business.model.information.InformationReceive"/>
+ 	
+ 	<!-- 新增 -->
+ 	<insert id="add" parameterClass="informationreceive">
+ 		INSERT INTO I_INFORMATION_RECEIVE_T
+ 		(informationid,informationsendid,receiveid,transferoper,transferoperid,transferdepid,transfertime,
+ 		validflag,feedbackflag,signoper,signoperid,signtime,feedbackoper,feedbackoperid,feedbacktime,feedbackcontent)
+ 		VALUES
+ 		($informationid$,$informationsendid$,$receiveid$,'$transferoper$',$transferoperid$,$transferdepid$,'$transfertime$',
+ 		1,1,'$signoper$',$signoperid$,'$signtime$','$feedbackoper$',$feedbackoperid$,'$feedbacktime$','$feedbackcontent$')
+ 		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
+ 	</insert>
+ 
+ 	<select id="selectInfoReceive1_count" parameterClass="informationreceive" resultClass="Integer">
+ 		select count(a.id) from i_information_receive_t a
+ 		left join i_information_t b on a.informationid = b.id
+ 		where a.receiveid = $receiveid$
+ 		<dynamic prepend="">
+ 			<isNotEmpty prepend="AND" property="infotitle">
+ 				(b.infotitle like '%$infotitle$%')
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="infocontent">
+ 				(b.infocontent like '%$infocontent$%')
+ 			</isNotEmpty>
+ 			<isNotEqual prepend="AND" property="validflag" compareValue="0">
+ 				a.validflag = $validflag$
+ 			</isNotEqual>
+ 			<isNotEqual prepend="AND" property="feedbackflag" compareValue="0">
+ 				a.feedbackflag = $feedbackflag$
+ 			</isNotEqual>
+ 			<isNotEmpty prepend="AND" property="starttime">
+ 				transfertime >= '%$starttime$%'
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="endtime">
+ 				'%$endtime$%' >= transfertime
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="infostate">
+ 				b.infostate = '%$infostate$%'
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="urgentflag">
+ 				b.urgentflag = '%$urgentflag$%'
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="infosource">
+ 				b.infosource = '%$infosource$%'
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="infotype">
+ 				b.infotype = '%$infotype$%'
+ 			</isNotEmpty>
+ 		</dynamic>
+ 	</select>
+ 	
+ 	<select id="selectInfoReceive1" parameterClass="informationreceive" resultClass="informationreceive">
+ 		select a.*,b.infotitle,b.infotype,b.urgentflag,b.infosource,b.infostate,b.annotationid,c.departname as departname
+ 		from i_information_receive_t a
+ 		left join i_information_t b on a.informationid = b.id
+ 		left join sys_department_t c on a.transferdepid = c.id
+ 		where a.receiveid = $receiveid$
+ 		<dynamic prepend="">
+ 			<isNotEmpty prepend="AND" property="infotitle">
+ 				(b.infotitle like '%$infotitle$%')
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="infocontent">
+ 				(b.infocontent like '%$infocontent$%')
+ 			</isNotEmpty>
+ 			<isNotEqual prepend="AND" property="validflag" compareValue="0">
+ 				a.validflag = $validflag$
+ 			</isNotEqual>
+ 			<isNotEqual prepend="AND" property="feedbackflag" compareValue="0">
+ 				a.feedbackflag = $feedbackflag$
+ 			</isNotEqual>
+ 			<isNotEmpty prepend="AND" property="starttime">
+ 				transfertime >= '%$starttime$%'
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="endtime">
+ 				'%$endtime$%' >= transfertime
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="infostate">
+ 				b.infostate = '%$infostate$%'
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="urgentflag">
+ 				b.urgentflag = '%$urgentflag$%'
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="infosource">
+ 				b.infosource = '%$infosource$%'
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="infotype">
+ 				b.infotype = '%$infotype$%'
+ 			</isNotEmpty>
+ 		</dynamic>
+ 		order by a.id desc
+ 	</select>
+ 	
+ 	<select id="getById" parameterClass="int" resultClass="informationreceive">
+ 		select a.*,b.departname as receivename
+ 		from i_information_receive_t a
+ 		left join sys_department_t b on a.receiveid = b.id
+ 		where a.id = $id$
+ 	</select>
+ 	
+ 	<select id="searchByinformationid" parameterClass="informationreceive" resultClass="informationreceive">
+ 		select a.*,b.departname as receivename 
+ 		from i_information_receive_t a
+ 		left join sys_department_t b on a.receiveid = b.id
+ 		where a.informationid = $informationid$
+ 		<isNotEqual prepend="AND" property="informationsendid" compareValue="0">
+ 			a.informationsendid = $informationsendid$
+ 		</isNotEqual>
+ 	</select>
+ 
+ 	<update id="qianshou" parameterClass="informationreceive">
+ 		update i_information_receive_t set validflag=$validflag$,
+ 		signoper='$signoper$',signoperid=$signoperid$,
+ 		signtime='$signtime$' where id = $id$
+ 	</update>
+ 	
+ 	<update id="fankui" parameterClass="informationreceive">
+ 		update i_information_receive_t set feedbackflag=$feedbackflag$,
+ 		feedbackoper='$feedbackoper$',feedbackoperid=$feedbackoperid$,
+ 		feedbacktime='$feedbacktime$',feedbackcontent='$feedbackcontent$' where id = $id$
+ 	</update>
+ 
+ 	<!-- 查询对下转阅信息-information表信息 -->
+ 	<select id="selectInfoReceive2_count" parameterClass="informationreceive" resultClass="Integer">
+ 		select count(a.id) from i_information_t a left join sys_department_t b on a.departmentid = b.id where a.id in (
+ 			(select distinct informationid from i_information_receive_t where validflag>0 and transferdepid = $transferdepid$)
+ 		)
+ 		<dynamic prepend="">
+ 			<isNotEmpty prepend="AND" property="infotitle">
+ 				(a.infotitle like '%$infotitle$%')
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="infocontent">
+ 				(a.infocontent like '%$infocontent$%')
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="starttime">
+ 				a.addtime >= '%$starttime$%'
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="endtime">
+ 				'%$endtime$%' >= a.addtime
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="infostate">
+ 				a.infostate = '%$infostate$%'
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="urgentflag">
+ 				a.urgentflag = '%$urgentflag$%'
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="infosource">
+ 				a.infosource = '%$infosource$%'
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="infotype">
+ 				a.infotype = '%$infotype$%'
+ 			</isNotEmpty>
+ 		</dynamic>
+ 	</select>
+ 	<select id="selectInfoReceive2" parameterClass="informationreceive" resultClass="informationreceive">
+ 		select a.id,a.infotitle,a.infocontent,a.departmentid,a.infosource,a.infotype,a.infostate,a.urgentflag,a.addtime,
+ 		b.departname as departname from i_information_t a left join sys_department_t b on a.departmentid = b.id
+ 		where a.id in (
+ 			(select distinct informationid from i_information_receive_t where validflag>0 and transferdepid = $transferdepid$)
+ 		)
+ 		<dynamic prepend="">
+ 			<isNotEmpty prepend="AND" property="infotitle">
+ 				(a.infotitle like '%$infotitle$%')
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="infocontent">
+ 				(a.infocontent like '%$infocontent$%')
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="starttime">
+ 				a.addtime >= '%$starttime$%'
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="endtime">
+ 				'%$endtime$%' >= a.addtime
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="infostate">
+ 				a.infostate = '%$infostate$%'
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="urgentflag">
+ 				a.urgentflag = '%$urgentflag$%'
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="infosource">
+ 				a.infosource = '%$infosource$%'
+ 			</isNotEmpty>
+ 			<isNotEmpty prepend="AND" property="infotype">
+ 				a.infotype = '%$infotype$%'
+ 			</isNotEmpty>
+ 		</dynamic>
+ 		order by a.id desc
+ 	</select>
+ 
+ 	<select id="rizhizhuanyue" parameterClass="String" resultClass="informationreceive">
+ 		select a.*,b.departname as receivename
+ 		from i_information_receive_t a
+ 		left join sys_department_t b on a.receiveid = b.id
+ 		where a.id in $informationreceiveid$
+ 	</select>
+ 
+ </sqlMap>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="common">
+    <typeAlias alias="selectmodel" type="com.aladdin.model.SelectModel"/>
+     
+    <select id="match" resultClass="string" remapResults="true">
+           $value$
+    </select>
+    <select id="match1" parameterClass="string" resultClass="selectmodel"  remapResults="true">
+          $value$
+    </select>
+    
+</sqlMap>

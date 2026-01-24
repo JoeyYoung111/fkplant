@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	Application context definition for PetClinic on JDBC.
+-->
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+
+    <!-- ========================= GENERAL DEFINITIONS ========================= -->
+
+    <!-- 每天凌晨同步系统账号及领悟账号   每天-->
+    <bean id="luTask" class="com.szrj.business.web.inferfaces.LwUserController"/>
+    <bean id="endluTask"
+          class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject">
+            <ref bean="luTask"/>
+        </property>
+        <property name="targetMethod">
+            <value>updateLingwuUsers</value>
+        </property>
+        <property name="concurrent" value="false"/>
+    </bean>
+    <bean id="luTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+        <property name="jobDetail" ref="endluTask"/>
+        <property name="cronExpression">
+            <value>0 50 23 * * ?</value>
+            <!--        <value>0 0/5 * * * ?</value>-->
+        </property>
+    </bean>
+    <!-- 每月28号检查每月评估是否录入  0 0 0 28 * ?-->
+    <bean id="KongExtendTask" class="com.szrj.business.web.personel.KongExtendController"/>
+    <bean id="checkMYPGTask"
+          class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject">
+            <ref bean="KongExtendTask"/>
+        </property>
+        <property name="targetMethod">
+            <value>checkMYPG</value>
+        </property>
+        <property name="concurrent" value="false"/>
+    </bean>
+    <bean id="checkMYPGTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+        <property name="jobDetail" ref="checkMYPGTask"/>
+        <property name="cronExpression">
+            <value>0 0 16 28 * ?</value>
+        </property>
+    </bean>
+    <!-- 每天晚上10点检测是否录入三日一走访数据  0 0 22 * * ?-->
+    <bean id="checkSRYZFTask"
+          class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject">
+            <ref bean="KongExtendTask"/>
+        </property>
+        <property name="targetMethod">
+            <value>checkSRYZF</value>
+        </property>
+        <property name="concurrent" value="false"/>
+    </bean>
+    <bean id="checkSRYZFTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+        <property name="jobDetail" ref="checkSRYZFTask"/>
+        <property name="cronExpression">
+            <value>0 0 22 * * ?</value>
+        </property>
+    </bean>
+    <!-- 每天下午4点检测录入人员最近9天是否有录入信息  0 0 16 * * ?-->
+    <bean id="checkSFYLRTask"
+          class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject">
+            <ref bean="KongExtendTask"/>
+        </property>
+        <property name="targetMethod">
+            <value>checkSFYLR</value>
+        </property>
+        <property name="concurrent" value="false"/>
+    </bean>
+    <bean id="checkSFYLRTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+        <property name="jobDetail" ref="checkSFYLRTask"/>
+        <property name="cronExpression">
+            <value>0 0 16 * * ?</value>
+        </property>
+    </bean>
+    <!--配置执行任务-->
+    <bean id="timerFactory"
+          class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+        <property name="triggers">
+            <list>
+                <ref bean="luTrigger"/>
+                <ref bean="checkSFYLRTrigger"/>
+                <ref bean="checkMYPGTrigger"/>
+                <ref bean="checkSRYZFTrigger"/>
+            </list>
+        </property>
+    </bean>
+
+</beans>

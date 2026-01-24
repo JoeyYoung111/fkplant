@@ -1,0 +1,85 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMapConfig PUBLIC "-//iBATIS.com//DTD SQL Map Config 2.0//EN"
+        "http://www.ibatis.org/dtd/sql-map-config-2.dtd">
+<sqlMapConfig>
+   <settings useStatementNamespaces="true"/>
+   
+   <!-- 基础信息_开始（勿删） -->
+    
+   <sqlMap resource="com/szrj/business/ibatismaps/UserTMap.xml"></sqlMap><!-- 用户 --> 
+   <sqlMap resource="com/szrj/business/ibatismaps/MenuTMap.xml"></sqlMap>   <!-- 菜单 -->
+   <sqlMap resource="com/szrj/business/ibatismaps/LogTMap.xml"></sqlMap>  <!-- 日志 -->
+   <sqlMap resource="com/szrj/business/ibatismaps/RoleTMap.xml"></sqlMap><!-- 角色 -->
+   <sqlMap resource="com/szrj/business/ibatismaps/RoleMenuTMap.xml"></sqlMap>    <!-- 角色菜单 -->
+   <sqlMap resource="com/szrj/business/ibatismaps/RoleUserTMap.xml"></sqlMap> <!-- 角色用户 -->
+   <sqlMap resource="com/szrj/business/ibatismaps/BasicMsgTMap.xml"></sqlMap>  <!-- 数据字典 -->
+   <sqlMap resource="com/szrj/business/ibatismaps/BasicTypeTMap.xml"></sqlMap>  <!-- 数据字典 -->
+   <sqlMap resource="com/szrj/business/ibatismaps/DepartmentTMap.xml"></sqlMap>  <!--系统部门 -->
+   <sqlMap resource="com/szrj/business/ibatismaps/FileTMap.xml"></sqlMap><!-- 文件上传 -->
+   <sqlMap resource="com/szrj/business/ibatismaps/AppButtonTMap.xml"></sqlMap>   <!-- 应用按钮 -->
+   <sqlMap resource="com/szrj/business/ibatismaps/RoleAppbuttonTMap.xml"></sqlMap>   <!-- 角色应用按钮配置 -->
+   <sqlMap resource="com/szrj/business/ibatismaps/ZdRoleTMap.xml"></sqlMap>   <!-- 中队角色 -->
+   <!-- 风险人员 -->
+   <sqlMap resource="com/szrj/business/ibatismaps/personel/PersonnelTMap.xml"></sqlMap>  <!-- 风险人员主表 -->
+   <sqlMap resource="com/szrj/business/ibatismaps/personel/PersonnelPhotoTMap.xml"></sqlMap>  <!-- 风险人员主表-照片 -->
+   <sqlMap resource="com/szrj/business/ibatismaps/personel/MaintainrateTMap.xml"></sqlMap>  <!-- 风险人员维护率表 -->
+   <sqlMap resource="com/szrj/business/ibatismaps/personel/WenGradeTMap.xml"></sqlMap>  <!-- 涉稳人员 -->
+   <sqlMap resource="com/szrj/business/ibatismaps/personel/WenRiskTMap.xml"></sqlMap>  <!-- 涉稳人员-风险背景 -->
+   <sqlMap resource="com/szrj/business/ibatismaps/personel/WenVisitTMap.xml"></sqlMap>  <!-- 涉稳人员-涉访涉诉经历 -->
+   <sqlMap resource="com/szrj/business/ibatismaps/personel/HeiEditorTMap.xml"></sqlMap>  <!--风险人员-涉黑 -->
+   <sqlMap resource="com/szrj/business/ibatismaps/personel/KongExtendTMap.xml"></sqlMap>  <!--风险人员-涉恐 -->
+   <sqlMap resource="com/szrj/business/ibatismaps/personel/KongControlPowerTMap.xml"></sqlMap>  <!--风险人员-涉恐  公共/秘密管控力量 个人简历 家庭关系、社会关系-->
+   <sqlMap resource="com/szrj/business/ibatismaps/personel/RelationTMap.xml"></sqlMap> <!-- 风险人员 关联信息 -->
+   <sqlMap resource="com/szrj/business/ibatismaps/personel/JointControlRecordTMap.xml"></sqlMap> <!-- 风险人员 联控记录 -->
+   <sqlMap resource="com/szrj/business/ibatismaps/personel/RealityShowTMap.xml"></sqlMap> <!-- 风险人员 现实表现 -->
+   <sqlMap resource="com/szrj/business/ibatismaps/personel/DuExtendTMap.xml"></sqlMap> <!-- 风险人员-涉毒扩展 -->
+   <sqlMap resource="com/szrj/business/ibatismaps/personel/PersonnelExtendTMap.xml"></sqlMap> <!-- 风险人员-通用扩展 -->
+   <sqlMap resource="com/szrj/business/ibatismaps/personel/ApplylabelTMap.xml"></sqlMap> <!-- 风险人员-标签审核 -->
+   <sqlMap resource="com/szrj/business/ibatismaps/personel/ZaExtendTMap.xml"></sqlMap> <!-- 风险人员-治安扩展 -->
+   <sqlMap resource="com/szrj/business/ibatismaps/personel/ControlPowerTMap.xml"></sqlMap> <!-- 风险人员-管控力量 -->
+   <sqlMap resource="com/szrj/business/ibatismaps/personel/ControlFilesTMap.xml"></sqlMap> <!-- 风险人员-管控方案 -->
+   <!-- 风险事件 -->
+   <sqlMap resource="com/szrj/business/ibatismaps/event/ContradictionInfoTMap.xml"></sqlMap>  <!-- 风险矛盾信息 -->
+   <sqlMap resource="com/szrj/business/ibatismaps/event/EventsInfoTMap.xml"></sqlMap>  <!-- 引发涉稳事件 -->
+   <sqlMap resource="com/szrj/business/ibatismaps/event/LeadsInfoTMap.xml"></sqlMap>  <!-- 情报线索信息 -->
+   <sqlMap resource="com/szrj/business/ibatismaps/event/KeypersonnelTMap.xml"></sqlMap>  <!-- 情报线索信息 -->
+   <sqlMap resource="com/szrj/business/ibatismaps/event/DefuseInfoTMap.xml"></sqlMap>  <!-- 稳控化解情况 -->
+   <sqlMap resource="com/szrj/business/ibatismaps/event/WorkInfoTMap.xml"></sqlMap>  <!-- 工作交办管理 -->
+   <sqlMap resource="com/szrj/business/ibatismaps/event/HandleInfoTMap.xml"></sqlMap>  <!-- 领导交办情况 -->
+   <sqlMap resource="com/szrj/business/ibatismaps/event/AuditRecordTMap.xml"></sqlMap>  <!-- 审核记录 -->
+   <!-- 风险单位 -->
+   <sqlMap resource="com/szrj/business/ibatismaps/company/CompanyTMap.xml"></sqlMap> <!-- 易制毒化学品单位 -->
+   <sqlMap resource="com/szrj/business/ibatismaps/company/YzdLicenceTMap.xml"></sqlMap><!-- 许可证信息 -->
+   <sqlMap resource="com/szrj/business/ibatismaps/company/YzdChemicalTMap.xml"></sqlMap><!-- 化学品种类 -->
+   <sqlMap resource="com/szrj/business/ibatismaps/company/YzdMessengerTMap.xml"></sqlMap><!-- 办证人员信息 -->
+   <sqlMap resource="com/szrj/business/ibatismaps/company/YzdChemistryTMap.xml"></sqlMap><!-- 懂化学技术人员 -->
+   <sqlMap resource="com/szrj/business/ibatismaps/company/YzdEquipmentTMap.xml"></sqlMap><!-- 设备信息 -->
+   <sqlMap resource="com/szrj/business/ibatismaps/company/YzdCheckTMap.xml"></sqlMap><!-- 检查表信息 -->
+   <sqlMap resource="com/szrj/business/ibatismaps/company/ComVehicleTMap.xml"></sqlMap><!-- 风险车辆 -->
+   <!-- 全国轨迹信息 -->
+   <sqlMap resource="com/szrj/business/ibatismaps/TrailInformationTMap.xml"></sqlMap><!-- 全国轨迹信息 -->
+   <!-- 情报管理 -->
+   <sqlMap resource="com/szrj/business/ibatismaps/information/InformationTMap.xml"></sqlMap><!-- 情报 -->
+   <sqlMap resource="com/szrj/business/ibatismaps/information/InfoJointPersonTMap.xml"></sqlMap><!-- 相关人员 -->
+   <sqlMap resource="com/szrj/business/ibatismaps/information/InformationSendTMap.xml"></sqlMap><!-- 上报 -->
+   <sqlMap resource="com/szrj/business/ibatismaps/information/InformationReceiveTMap.xml"></sqlMap><!-- 转阅 -->
+   <sqlMap resource="com/szrj/business/ibatismaps/information/InfoTimeLineTMap.xml"></sqlMap><!-- 时光轴 -->
+   <sqlMap resource="com/szrj/business/ibatismaps/information/InfoAnnotationTMap.xml"></sqlMap><!-- 批注 -->
+   <sqlMap resource="com/szrj/business/ibatismaps/information/InformationSpecialTMap.xml"></sqlMap><!-- 专项标签 -->
+   <sqlMap resource="com/szrj/business/ibatismaps/information/InfoAssignTMap.xml"></sqlMap><!-- 情报交接表 -->
+   <sqlMap resource="com/szrj/business/ibatismaps/information/AssignSignforTMap.xml"></sqlMap><!-- 交接反馈表 -->
+   <!-- 政保阵地 -->
+   <sqlMap resource="com/szrj/business/ibatismaps/position/PositionTMap.xml"></sqlMap><!-- 政保阵地 -->
+   <sqlMap resource="com/szrj/business/ibatismaps/position/Organization.xml"></sqlMap><!-- 组织 -->
+   <!-- 系统功能 -->
+   <sqlMap resource="com/szrj/business/ibatismaps/sysapp/NoticeTMap.xml"></sqlMap><!-- 通知公告 -->
+   <sqlMap resource="com/szrj/business/ibatismaps/sysapp/SendMessageTMap.xml"></sqlMap><!-- 发送短信 -->
+   <sqlMap resource="com/szrj/business/ibatismaps/sysapp/SendMessageLogTMap.xml"></sqlMap><!-- 发送短信日志 -->
+   <!-- 日常管理 -->
+   <sqlMap resource="com/szrj/business/ibatismaps/daily/DutyTMap.xml"></sqlMap><!-- 值班管理 -->
+   <!-- 卡口 -->
+   <sqlMap resource="com/szrj/business/ibatismaps/interfaces/KaKouTMap.xml"></sqlMap>
+   <!-- 风险物品 -->
+   <sqlMap resource="com/szrj/business/ibatismaps/goods/DangerousItemTMap.xml"></sqlMap>
+</sqlMapConfig>
+
