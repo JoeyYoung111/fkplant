@@ -33,6 +33,9 @@
     <!-- ztree -->
     <script type="text/javascript" src="<c:url value="/jquery/ztree/jquery.ztree.all-3.5.js"/>"></script>
     <link rel="stylesheet" href="<c:url value="/jquery/ztree/zTreeStyle.css"/>"/>
+
+    <!-- 头像编辑、关联信息 、社会关系 数据处理js - 需要在HTML前加载 -->
+    <script type="text/javascript" src="<c:url value="/jsp/personel/personel221018.js"/>"></script>
     <style type="text/css">
         .layui-form-checkbox {
             position: relative;
@@ -74,6 +77,78 @@
         #handleUnitTags .layui-icon-close:hover {
             color: #FF5722;
         }
+
+        /* 修复小屏幕下左右tab重叠和滚动问题 */
+        .layui-form.layui-row {
+            display: flex;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            align-items: flex-start; /* 确保两栏从顶部对齐 */
+            height: calc(100vh - 20px); /* 优化高度计算，确保不超出视口 */
+        }
+
+        .layui-form.layui-row > .layui-col-md6 {
+            flex: 0 0 50%;
+            min-width: 500px;
+            max-width: 50%;
+            overflow-y: auto !important; /* 强制启用垂直滚动 */
+            overflow-x: hidden; /* 隐藏水平滚动条 */
+            height: 100%; /* 使用父容器的完整高度 */
+            min-height: 105%; /* 强制内容稍高于容器，确保滚动条可用 */
+            padding-bottom: 100px !important; /* 底部留白100px，确保提交按钮可见 */
+        }
+
+        /* 右侧tab容器也需要独立滚动 */
+        .layui-form.layui-row > .layui-col-md6 > .layui-tab {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            min-height: 105%; /* 确保tab容器也有足够高度触发滚动 */
+        }
+
+        .layui-form.layui-row > .layui-col-md6 > .layui-tab > .layui-tab-content {
+            flex: 1;
+            overflow-y: auto !important; /* 强制启用滚动 */
+            overflow-x: hidden;
+            padding-bottom: 100px !important; /* 右侧tab内容底部留白 */
+        }
+
+        /* 在小屏幕下确保两栏并排显示，允许横向滚动 */
+        @media screen and (max-width: 1200px) {
+            .layui-form.layui-row {
+                height: calc(100vh - 20px);
+            }
+
+            .layui-form.layui-row > .layui-col-md6 {
+                flex: 0 0 600px;
+                min-width: 500px;
+                max-width: 600px;
+            }
+        }
+
+        @media screen and (max-width: 768px) {
+            .layui-form.layui-row {
+                height: calc(100vh - 20px);
+            }
+
+            .layui-form.layui-row > .layui-col-md6 {
+                flex: 0 0 500px;
+                min-width: 450px;
+                max-width: 500px;
+            }
+        }
+
+        /* 确保左侧表单提交按钮可见 */
+        .layui-form.layui-row > .layui-col-md6 form {
+            min-height: 105%; /* 强制内容高度超出容器 */
+            padding-bottom: 100px !important; /* 底部留白100px */
+        }
+
+        /* 确保右侧tab内的表单提交按钮可见 */
+        .layui-form.layui-row > .layui-col-md6 .layui-tab-content form {
+            min-height: 105%;
+            padding-bottom: 200px !important;
+        }
     </style>
 </head>
 <body class="childrenBody layui-fluid">
@@ -87,6 +162,7 @@
             <input type="hidden" name="policephone1" value="${personnel.pphone1}">
             <input type="hidden" name="id" id="id" value=${personnel.id }>
             <input type="hidden" name="zslabel1" id="zslabel1" value=${personnel.zslabel1 }>
+            <input type="hidden" id="hasPhoto" value="0">
             <div class="layui-row" style="border-bottom: 1px solid #eee;padding: 15px;">
                 <div class="layui-inline layui-col-md12">
                     <label class="layui-form-label layui-font-blue">基本信息：</label>
@@ -95,6 +171,7 @@
                     <img id="defaultPhoto">
                     <a class="my-font-blue" style="text-decoration: underline;cursor:pointer;" onclick="openPhotos()">编
                         辑</a>
+                    <span style="color:red;font-weight:bold;margin-left:5px;">*必填</span>
                 </div>
                 <div class="layui-col-md5">
                     <div class="layui-form-item my-form-item">
@@ -292,39 +369,26 @@
                         </div>
                     </div>
                 </div>
-                <%--                <div class="layui-col-md6">--%>
-                <%--                    <div class="layui-form-item my-form-item">--%>
-                <%--                        <label class="layui-form-label">联系电话：</label>--%>
-                <%--                        <div class="layui-input-block">--%>
-                <%--                            <input type="text" name="phone" id="personPhone" value="${personnel.phone}"--%>
-                <%--                                   placeholder="请输入联系电话" class="layui-input"--%>
-                <%--                                   style="width:60%;display:inline-block;">--%>
-                <%--                            <button type="button" class="layui-btn layui-btn-sm layui-btn-warm"--%>
-                <%--                                    onclick="showPhoneHistory(${personnel.id})"><i class="layui-icon">&#xe68d;</i>历史号码--%>
-                <%--                            </button>--%>
-                <%--                        </div>--%>
-                <%--                    </div>--%>
-                <%--                </div>--%>
-                <!-- 涉赌前科和涉娼前科显示（自动根据历史记录填充） -->
-                <div class="layui-col-md6">
+                <!-- 涉赌前科和涉黄前科显示（自动根据历史记录填充） -->
+                <!-- 隐藏字段：已移至各自tab中，基本信息提交时不提交这两个字段 -->
+                <div class="layui-col-md6" style="display:none;">
                     <div class="layui-form-item my-form-item">
                         <label class="layui-form-label">涉赌前科：</label>
                         <div class="layui-input-block">
                             <c:choose>
                                 <c:when test="${duEditable == false}">
-                                    <select name="hasSheduRecord" disabled="disabled" style="background:#efefef;">
+                                    <select disabled="disabled" style="background:#efefef; width:100px;">
                                         <option value="1" selected>有</option>
                                     </select>
-                                    <input type="hidden" name="hasSheduRecord" value="1"/>
                                     <span class="layui-form-mid" style="color:#FF5722;font-size:12px;">该人员存在涉赌记录，涉赌前科由系统自动判定，不可修改</span>
                                 </c:when>
                                 <c:otherwise>
-                                    <select name="hasSheduRecord">
-                                        <option value="0" <c:if test="${personnel.hasSheduRecord == 0}">selected</c:if>>
-                                            无
+                                    <select disabled="disabled">
+                                        <option value="0"
+                                                <c:if test="${personnel.hasSheduRecord == 0}">selected</c:if>>无
                                         </option>
-                                        <option value="1" <c:if test="${personnel.hasSheduRecord == 1}">selected</c:if>>
-                                            有
+                                        <option value="1"
+                                                <c:if test="${personnel.hasSheduRecord == 1}">selected</c:if>>有
                                         </option>
                                     </select>
                                 </c:otherwise>
@@ -332,20 +396,19 @@
                         </div>
                     </div>
                 </div>
-                <div class="layui-col-md6">
+                <div class="layui-col-md6" style="display:none;">
                     <div class="layui-form-item my-form-item">
-                        <label class="layui-form-label">涉娼前科：</label>
+                        <label class="layui-form-label">涉黄前科：</label>
                         <div class="layui-input-block">
                             <c:choose>
                                 <c:when test="${changEditable == false}">
-                                    <select name="hasSechangRecord" disabled="disabled" style="background:#efefef;">
+                                    <select disabled="disabled" style="background:#efefef; width:100px;">
                                         <option value="1" selected>有</option>
                                     </select>
-                                    <input type="hidden" name="hasSechangRecord" value="1"/>
-                                    <span class="layui-form-mid" style="color:#FF5722;font-size:12px;">该人员存在涉娼记录，涉娼前科由系统自动判定，不可修改</span>
+                                    <span class="layui-form-mid" style="color:#FF5722;font-size:12px;">该人员存在涉黄记录，涉黄前科由系统自动判定，不可修改</span>
                                 </c:when>
                                 <c:otherwise>
-                                    <select name="hasSechangRecord">
+                                    <select disabled="disabled">
                                         <option value="0"
                                                 <c:if test="${personnel.hasSechangRecord == 0}">selected</c:if>>无
                                         </option>
@@ -358,6 +421,32 @@
                         </div>
                     </div>
                 </div>
+<%--                <div class="layui-col-md6">--%>
+<%--                    <div class="layui-form-item my-form-item">--%>
+<%--                        <label class="layui-form-label">是否陪侍人员：</label>--%>
+<%--                        <div class="layui-input-block">--%>
+<%--                            <c:choose>--%>
+<%--                                <c:when test="${peiEditable == false}">--%>
+<%--                                    <select name="isPeishi" disabled="disabled" style="background:#efefef; width:100px;">--%>
+<%--                                        <option value="1" selected>是</option>--%>
+<%--                                    </select>--%>
+<%--                                    <input type="hidden" name="isPeishi" value="1"/>--%>
+<%--                                    <span class="layui-form-mid" style="color:#FF5722;font-size:12px;">该人员存在陪侍记录，由系统自动判定，不可修改</span>--%>
+<%--                                </c:when>--%>
+<%--                                <c:otherwise>--%>
+<%--                                    <select name="isPeishi" style="width:100px;">--%>
+<%--                                        <option value="0"--%>
+<%--                                                <c:if test="${personnel.isPeishi == 0 || personnel.isPeishi == null}">selected</c:if>>否--%>
+<%--                                        </option>--%>
+<%--                                        <option value="1"--%>
+<%--                                                <c:if test="${personnel.isPeishi == 1}">selected</c:if>>是--%>
+<%--                                        </option>--%>
+<%--                                    </select>--%>
+<%--                                </c:otherwise>--%>
+<%--                            </c:choose>--%>
+<%--                        </div>--%>
+<%--                    </div>--%>
+<%--                </div>--%>
                 <div class="layui-col-md6">
                     <div class="layui-form-item my-form-item">
                         <label class="layui-form-label">是否未成年：</label>
@@ -377,20 +466,28 @@
                     <div class="layui-form-item my-form-item">
                         <label class="layui-form-label">打处单位：</label>
                         <div class="layui-input-block">
-                            <div style="display: flex; align-items: center;">
-                                <select id="handleUnitSelect" lay-filter="handleUnitSelect" style="flex: 1;">
-                                    <option value="">请选择打处单位</option>
-                                </select>
-                                <button type="button" class="layui-btn layui-btn-sm layui-btn-normal"
-                                        id="addHandleUnitBtn" style="margin-left: 5px;"><i
-                                        class="layui-icon">&#xe654;</i>添加
-                                </button>
+                            <!-- 可编辑区域（仅限有权限的用户） -->
+                            <div id="handleUnitEditArea" style="display: none;">
+                                <div style="display: flex; align-items: center;">
+                                    <select id="handleUnitSelect" lay-filter="handleUnitSelect" style="flex: 1;">
+                                        <option value="">请选择打处单位</option>
+                                    </select>
+                                    <button type="button" class="layui-btn layui-btn-sm layui-btn-normal"
+                                            id="addHandleUnitBtn" style="margin-left: 5px;"><i
+                                            class="layui-icon">&#xe654;</i>添加
+                                    </button>
+                                </div>
+                                <div id="handleUnitTags" style="margin-top: 5px;"></div>
+                                <span class="layui-form-mid" style="color:#999;font-size:12px;">最多添加3个打处单位</span>
                             </div>
-                            <div id="handleUnitTags" style="margin-top: 5px;"></div>
+                            <!-- 只读显示区域（无权限用户） -->
+                            <div id="handleUnitReadOnlyArea" style="display: none;">
+                                <span id="handleUnitDisplayText" style="line-height: 38px; color: #333;"></span>
+                                <span class="layui-form-mid" style="color:#FF5722;font-size:12px;">（您无权修改此字段）</span>
+                            </div>
                             <input type="hidden" name="handleUnit" id="handleUnit" value="${personnel.handleUnit}">
                             <input type="hidden" name="handleUnitCode" id="handleUnitCode"
                                    value="${personnel.handleUnitCode}">
-                            <span class="layui-form-mid" style="color:#999;font-size:12px;">最多添加3个打处单位</span>
                         </div>
                     </div>
                 </div>
@@ -404,8 +501,9 @@
                     <div class="layui-form-item my-form-item">
                         <label class="layui-form-label">省：</label>
                         <div class="layui-input-block">
-                            <input type="text" name="houseProvince" id="houseProvince"
-                                   value="${personnel.houseProvince}" placeholder="省" class="layui-input">
+                            <select name="houseProvince" id="houseProvince" lay-filter="houseProvince">
+                                <option value="">请选择省份</option>
+                            </select>
                         </div>
                     </div>
                 </div>
@@ -413,8 +511,9 @@
                     <div class="layui-form-item my-form-item">
                         <label class="layui-form-label">地级市：</label>
                         <div class="layui-input-block">
-                            <input type="text" name="houseCity" id="houseCity" value="${personnel.houseCity}"
-                                   placeholder="地级市" class="layui-input">
+                            <select name="houseCity" id="houseCity" lay-filter="houseCity">
+                                <option value="">请选择地级市</option>
+                            </select>
                         </div>
                     </div>
                 </div>
@@ -422,8 +521,9 @@
                     <div class="layui-form-item my-form-item">
                         <label class="layui-form-label">县级市：</label>
                         <div class="layui-input-block">
-                            <input type="text" name="houseCounty" id="houseCounty" value="${personnel.houseCounty}"
-                                   placeholder="县级市/区" class="layui-input">
+                            <select name="houseCounty" id="houseCounty" lay-filter="houseCounty">
+                                <option value="">请选择县级市/区</option>
+                            </select>
                         </div>
                     </div>
                 </div>
@@ -495,8 +595,9 @@
                     <div class="layui-form-item my-form-item">
                         <label class="layui-form-label">省：</label>
                         <div class="layui-input-block">
-                            <input type="text" name="homeProvince" id="homeProvince" value="${personnel.homeProvince}"
-                                   placeholder="省" class="layui-input">
+                            <select name="homeProvince" id="homeProvince" lay-filter="homeProvince">
+                                <option value="">请选择省份</option>
+                            </select>
                         </div>
                     </div>
                 </div>
@@ -504,9 +605,9 @@
                     <div class="layui-form-item my-form-item">
                         <label class="layui-form-label">地级市：</label>
                         <div class="layui-input-block">
-                            <input type="text" name="homeCity" id="homeCity" value="${personnel.homeCity}"
-                                   placeholder="地级市"
-                                   class="layui-input">
+                            <select name="homeCity" id="homeCity" lay-filter="homeCity">
+                                <option value="">请选择地级市</option>
+                            </select>
                         </div>
                     </div>
                 </div>
@@ -514,8 +615,9 @@
                     <div class="layui-form-item my-form-item">
                         <label class="layui-form-label">县级市：</label>
                         <div class="layui-input-block">
-                            <input type="text" name="homeCounty" id="homeCounty" value="${personnel.homeCounty}"
-                                   placeholder="县级市/区" class="layui-input">
+                            <select name="homeCounty" id="homeCounty" lay-filter="homeCounty">
+                                <option value="">请选择县级市/区</option>
+                            </select>
                         </div>
                     </div>
                 </div>
@@ -606,73 +708,29 @@
                     </div>
                 </div>
             </div>
-            <%--            <!-- 分级分类信息 -->--%>
-            <%--            <div class="layui-row" style="padding: 15px;">--%>
-            <%--                <div class="layui-inline layui-col-md12">--%>
-            <%--                    <label class="layui-form-label layui-font-blue my-text-nowarp">分级分类信息</label>--%>
-            <%--                </div>--%>
-            <%--                <div class="layui-col-md8">--%>
-            <%--                    <div class="layui-col-md7">--%>
-            <%--                        <div class="layui-form-item my-form-item">--%>
-            <%--                            <label class="layui-form-label my-text-nowarp"><font color="red" size=2>*</font>管辖责任单位：</label>--%>
-            <%--                            <div class="layui-input-block">--%>
-            <%--                                <input type="text" id="jdunit1" name="jdunit1" value="0" lay-filter="jdunit1" lay-verify="jdunit1" class="layui-input">--%>
-            <%--                            </div>--%>
-            <%--                        </div>--%>
-            <%--                    </div>--%>
-            <%--                    <div class="layui-col-md5">--%>
-            <%--                        <div class="layui-form-item my-form-item">--%>
-            <%--                            <label class="layui-form-label my-text-nowarp"><font color="red" size=2>*</font>管辖责任民警：</label>--%>
-            <%--                            <div class="layui-input-block">--%>
-            <%--                                <select id="jdpolice1" name="jdpolice1" lay-filter="jdpolice1">--%>
-            <%--                                </select>--%>
-            <%--                            </div>--%>
-            <%--                        </div>--%>
-            <%--                    </div>--%>
-            <%--                </div>--%>
-            <%--                <div class="layui-col-md4">--%>
-            <%--                    <div class="layui-form-item my-form-item">--%>
-            <%--                        <label class="layui-form-label">民警手机：</label>--%>
-            <%--                        <div class="layui-input-block">--%>
-            <%--                            <input type="text" autocomplete="off" name="pphone1" id="pphone1" lay-verify=""--%>
-            <%--                                   value="${personnel.pphone1}" placeholder="请输入民警手机" class="layui-input">--%>
-            <%--                        </div>--%>
-            <%--                    </div>--%>
-            <%--                </div>--%>
-            <%--                <div class="layui-col-md8">--%>
-            <%--                    <div class="layui-col-md7">--%>
-            <%--                        <div class="layui-form-item my-form-item">--%>
-            <%--                            <label class="layui-form-label my-text-nowarp">双列管单位：</label>--%>
-            <%--                            <div class="layui-input-block">--%>
-            <%--                                <input type="text" id="jdunit2" name="jdunit2" value="0" lay-filter="jdunit2" lay-verify="jdunit2" class="layui-input">--%>
-            <%--                            </div>--%>
-            <%--                        </div>--%>
-            <%--                    </div>--%>
-            <%--                    <div class="layui-col-md5">--%>
-            <%--                        <div class="layui-form-item my-form-item">--%>
-            <%--                            <label class="layui-form-label my-text-nowarp">双列管民警：</label>--%>
-            <%--                            <div class="layui-input-block">--%>
-            <%--                                <select id="jdpolice2" name="jdpolice2"  lay-filter="jdpolice2">--%>
-            <%--                                </select>--%>
-            <%--                            </div>--%>
-            <%--                        </div>--%>
-            <%--                    </div>--%>
-            <%--                </div>--%>
-            <%--                <div class="layui-col-md4">--%>
-            <%--                    <div class="layui-form-item my-form-item">--%>
-            <%--                        <label class="layui-form-label">民警手机：</label>--%>
-            <%--                        <div class="layui-input-block">--%>
-            <%--                            <input type="text" autocomplete="off" name="pphone2" id="pphone2" lay-verify=""--%>
-            <%--                                   value="${personnel.pphone2}" placeholder="请输入民警手机" class="layui-input">--%>
-            <%--                        </div>--%>
-            <%--                    </div>--%>
-            <%--                </div>--%>
+
+            <!-- 打处单位处理确认模块 -->
+            <div id="dealUnitConfirmSection"
+                 style="display:none; border-top: 1px solid #eee; padding: 15px; margin: 15px 0; background-color: #f8f8f8;">
+                <div style="display: flex; flex-wrap: nowrap; align-items: center;">
+                    <span style="color:#FF5722;font-weight:bold;white-space:nowrap;">打处单位处理确认：</span>
+                    <span id="currentUnitNameDisplay"
+                          style="color: #333; font-weight: bold; margin: 0 15px; white-space:nowrap;"></span>
+                    <span style="white-space:nowrap;margin-right:10px;">是否已处理：</span>
+                    <input type="radio" name="dealUnitHandled" value="0" title="否" checked>
+                    <input type="radio" name="dealUnitHandled" value="1" title="是">
+                    <span style="margin-left: 15px; color: #999; font-size: 12px; white-space:nowrap;">
+                        <i class="layui-icon layui-icon-tips" style="color: #FFB800;"></i>
+                        选择「是」后当前单位将从打处单位列表中移除
+                    </span>
+                </div>
+            </div>
+
             <div class="layui-col-md4 layui-col-md-offset6" style="margin-bottom: 30px;margin-top: 30px;">
                 <div class="layui-form-item my-form-item">
                     <button type="submit" class="layui-btn" lay-submit="" lay-filter="updateZa">立即提交</button>
                 </div>
             </div>
-            <%--            </div>--%>
         </form>
         <div style="height:100px;"></div>
     </div>
@@ -685,14 +743,15 @@
                      style="margin: 0 30px;width: auto !important;">
                     <div class="swiper-wrapper" style="width:85px;height: 80px;">
                         <li class="btn btn_2 layui-this swiper-slide" onclick="openZaDu(${personnel.id})">涉赌背景</li>
-                        <li class="btn btn_6 swiper-slide" onclick="openZaChang(${personnel.id})">涉娼背景</li>
+                        <li class="btn btn_6 swiper-slide" onclick="openZaChang(${personnel.id})">涉黄背景</li>
+                        <li class="btn btn_13 swiper-slide" onclick="openZaPei(${personnel.id})">陪侍记录</li>
                         <li class="btn btn_11 swiper-slide" onclick="openAttributelabel()">人员属性标签</li>
                         <li class="btn btn_1 swiper-slide">关联信息</li>
                         <li class="btn btn_4 swiper-slide" onclick="openTrajectoryKK('${personnel.cardnumber}','');">
                             轨迹信息
                         </li>
                         <li class="btn btn_3 swiper-slide" onclick="openSocialRelations(${personnel.id});">社会关系</li>
-                        <li class="btn btn_12 swiper-slide" onclick="openjqxx('${personnel.cardnumber}')">涉警涉案</li>
+                        <li class="btn btn_12 swiper-slide" onclick="openzajqxx('${personnel.cardnumber}')">涉警涉案</li>
                         <li class="btn btn_7 swiper-slide" onclick="openGoodsShow(${personnel.id})">关联物品</li>
                         <li class="btn btn_5 swiper-slide" id="zaextendButton" onclick="openZaExtend(${personnel.id});">
                             更多信息
@@ -709,28 +768,35 @@
                         <input type="hidden" id="firstDu" value=0>
                         <div class="layui-col-md12">
                             <div class="layui-form-item my-form-item">
+                                <button class="layui-btn layui-btn-sm" id="duHistory"><i
+                                        class="layui-icon">&#xe68d;</i>历史记录
+                                </button>
                                 <label class="my-form-label-br">关联案件</label>
-                                <div class="my-input-block">
+                                <div class="my-input-block" style="display:flex;align-items:center;">
                                     <input type="hidden" name="relatedCaseId"
                                            id="du_relatedCaseId" value="">
                                     <input type="text" id="du_caseName"
-                                           autocomplete="off" placeholder="点击选择关联案件"
+                                           autocomplete="off" placeholder="点击右侧按钮选择关联警情/案件"
                                            class="layui-input" readonly
-                                           onclick="selectRelatedCase('du')"
-                                           style="cursor:pointer;background:#efefef;">
+                                           style="flex:1;background:#efefef;cursor:default;">
+                                    <button type="button" class="layui-btn layui-btn-normal layui-btn-sm"
+                                            onclick="selectdujqaj('${personnel.cardnumber}', $('#firstDu').val())"
+                                            style="margin-left:10px;">
+                                        <i class="layui-icon layui-icon-add-1"></i> 选择
+                                    </button>
                                 </div>
                             </div>
                         </div>
-                        <div class="layui-col-md12">
+                        <div class="layui-col-md12" style="display:none;">
                             <div class="layui-form-item my-form-item">
-                                <label class="my-form-label-br">历史涉赌情况综述
-                                    <button class="layui-btn layui-btn-sm" id="duHistory" style="display:none;"><i
+                                <label class="my-form-label-br">涉赌情况综述
+                                    <button class="layui-btn layui-btn-sm" id="duHistory"><i
                                             class="layui-icon">&#xe68d;</i>历史记录
                                     </button>
                                 </label>
                                 <div class="my-input-block">
 											<textarea placeholder="请输入内容" class="layui-textarea"
-                                                      id="lssdqk" name="lssdqk" lay-verify="lssdqk"></textarea>
+                                                      id="lssdqk" name="lssdqk" lay-verify=""></textarea>
                                 </div>
                             </div>
                         </div>
@@ -744,6 +810,16 @@
                                             lay-reqdiv="collectSource-du-div">
                                         <option value="">==请选择==</option>
                                     </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="layui-col-md6">
+                            <div class="layui-form-item my-form-item">
+                                <label class="my-form-label-br">采集日期</label>
+                                <div class="my-input-block">
+                                    <input type="text" name="collectDate" id="du_collectDate" autocomplete="off"
+                                           placeholder="年-月-日" class="layui-input">
                                 </div>
                             </div>
                         </div>
@@ -782,6 +858,20 @@
                                 </div>
                             </div>
                         </div>
+                        <!-- 涉赌前科字段 -->
+                        <div class="layui-col-md6">
+                            <div class="layui-form-item my-form-item">
+                                <label class="my-form-label-br"><span style="color:red;">*</span>涉赌前科</label>
+                                <div class="my-input-block" id="hasSheduRecord-du-div">
+                                    <select id="hasSheduRecord-du" name="hasSheduRecord" lay-filter="hasSheduRecord-du"
+                                            lay-verify="hasSheduRecord-du" lay-reqdiv="hasSheduRecord-du-div">
+                                        <option value="">==请选择==</option>
+                                        <option value="0">无</option>
+                                        <option value="1">有</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
                         <div class="layui-col-md6">
                             <div class="layui-form-item my-form-item">
                                 <label class="my-form-label-br">手机号码</label>
@@ -793,12 +883,47 @@
                         </div>
                         <div class="layui-col-md12">
                             <div class="layui-form-item my-form-item">
-                                <label class="my-form-label-br">处罚时间
+                                <label class="my-form-label-br">处罚情况</label>
+                                <div class="my-input-block" id="cfjg-div">
+                                    <select name="cfjg" id="cfjg" lay-verify="cfjg" lay-reqdiv="cfjg-div">
+                                        <option value="">==请选择==</option>
+                                        <option value="刑事处罚">刑事处罚</option>
+                                        <option value="行政拘留并处罚款">治安拘留并处罚款</option>
+                                        <option value="治安拘留">治安拘留</option>
+                                        <option value="罚款">罚款</option>
+                                        <option value="不予治安处罚">不予治安处罚</option>
+                                        <option value="保证金取保候审">保证金取保候审</option>
+                                        <option value="保证人取保候审">保证人取保候审</option>
+                                        <option value="监视居住">监视居住</option>
+                                        <option value="行政拘留">行政拘留</option>
+                                        <option value="行政拘留并处罚款">行政拘留并处罚款</option>
+                                        <option value="行政拘留（不予执行）">行政拘留（不予执行）</option>
+                                        <option value="行政拘留（不予执行）并处罚款">行政拘留（不予执行）并处罚款</option>
+                                        <option value="不予行政处罚">不予行政处罚</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="layui-col-md6">
+                            <div class="layui-form-item my-form-item">
+                                <label class="my-form-label-br">处罚日期
                                 </label>
                                 <div class="my-input-block">
                                     <input type="text" name="chsj" id="chsj" lay-verify="chsj"
-                                           lay-reqtext="请选择处罚时间" autocomplete="off" placeholder="年-月-日"
+                                           lay-reqtext="请选择处罚日期" autocomplete="off" placeholder="年-月-日"
                                            class="layui-input">
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 打处单位字段 -->
+                        <div class="layui-col-md6">
+                            <div class="layui-form-item my-form-item">
+                                <label class="my-form-label-br">打处单位</label>
+                                <div class="my-input-block">
+                                    <input type="text" id="du_handleUnit" autocomplete="off"
+                                           placeholder="自动填充当前用户所属单位" class="layui-input"
+                                           readonly style="background:#efefef;">
+                                    <input type="hidden" id="du_handleUnitCode" name="handleUnitCode" value="">
                                 </div>
                             </div>
                         </div>
@@ -808,27 +933,30 @@
                         <div class="layui-col-md3">
                             <div class="layui-form-item my-form-item"><label
                                     class="layui-form-label">省：</label>
-                                <div class="layui-input-block"><input type="text"
-                                                                      id="du_homeProvince"
-                                                                      class="layui-input">
+                                <div class="layui-input-block">
+                                    <select id="du_homeProvince" lay-filter="du_homeProvince">
+                                        <option value="">请选择省份</option>
+                                    </select>
                                 </div>
                             </div>
                         </div>
                         <div class="layui-col-md3">
                             <div class="layui-form-item my-form-item"><label
                                     class="layui-form-label">地级市：</label>
-                                <div class="layui-input-block"><input type="text" id="du_homeCity"
-                                                                      class="layui-input">
+                                <div class="layui-input-block">
+                                    <select id="du_homeCity" lay-filter="du_homeCity">
+                                        <option value="">请选择地级市</option>
+                                    </select>
                                 </div>
                             </div>
                         </div>
                         <div class="layui-col-md3">
                             <div class="layui-form-item my-form-item"><label
                                     class="layui-form-label">县级市：</label>
-                                <div class="layui-input-block"><input type="text" id="du_homeCounty"
-                                                                      class="layui-input"
-                                                                      oninput="checkDuPoliceStation()"
-                                                                      onblur="checkDuPoliceStation()">
+                                <div class="layui-input-block">
+                                    <select id="du_homeCounty" lay-filter="du_homeCounty">
+                                        <option value="">请选择县级市/区</option>
+                                    </select>
                                 </div>
                             </div>
                         </div>
@@ -888,15 +1016,7 @@
                         </div>
 
 
-                        <div class="layui-col-md12">
-                            <div class="layui-form-item my-form-item">
-                                <label class="my-form-label-br">采集日期</label>
-                                <div class="my-input-block">
-                                    <input type="text" name="collectDate" id="du_collectDate" autocomplete="off"
-                                           placeholder="年-月-日" class="layui-input">
-                                </div>
-                            </div>
-                        </div>
+
 
                         <div class="layui-col-md12">
                             <div class="layui-form-item my-form-item">
@@ -925,37 +1045,30 @@
                         </div>
 
 
-                        <div class="layui-col-md12">
+                        <div class="layui-col-md12" style="display:none;">
                             <div class="layui-form-item my-form-item">
                                 <label class="my-form-label-br">查获经过</label>
                                 <div class="my-input-block">
 											<textarea placeholder="请输入内容" class="layui-textarea"
-                                                      id="chjg" name="chjg" lay-verify="chjg"></textarea>
+                                                      id="chjg" name="chjg" lay-verify=""></textarea>
                                 </div>
                             </div>
                         </div>
-                        <div class="layui-col-md12">
-                            <div class="layui-form-item my-form-item">
-                                <label class="my-form-label-br">处罚结果</label>
-                                <div class="my-input-block" id="cfjg-div">
-                                    <select name="cfjg" id="cfjg" lay-verify="cfjg" lay-reqdiv="cfjg-div">
-                                        <option value="">==请选择==</option>
-                                        <option value="刑事处罚">刑事处罚</option>
-                                        <option value="治安处罚">治安处罚</option>
-                                        <option value="未处罚">未处罚</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="layui-col-md12">
+
+                        <div class="layui-col-md12" style="display:none;">
                             <div class="layui-form-item my-form-item">
                                 <label class="my-form-label-br">处理详情</label>
                                 <div class="my-input-block">
 											<textarea placeholder="请输入内容" class="layui-textarea"
-                                                      id="clxq" name="clxq" lay-verify="clxq"></textarea>
+                                                      id="clxq" name="clxq" lay-verify=""></textarea>
                                 </div>
                             </div>
                         </div>
+
+
+
+
+
                         <div class="layui-col-md3 layui-col-md-offset5">
                             <div class="layui-form-item my-form-item" style="padding: 15px;">
                                 <button id="duSub" type="submit" class="layui-btn" lay-submit="" lay-filter="duSub">
@@ -970,25 +1083,46 @@
                         <input type="hidden" id="firstChang" value=0>
                         <div class="layui-col-md12">
                             <div class="layui-form-item my-form-item">
-                                <label class="my-form-label-br">历史涉嫖情况综述
+                                <button class="layui-btn layui-btn-sm" id="changHistory" style="display:none;"><i
+                                        class="layui-icon">&#xe68d;</i>历史记录
+                                </button>
+                                <label class="my-form-label-br">关联案件</label>
+                                <div class="my-input-block" style="display:flex;align-items:center;">
+                                    <input type="hidden" name="relatedCaseId"
+                                           id="chang_relatedCaseId" value="">
+                                    <input type="text" id="chang_caseName"
+                                           autocomplete="off" placeholder="点击右侧按钮选择关联警情/案件"
+                                           class="layui-input" readonly
+                                           style="flex:1;background:#efefef;cursor:default;">
+                                    <button type="button" class="layui-btn layui-btn-normal layui-btn-sm"
+                                            onclick="selectchangjqaj('${personnel.cardnumber}', $('#firstchang').val())"
+                                            style="margin-left:10px;">
+                                        <i class="layui-icon layui-icon-add-1"></i> 选择
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="layui-col-md12" style="display:none;">
+                            <div class="layui-form-item my-form-item">
+                                <label class="my-form-label-br">涉黄情况综述
                                     <button class="layui-btn layui-btn-sm" id="changHistory" style="display:none;"><i
                                             class="layui-icon">&#xe68d;</i>历史记录
                                     </button>
                                 </label>
                                 <div class="my-input-block">
 											<textarea placeholder="请输入内容" class="layui-textarea"
-                                                      id="chang_lsscqk" name="chang_lsscqk"
-                                                      lay-verify="chang_lsscqk"></textarea>
+                                                      id="chang_lsscqk" name="chang_lsscqk" lay-verify=""></textarea>
                                 </div>
                             </div>
                         </div>
+
                         <div class="layui-col-md6">
                             <div class="layui-form-item my-form-item">
                                 <label class="my-form-label-br">采集来源</label>
-                                <div class="my-input-block"
-                                     id="collectSource-chang-div">
+                                <div class="my-input-block" id="collectSource-chang-div">
                                     <select id="collectSource-chang" name="collectSource"
-                                            lay-filter="collectSource-chang" lay-verify=""
+                                            lay-filter="collectSource-chang"
+                                            lay-verify=""
                                             lay-reqdiv="collectSource-chang-div">
                                         <option value="">==请选择==</option>
                                     </select>
@@ -997,24 +1131,32 @@
                         </div>
                         <div class="layui-col-md6">
                             <div class="layui-form-item my-form-item">
-                                <label class="my-form-label-br">涉娼角色</label>
-                                <div class="my-input-block"
-                                     id="chang_scjs-div">
+                                <label class="my-form-label-br">采集日期</label>
+                                <div class="my-input-block">
+                                    <input type="text" name="collectDate" id="chang_collectDate" autocomplete="off"
+                                           placeholder="年-月-日" class="layui-input">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="layui-col-md6">
+                            <div class="layui-form-item my-form-item">
+                                <label class="my-form-label-br">人员属性</label>
+                                <div class="my-input-block" id="chang_scjs-div">
                                     <select id="chang_scjs" name="chang_scjs"
                                             lay-filter="chang_scjs"
-                                            lay-verify="chang_scjs"
-                                            lay-reqdiv="chang_scjs-div">
+                                            lay-verify="chang_scjs" lay-reqdiv="chang_scjs-div">
                                         <option value="">==请选择==</option>
                                     </select>
                                 </div>
                             </div>
                         </div>
+
                         <div class="layui-col-md6">
                             <div class="layui-form-item my-form-item">
-                                <label class="my-form-label-br">涉娼方式</label>
+                                <label class="my-form-label-br">涉黄方式</label>
                                 <div class="my-input-block" id="chang_myfs-div">
-                                    <select id="chang_myfs" name="chang_myfs"
-                                            lay-filter="chang_myfs"
+                                    <select id="chang_myfs" name="chang_myfs" lay-filter="chang_myfs"
                                             lay-verify="chang_myfs"
                                             lay-reqdiv="chang_myfs-div">
                                         <option value="">==请选择==</option>
@@ -1025,12 +1167,26 @@
 
                         <div class="layui-col-md6">
                             <div class="layui-form-item my-form-item">
-                                <label class="my-form-label-br">涉娼部位</label>
-                                <div class="my-input-block" id="chang_scbw-div">
-                                    <select id="chang_scbw" name="chang_scbw" lay-filter="chang_scbw"
-                                            lay-verify="chang_scbw"
-                                            lay-reqdiv="chang_scbw-div">
+                                <label class="my-form-label-br">涉黄类型</label>
+                                <div class="my-input-block" id="changType-div">
+                                    <select id="changType" name="changType" lay-filter="changType"
+                                            lay-verify="changType"
+                                            lay-reqdiv="changType-div">
                                         <option value="">==请选择==</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 涉黄前科字段 -->
+                        <div class="layui-col-md6">
+                            <div class="layui-form-item my-form-item">
+                                <label class="my-form-label-br"><span style="color:red;">*</span>涉黄前科</label>
+                                <div class="my-input-block" id="hasShechangRecord-chang-div">
+                                    <select id="hasShechangRecord-chang" name="hasShechangRecord" lay-filter="hasShechangRecord-chang"
+                                            lay-verify="hasShechangRecord-chang" lay-reqdiv="hasShechangRecord-chang-div">
+                                        <option value="">==请选择==</option>
+                                        <option value="0">无</option>
+                                        <option value="1">有</option>
                                     </select>
                                 </div>
                             </div>
@@ -1039,26 +1195,37 @@
                             <div class="layui-form-item my-form-item">
                                 <label class="my-form-label-br">手机号码</label>
                                 <div class="my-input-block">
-                                    <input type="text" name="phone" id="chang_phone"
-                                           autocomplete="off" placeholder="请输入手机号码"
-                                           class="layui-input">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="layui-col-md6">
-                            <div class="layui-form-item my-form-item">
-                                <label class="my-form-label-br">是否未成年案件</label>
-                                <div class="my-input-block">
-                                    <input type="radio" name="isMinorCase" value="0"
-                                           title="否" checked>
-                                    <input type="radio" name="isMinorCase" value="1"
-                                           title="是">
-                                    <span
-                                            style="color:#999;font-size:12px;">(系统将自动根据处罚日期计算)</span>
+                                    <input type="text" name="phone" id="chang_phone" autocomplete="off"
+                                           placeholder="请输入手机号码" class="layui-input">
                                 </div>
                             </div>
                         </div>
                         <div class="layui-col-md12">
+                            <div class="layui-form-item my-form-item">
+                                <label class="my-form-label-br">处罚情况</label>
+                                <div class="my-input-block" id="chang_cfjg-div">
+                                    <select name="chang_cfjg" id="chang_cfjg" lay-verify="chang_cfjg"
+                                            lay-reqdiv="chang_cfjg-div">
+                                        <option value="">==请选择==</option>
+                                        <option value="刑事处罚">刑事处罚</option>
+                                        <option value="行政拘留并处罚款">治安拘留并处罚款</option>
+                                        <option value="治安拘留">治安拘留</option>
+                                        <option value="罚款">罚款</option>
+                                        <option value="不予治安处罚">不予治安处罚</option>
+                                        <option value="保证金取保候审">保证金取保候审</option>
+                                        <option value="保证人取保候审">保证人取保候审</option>
+                                        <option value="监视居住">监视居住</option>
+                                        <option value="行政拘留">行政拘留</option>
+                                        <option value="行政拘留并处罚款">行政拘留并处罚款</option>
+                                        <option value="行政拘留（不予执行）">行政拘留（不予执行）</option>
+                                        <option value="行政拘留（不予执行）并处罚款">行政拘留（不予执行）并处罚款</option>
+                                        <option value="不予行政处罚">不予行政处罚</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="layui-col-md6">
                             <div class="layui-form-item my-form-item">
                                 <label class="my-form-label-br">处罚时间
                                 </label>
@@ -1069,6 +1236,32 @@
                                 </div>
                             </div>
                         </div>
+                        <!-- 打处单位字段 -->
+
+                        <div class="layui-col-md6">
+                            <div class="layui-form-item my-form-item">
+                                <label class="my-form-label-br">是否未成年案件</label>
+                                <div class="my-input-block">
+                                    <input type="radio" name="isMinorCase" value="0"
+                                           title="否" checked>
+                                    <input type="radio" name="isMinorCase" value="1"
+                                           title="是">
+                                    <span
+                                            style="color:#999;font-size:12px;">(系统根据处罚时间自动计算)</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="layui-col-md6">
+                            <div class="layui-form-item my-form-item">
+                                <label class="my-form-label-br">打处单位</label>
+                                <div class="my-input-block">
+                                    <input type="text" id="chang_handleUnit" autocomplete="off"
+                                           placeholder="自动填充当前用户所属单位" class="layui-input"
+                                           readonly style="background:#efefef;">
+                                    <input type="hidden" id="chang_handleUnitCode" name="handleUnitCode" value="">
+                                </div>
+                            </div>
+                        </div>
 
                         <div class="layui-col-md12">
                             <label class="layui-form-label" style="color:#1E9FFF;font-weight:bold;">现住地址：</label>
@@ -1076,41 +1269,37 @@
                         <div class="layui-col-md3">
                             <div class="layui-form-item my-form-item"><label
                                     class="layui-form-label">省：</label>
-                                <div class="layui-input-block"><input type="text"
-                                                                      name="homeProvince" id="chang_homeProvince"
-                                                                      value="${personnel.homeProvince}"
-                                                                      class="layui-input">
+                                <div class="layui-input-block">
+                                    <select id="chang_homeProvince" lay-filter="chang_homeProvince">
+                                        <option value="">请选择省份</option>
+                                    </select>
                                 </div>
                             </div>
                         </div>
                         <div class="layui-col-md3">
                             <div class="layui-form-item my-form-item"><label
                                     class="layui-form-label">地级市：</label>
-                                <div class="layui-input-block"><input type="text"
-                                                                      name="homeCity" id="chang_homeCity"
-                                                                      value="${personnel.homeCity}"
-                                                                      class="layui-input">
+                                <div class="layui-input-block">
+                                    <select id="chang_homeCity" lay-filter="chang_homeCity">
+                                        <option value="">请选择地级市</option>
+                                    </select>
                                 </div>
                             </div>
                         </div>
                         <div class="layui-col-md3">
                             <div class="layui-form-item my-form-item"><label
                                     class="layui-form-label">县级市：</label>
-                                <div class="layui-input-block"><input type="text"
-                                                                      name="homeCounty" id="chang_homeCounty"
-                                                                      value="${personnel.homeCounty}"
-                                                                      class="layui-input"
-                                                                      oninput="checkChangPoliceStation()"
-                                                                      onblur="checkChangPoliceStation()">
+                                <div class="layui-input-block">
+                                    <select id="chang_homeCounty" lay-filter="chang_homeCounty">
+                                        <option value="">请选择县级市/区</option>
+                                    </select>
                                 </div>
                             </div>
                         </div>
                         <div class="layui-col-md3">
                             <div class="layui-form-item my-form-item"><label
                                     class="layui-form-label">镇街：</label>
-                                <div class="layui-input-block"><input type="text"
-                                                                      name="homeTown" id="chang_homeTown"
-                                                                      value="${personnel.homeTown}"
+                                <div class="layui-input-block"><input type="text" id="chang_homeTown"
                                                                       class="layui-input">
                                 </div>
                             </div>
@@ -1120,22 +1309,19 @@
                             <div class="layui-form-item my-form-item">
                                 <label class="layui-form-label my-text-nowarp">详细地址：</label>
                                 <div class="layui-input-block">
-                                    <input type="text" name="homeplace" lay-verify="" autocomplete="off"
-                                           value="${personnel.homeplace}" placeholder="请输入现住地详址"
-                                           class="layui-input"
+                                    <input type="text" lay-verify="" autocomplete="off"
+                                           placeholder="请输入现住地详址" class="layui-input"
                                            id="chang_homeplace" onclick="openPGisChang('home','现住地');" readonly
                                            style="background:#efefef;cursor:pointer;">
                                 </div>
                             </div>
                         </div>
-
                         <div class="layui-col-md6" id="chang_homepolice_div">
                             <div class="layui-form-item my-form-item">
                                 <label class="layui-form-label my-text-nowarp">现住地派出所：<span
                                         id="chang_homepolice-required" style="color:red;display:none;">*</span></label>
                                 <div class="layui-input-block">
                                     <select id="chang_policeStation"
-                                            name="homepolice"
                                             lay-filter="chang_policeStation">
                                         <option value="">请选择派出所</option>
                                     </select>
@@ -1146,8 +1332,8 @@
                             <div class="layui-form-item my-form-item">
                                 <label class="layui-form-label my-text-nowarp">现住地经度：</label>
                                 <div class="layui-input-block">
-                                    <input type="text" name="homex" lay-verify="" autocomplete="off"
-                                           value="${personnel.homex}" class="layui-input" id="chang_homex"
+                                    <input type="text" lay-verify="" autocomplete="off"
+                                           class="layui-input" id="chang_homex"
                                            onclick="openPGisChang('home','现住地');" readonly
                                            style="background:#efefef;cursor:pointer;">
                                 </div>
@@ -1157,53 +1343,36 @@
                             <div class="layui-form-item my-form-item">
                                 <label class="layui-form-label my-text-nowarp">现住地纬度：</label>
                                 <div class="layui-input-block">
-                                    <input type="text" name="homey" lay-verify="" autocomplete="off"
-                                           value="${personnel.homey}" class="layui-input" id="chang_homey"
+                                    <input type="text" lay-verify="" autocomplete="off"
+                                           class="layui-input" id="chang_homey"
                                            onclick="openPGisChang('home','现住地');" readonly
                                            style="background:#efefef;cursor:pointer;">
                                 </div>
                             </div>
                         </div>
-                        <div class="layui-col-md12">
-                            <div class="layui-form-item my-form-item">
-                                <label class="my-form-label-br">采集日期</label>
-                                <div class="my-input-block">
-                                    <input type="text" name="collectDate"
-                                           id="chang_collectDate" autocomplete="off"
-                                           placeholder="年-月-日" class="layui-input">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="layui-col-md6">
-                            <div class="layui-form-item my-form-item">
-                                <label class="my-form-label-br">关联案件</label>
-                                <div class="my-input-block">
-                                    <input type="hidden" name="relatedCaseId"
-                                           id="chang_relatedCaseId" value="">
-                                    <input type="text" id="chang_caseName"
-                                           autocomplete="off" placeholder="点击选择关联案件"
-                                           class="layui-input" readonly
-                                           onclick="selectRelatedCase('chang')"
-                                           style="cursor:pointer;background:#efefef;">
-                                </div>
-                            </div>
-                        </div>
+
+
 
 
                         <div class="layui-col-md12">
                             <div class="layui-form-item my-form-item">
                                 <label class="my-form-label-br"
                                        style="display: inline-block; float: left;">涉案地址：</label>
+
                                 <span class="layui-word-aux"
-                                      style="display: inline-block; line-height: 38px; margin-left: 10px;">最多填写 5 个</span>
+                                      style="display: inline-block; line-height: 38px; margin-left: 10px;">
+                                        最多填写 5 个
+                                </span>
+
                                 <div class="my-input-block" id="changCaseAddressContainer">
-                                    <!-- 动态生成 -->
+                                    <!-- 这里只放 address-row -->
                                 </div>
+
                                 <div class="my-input-block" style="margin-top: 5px;">
                                     <!-- ✅ 改为使用 onclick 内联方式 -->
                                     <button type="button"
                                             class="layui-btn layui-btn-sm"
-                                            id="addChangCaseAddressBtn"
+                                            id="addchangCaseAddressBtn"
                                             onclick="handleAddChangCaseAddress()">
                                         + 新增地址
                                     </button>
@@ -1211,40 +1380,32 @@
                             </div>
                         </div>
 
-                        <div class="layui-col-md12">
+                        <div class="layui-col-md12" style="display:none;">
                             <div class="layui-form-item my-form-item">
                                 <label class="my-form-label-br">查获经过</label>
                                 <div class="my-input-block">
 											<textarea placeholder="请输入内容" class="layui-textarea"
                                                       id="chang_chjg" name="chang_chjg"
-                                                      lay-verify="chang_chjg"></textarea>
+                                                      lay-verify=""></textarea>
                                 </div>
                             </div>
                         </div>
-                        <div class="layui-col-md12">
-                            <div class="layui-form-item my-form-item">
-                                <label class="my-form-label-br">处罚结果</label>
-                                <div class="my-input-block" id="chang_cfjg-div">
-                                    <select name="chang_cfjg" id="chang_cfjg" lay-verify="chang_cfjg"
-                                            lay-reqdiv="chang_cfjg-div">
-                                        <option value="">==请选择==</option>
-                                        <option value="刑事处罚">刑事处罚</option>
-                                        <option value="治安处罚">治安处罚</option>
-                                        <option value="未处罚">未处罚</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="layui-col-md12">
+
+                        <div class="layui-col-md12" style="display:none;">
                             <div class="layui-form-item my-form-item">
                                 <label class="my-form-label-br">处理详情</label>
                                 <div class="my-input-block">
 											<textarea placeholder="请输入内容" class="layui-textarea"
                                                       id="chang_clxq" name="chang_clxq"
-                                                      lay-verify="chang_clxq"></textarea>
+                                                      lay-verify=""></textarea>
                                 </div>
                             </div>
                         </div>
+
+
+
+
+
                         <div class="layui-col-md3 layui-col-md-offset5">
                             <div class="layui-form-item my-form-item" style="padding: 15px;">
                                 <button id="changSub" type="submit" class="layui-btn" lay-submit=""
@@ -1255,44 +1416,203 @@
                     </form>
                 </div>
 
-                <div class="right-child-content layui-tab-item"><!--人员属性标签 -->
-                    <form class="layui-form" method="post" id="formAttributeLabel" onsubmit="return false;">
-                        <div class="layui-tab my-tab layui-tab-brief" lay-filter="docDemoTabBrief">
+                <div class="right-child-content layui-tab-item">
+                    <form class="layui-form" method="post" id="formZaPei" onsubmit="return false;">
+                        <input type="hidden" id="firstPei" value=0>
+                        <div class="layui-col-md12">
+                            <div class="layui-form-item my-form-item">
+                                <button class="layui-btn layui-btn-sm" id="PeiHistory" style="display:none;"><i
+                                        class="layui-icon">&#xe68d;</i>历史记录
+                                </button>
+                                <label class="my-form-label-br">关联案件</label>
+                                <div class="my-input-block" style="display:flex;align-items:center;">
+                                    <input type="hidden" name="relatedCaseId"
+                                           id="pei_relatedCaseId" value="">
+                                    <input type="text" id="pei_caseName"
+                                           autocomplete="off" placeholder="点击右侧按钮选择关联警情/案件"
+                                           class="layui-input" readonly
+                                           style="flex:1;background:#efefef;cursor:default;">
+                                    <button type="button" class="layui-btn layui-btn-normal layui-btn-sm"
+                                            onclick="selectpeijqaj('${personnel.cardnumber}', $('#firstpei').val())"
+                                            style="margin-left:10px;">
+                                        <i class="layui-icon layui-icon-add-1"></i> 选择
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="layui-col-md12" style="display:none;">
+                            <div class="layui-form-item my-form-item">
+                                <label class="my-form-label-br">陪侍情况综述
+                                    <button class="layui-btn layui-btn-sm" id="PeiHistory" style="display:none;"><i
+                                            class="layui-icon">&#xe68d;</i>历史记录
+                                    </button>
+                                </label>
+                                <div class="my-input-block">
+											<textarea placeholder="请输入内容" class="layui-textarea"
+                                                      id="otherMemo" name="otherMemo" lay-verify=""></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="layui-col-md6">
+                            <div class="layui-form-item my-form-item">
+                                <label class="my-form-label-br">采集来源</label>
+                                <div class="my-input-block" id="collectSource-pei-div">
+                                    <select id="collectSource-pei" name="collectSource" lay-filter="collectSource-pei"
+                                            lay-verify=""
+                                            lay-reqdiv="collectSource-pei-div">
+                                        <option value="">==请选择==</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="layui-col-md12">
+                            <div class="layui-form-item my-form-item">
+                                <label class="my-form-label-br">采集日期</label>
+                                <div class="my-input-block">
+                                    <input type="text" name="collectDate" id="pei_collectDate" autocomplete="off"
+                                           placeholder="年-月-日" class="layui-input">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="layui-col-md12">
+                            <div class="layui-form-item my-form-item">
+                                <label class="my-form-label-br">角色标签</label>
+                                <div class="my-input-block">
+                                    <select id="pei_memo" name="pei_memo" lay-filter="pei_memo">
+                                        <option value="">==请选择==</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 涉黄前科字段 -->
+                        <div class="layui-col-md12">
+                            <div class="layui-form-item my-form-item">
+                                <label class="my-form-label-br"><span style="color:red;">*</span>涉黄前科</label>
+                                <div class="my-input-block" id="hasShechangRecord-pei-div">
+                                    <select id="hasShechangRecord-pei" name="hasShechangRecord" lay-filter="hasShechangRecord-pei"
+                                            lay-verify="hasShechangRecord-pei" lay-reqdiv="hasShechangRecord-pei-div">
+                                        <option value="">==请选择==</option>
+                                        <option value="0">无</option>
+                                        <option value="1">有</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="layui-col-md12">
+                            <div class="layui-form-item my-form-item">
+                                <label class="my-form-label-br"
+                                       style="display: inline-block; float: left;">活动场所：</label>
+
+                                <span class="layui-word-aux"
+                                      style="display: inline-block; line-height: 38px; margin-left: 10px;">
+                                        最多填写 5 个
+                                </span>
+
+                                <div class="my-input-block" id="peiCaseAddressContainer">
+                                    <!-- 这里只放 address-row -->
+                                </div>
+
+                                <div class="my-input-block" style="margin-top: 5px;">
+                                    <!-- ✅ 改为使用 onclick 内联方式 -->
+                                    <button type="button"
+                                            class="layui-btn layui-btn-sm"
+                                            id="addpeiCaseAddressBtn"
+                                            onclick="handleAddpeiCaseAddress()">
+                                        + 新增地址
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+
+
+                        <div class="layui-col-md3 layui-col-md-offset5">
+                            <div class="layui-form-item my-form-item" style="padding: 15px;">
+                                <button id="peiSub" type="submit" class="layui-btn" lay-submit=""
+                                        lay-filter="peiSub">立即提交
+                                </button>
+                            </div>
+                        </div>
+
+
+                    </form>
+                </div>
+                <div class="right-child-content layui-tab-item">
+                    <div class="layui-form">
+                        <div class="layui-tab my-tab layui-tab-brief">
                             <ul class="layui-tab-title my-tab-title">
                                 <li class="layui-this">人员属性标签</li>
                                 <li>标签维护记录</li>
                             </ul>
+
                             <div class="layui-tab-content">
-                                <div class="layui-tab-item layui-show">
+
+                                <!-- 只读展示区 -->
+                                <div class="layui-tab-item layui-show readonly-view">
                                     <table class="layui-table">
                                         <tr>
                                             <td valign="top" width="20%">
-                                                <div id="zTree" align="center"
-                                                     style="width:98%;overflow: auto;height: 480px;"></div>
+                                                <div id="zTree"
+                                                     style="width:98%;overflow:auto;height:480px;"></div>
                                             </td>
                                             <td valign="top" width="80%">
-                                                <div id="attributelabel" style="height: 480px;">
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td width="100%" colspan="2">
-                                                <div class="layui-form-item" align="center">
-                                                    <button type="submit" class="layui-btn" lay-submit=""
-                                                            lay-filter="attributeLabelSub">立即提交
-                                                    </button>
-                                                </div>
+                                                <form class="layui-form" id="attributelabel" style="height:480px;"></form>
                                             </td>
                                         </tr>
                                     </table>
                                 </div>
+
+                                <!-- 维护记录 -->
                                 <div class="layui-tab-item">
                                     <table class="layui-hide" id="applyTable" lay-filter="applyTable"></table>
                                 </div>
+
                             </div>
                         </div>
-                    </form>
+                    </div>
                 </div>
+
+<%--                <div class="right-child-content layui-tab-item"><!--人员属性标签 -->--%>
+<%--                    <form class="layui-form" method="post" id="formAttributeLabel" onsubmit="return false;">--%>
+<%--                        <div class="layui-tab my-tab layui-tab-brief" lay-filter="docDemoTabBrief">--%>
+<%--                            <ul class="layui-tab-title my-tab-title">--%>
+<%--                                <li class="layui-this">人员属性标签</li>--%>
+<%--                                <li>标签维护记录</li>--%>
+<%--                            </ul>--%>
+<%--                            <div class="layui-tab-content">--%>
+<%--                                <div class="layui-tab-item layui-show">--%>
+<%--                                    <table class="layui-table">--%>
+<%--                                        <tr>--%>
+<%--                                            <td valign="top" width="20%">--%>
+<%--                                                <div id="zTree" align="center"--%>
+<%--                                                     style="width:98%;overflow: auto;height: 480px;"></div>--%>
+<%--                                            </td>--%>
+<%--                                            <td valign="top" width="80%">--%>
+<%--                                                <div id="attributelabel" style="height: 480px;">--%>
+<%--                                                </div>--%>
+<%--                                            </td>--%>
+<%--                                        </tr>--%>
+<%--                                        <tr>--%>
+<%--                                            <td width="100%" colspan="2">--%>
+<%--                                                <div class="layui-form-item" align="center">--%>
+<%--                                                    <button type="submit" class="layui-btn" lay-submit=""--%>
+<%--                                                            lay-filter="attributeLabelSub">立即提交--%>
+<%--                                                    </button>--%>
+<%--                                                </div>--%>
+<%--                                            </td>--%>
+<%--                                        </tr>--%>
+<%--                                    </table>--%>
+<%--                                </div>--%>
+<%--                                <div class="layui-tab-item">--%>
+<%--                                    <table class="layui-hide" id="applyTable" lay-filter="applyTable"></table>--%>
+<%--                                </div>--%>
+<%--                            </div>--%>
+<%--                        </div>--%>
+<%--                    </form>--%>
+<%--                </div>--%>
                 <div class="right-child-content layui-tab-item">
                     <form class="layui-form" method="post" id="formRelation" onsubmit="return false;">
                         <div class="layui-col-md11">
@@ -1514,37 +1834,7 @@
                         </div>
                         <table class="layui-hide" id="trajectoryTable" lay-filter="trajectoryTable"></table>
                     </form>
-                    <%--<div class="layui-tab my-tab layui-tab-brief" lay-filter="GuiJi">
-								<ul class="layui-tab-title my-tab-title">
-									<li onclick="openTrajectoryKK('${personnel.cardnumber}',2);" class="layui-this">电围</li>
-									<li onclick="openTrajectoryKK('${personnel.cardnumber}',1);">卡口</li>
-									<li onclick="openTrajectoryKK('${personnel.cardnumber}',3);">人脸识别</li>
-									<li onclick="openTrajectoryKK('${personnel.cardnumber}',4);">车辆</li>
-									<li onclick="openTrajectoryKK('${personnel.cardnumber}',5);">旅馆</li>
-									<li onclick="openTrajectoryKK('${personnel.cardnumber}',6);">网吧</li>
-								</ul>
-								<div class="layui-tab-content">
-									<div class="layui-tab-item layui-show">
-										<table class="layui-hide" id="trajectoryTable2" lay-filter="trajectoryTable2"></table>
-									</div>
-									<div class="layui-tab-item">
-										<table class="layui-hide" id="trajectoryTable1" lay-filter="trajectoryTable1"></table>
-									</div>
-									<div class="layui-tab-item">
-									    <table class="layui-hide" id="trajectoryTable3" lay-filter="trajectoryTable3"></table>
-									</div>
-									<div class="layui-tab-item">
-									   <table class="layui-hide" id="trajectoryTable4" lay-filter="trajectoryTable4"></table>
-									</div>
-									<div class="layui-tab-item">
-									   <table class="layui-hide" id="trajectoryTable5" lay-filter="trajectoryTable5"></table>
-									</div>
-									<div class="layui-tab-item">
-									   <table class="layui-hide" id="trajectoryTable6" lay-filter="trajectoryTable6"></table>
-									</div>
-								</div>
-						    </div>
-						--%></div>
+                </div>
 
                 <script type="text/html" id="socialrelationstoolbar">
                     <button type="button" class="layui-btn layui-btn-sm" lay-event="add"><i
@@ -1566,11 +1856,10 @@
                     <table class="layui-hide" id="socialrelationsTable" lay-filter="socialrelationsTable"></table>
                 </div>
                 <div class="right-child-content layui-tab-item"><!-- 涉警涉案信息 -->
-                    <div class="layui-tab my-tab layui-tab-brief" lay-filter="GuiJi">
+                    <div class="layui-tab my-tab layui-tab-brief" lay-filter="zajqajTab">
                         <ul class="layui-tab-title my-tab-title">
-                            <li onclick="openjqxx('${personnel.cardnumber}');" class="layui-this">涉警信息</li>
-                            <li onclick="openajxx('${personnel.cardnumber}');">涉案信息</li>
-
+                            <li class="layui-this">涉警信息</li>
+                            <li>涉案信息</li>
                         </ul>
                         <div class="layui-tab-content">
                             <div class="layui-tab-item layui-show">
@@ -1637,6 +1926,63 @@
 <script>
     var users1 = {}, users2 = {};
 
+    // 加载默认照片并标记是否有照片
+    function getDefaultPhoto() {
+        var personnelid = $("#id").val();
+        $.ajax({
+            type: 'POST',
+            url: locat + '/getPersonnelPhotoFlowList.do?personnelid=' + personnelid,
+            dataType: 'json',
+            async: false,
+            success: function (data) {
+                var defaultid = 0;
+                if (data.count > 0) {
+                    $.each(data.photos, function (i) {
+                        if (this.defaultflag == 1) {
+                            defaultid = this.id;
+                            if (this.validflag > 1) $('#defaultPhoto').attr('src', '../uploadFiles/' + this.fileallName);
+                            else $('#defaultPhoto').attr('src', '../uploadFiles/pictures/' + this.fileallName);
+                            // 标记有照片
+                            $('#hasPhoto').val('1');
+                            return false;
+                        }
+                    });
+                }
+                if (defaultid == 0) {
+                    $('#defaultPhoto').attr('src', locat + '/images/nophoto.png');
+                    // 标记没有照片
+                    $('#hasPhoto').val('0');
+                }
+                $('#defaultPhoto').attr('onload', "javascript:DrawImage(this,110,150)");
+            }
+        });
+    }
+
+    // 打开图片编辑上传页面（覆盖personel.js中的同名函数）
+    function openPhotos() {
+        var menuid = $("#menuid").val();
+        var personnelid = $("#id").val();
+        var index = layui.layer.open({
+            title: "编辑风险人员照片",
+            type: 2,  //0（信息框，默认）1（页面层）2（iframe层）3（加载层）4（tips层）
+            content: locat + '/jsp/personel/wen/photo.jsp?personnelid=' + personnelid + '&menuid=' + menuid,
+            area: ['700', '600px'],
+            maxmin: true,
+            success: function (layero, index) {
+                setTimeout(function () {
+                    layui.layer.tips('点击此处返回列表', '.layui-layer-setwin .layui-layer-close', {
+                        tips: 3
+                    });
+                }, 500)
+            },
+            end: function () {
+                // 弹窗关闭时重新加载照片，更新hasPhoto标记
+                getDefaultPhoto();
+            }
+        })
+        layui.layer.full(index);
+    }
+
     // 打处单位队列管理
     var handleUnitQueue = [];       // 存储单位名称
     var handleUnitCodeQueue = [];   // 存储单位编码
@@ -1644,24 +1990,66 @@
 
     // 初始化打处单位队列
     function initHandleUnitQueue() {
-        var savedUnits = $('#handleUnit').val();
+        // 优先从handle_unit_code（部门ID）加载，确保每次打开页面都显示最新数据
         var savedCodes = $('#handleUnitCode').val();
 
-        if (savedUnits && savedUnits.trim() !== '') {
-            handleUnitQueue = savedUnits.split(',').filter(function (item) {
+        console.log('========== 初始化打处单位队列 ==========');
+        console.log('从数据库获取的handle_unit_code: ' + savedCodes);
+
+        handleUnitQueue = [];
+        handleUnitCodeQueue = [];
+
+        if (savedCodes && savedCodes.trim() !== '') {
+            var codeArray = savedCodes.split(',').filter(function (item) {
                 return item.trim() !== '';
             });
-        }
-        if (savedCodes && savedCodes.trim() !== '') {
-            handleUnitCodeQueue = savedCodes.split(',').filter(function (item) {
-                return item.trim() !== '';
+
+            var otherAdded = false; // 标记"治安大队"是否已添加
+            // 根据handle_unit_code查找对应的单位名称
+            codeArray.forEach(function(code) {
+                var unitName = '';
+                var codeNum = parseInt(code.trim());
+
+                // 不在240-263范围内的数字，显示"治安大队"（只显示一次）
+                if (isNaN(codeNum) || codeNum < 240 || codeNum > 263) {
+                    if (!otherAdded) {
+                        otherAdded = true;
+                        handleUnitCodeQueue.push(code.trim());
+                        handleUnitQueue.push('治安大队');
+                        console.log('加载打处单位: code=' + code + ', name=治安大队');
+                    } else {
+                        console.log('跳过重复的"治安大队": code=' + code);
+                    }
+                    return;
+                }
+
+                // 在240-263范围内，从policeData中查找对应的单位名称
+                if (policeData && policeData.length > 0) {
+                    for (var i = 0; i < policeData.length; i++) {
+                        if (policeData[i].departmentid == code) {
+                            unitName = policeData[i].name;
+                            break;
+                        }
+                    }
+                }
+
+                // 如果没找到单位名称，使用部门ID作为显示
+                if (!unitName) {
+                    unitName = '部门' + code;
+                    console.warn('未找到部门ID ' + code + ' 对应的名称，使用默认显示');
+                }
+
+                handleUnitCodeQueue.push(code.trim());
+                handleUnitQueue.push(unitName);
+                console.log('加载打处单位: code=' + code + ', name=' + unitName);
             });
         }
 
-        // 同步长度
-        while (handleUnitCodeQueue.length < handleUnitQueue.length) {
-            handleUnitCodeQueue.push('');
-        }
+        // 更新隐藏字段的handleUnit值（保持同步）
+        $('#handleUnit').val(handleUnitQueue.join(','));
+
+        console.log('初始化完成: handleUnitQueue=' + handleUnitQueue.join(','));
+        console.log('初始化完成: handleUnitCodeQueue=' + handleUnitCodeQueue.join(','));
 
         renderHandleUnitTags();
         bindHandleUnitEvents();
@@ -1750,7 +2138,7 @@
                 }
             }
             // 方案 2：如果方案 1 失败，从 policeData 数组中查找
-            if (!unitCode && policeData && policeData. length > 0) {
+            if (!unitCode && policeData && policeData.length > 0) {
                 for (var i = 0; i < policeData.length; i++) {
                     if (policeData[i].name === unitName) {
                         unitCode = policeData[i].departmentid || '';
@@ -1767,6 +2155,191 @@
                 layui.form.render('select');
             }
         });
+    }
+
+    // 初始化涉赌、涉黄、陪侍tab的打处单位字段
+    function initTabHandleUnitFields() {
+        // 获取当前用户的部门信息
+        var currentUserDeptId = '<%=userSession != null ? userSession.getLoginUserDepartmentid() : ""%>';
+        var currentUserDeptName = '';
+
+        // 从policeData中查找当前用户的部门名称
+        if (currentUserDeptId && policeData && policeData.length > 0) {
+            for (var i = 0; i < policeData.length; i++) {
+                if (policeData[i].departmentid == currentUserDeptId) {
+                    currentUserDeptName = policeData[i].name;
+                    break;
+                }
+            }
+        }
+
+        // 如果没找到，使用默认显示
+        if (!currentUserDeptName && currentUserDeptId) {
+            currentUserDeptName = '治安大队';
+        }
+
+        // 设置涉赌tab的打处单位
+        if (currentUserDeptName) {
+            $('#du_handleUnit').val(currentUserDeptName);
+            $('#du_handleUnitCode').val(currentUserDeptId);
+        }
+
+        // 设置涉黄tab的打处单位
+        if (currentUserDeptName) {
+            $('#chang_handleUnit').val(currentUserDeptName);
+            $('#chang_handleUnitCode').val(currentUserDeptId);
+        }
+
+        console.log('初始化tab打处单位字段: deptId=' + currentUserDeptId + ', deptName=' + currentUserDeptName);
+    }
+
+    // ========== 打处单位修改权限控制 ==========
+    // 允许修改打处单位的部门ID：1(管理员)、47、48、49、51、53、65(治安大队及相关)
+    var allowedDepartmentIds = ['1', '47', '48', '49', '51', '53', '65'];
+
+    // 获取当前登录用户的单位ID和单位名称
+    var currentUserUnitId = '<%=userSession != null ? userSession.getLoginUserDepartmentid() : ""%>';
+    var currentUserUnitName = '<%=userSession != null ? userSession.getLoginUserDepartname() : ""%>';
+    var currentUserDepartCode = '<%=userSession != null ? userSession.getLoginDepartcode() : ""%>';
+
+    // 获取人员的打处单位编码列表（用于判断编辑权限）
+    var handleUnitCodeForPermission = '${personnel.handleUnitCode}' || '';
+    var handleUnitCodesArray = handleUnitCodeForPermission.split(',').filter(function(item) {
+        return item.trim() !== '';
+    });
+
+    // 判断当前用户是否有打处单位修改权限
+    // 条件1：用户在allowedDepartmentIds中（管理员或治安大队）
+    // 条件2：用户的departmentid在handle_unit_code列表中
+    var isInAllowedDepartments = allowedDepartmentIds.indexOf(currentUserUnitId) !== -1;
+    var isInHandleUnitCode = handleUnitCodesArray.indexOf(currentUserUnitId) !== -1;
+    var hasHandleUnitEditPermission = isInAllowedDepartments || isInHandleUnitCode;
+
+    console.log('========== 权限初始化调试 ==========');
+    console.log('currentUserUnitId: ' + currentUserUnitId);
+    console.log('handleUnitCodesArray: ', handleUnitCodesArray);
+    console.log('isInAllowedDepartments: ' + isInAllowedDepartments);
+    console.log('isInHandleUnitCode: ' + isInHandleUnitCode);
+    console.log('hasHandleUnitEditPermission: ' + hasHandleUnitEditPermission);
+
+    // 初始化打处单位显示区域
+    function initHandleUnitDisplay() {
+        console.log('========== 打处单位权限控制初始化 ==========');
+        console.log('当前用户部门ID: ' + currentUserUnitId);
+        console.log('是否有打处单位修改权限: ' + hasHandleUnitEditPermission);
+
+        if (hasHandleUnitEditPermission) {
+            // 有权限：显示可编辑区域
+            $('#handleUnitEditArea').show();
+            $('#handleUnitReadOnlyArea').hide();
+        } else {
+            // 无权限：显示只读区域，根据handle_unit_code获取单位名称显示
+            $('#handleUnitEditArea').hide();
+            $('#handleUnitReadOnlyArea').show();
+
+            // 根据handle_unit_code从policeData查找对应中文名称
+            var handleUnitCodes = $('#handleUnitCode').val() || '';
+            var displayText = '';
+
+            if (handleUnitCodes.trim() !== '') {
+                var codes = handleUnitCodes.split(',');
+                var names = [];
+                for (var i = 0; i < codes.length; i++) {
+                    var code = codes[i].trim();
+                    if (code !== '') {
+                        if (code === '47') {
+                            names.push('治安大队');
+                        } else {
+                            var foundName = '';
+                            // 从policeData中查找匹配的名称
+                            if (typeof policeData !== 'undefined' && policeData && policeData.length > 0) {
+                                for (var j = 0; j < policeData.length; j++) {
+                                    if (policeData[j].departmentid && policeData[j].departmentid.toString() === code) {
+                                        foundName = policeData[j].name;
+                                        break;
+                                    }
+                                }
+                            }
+                            // 如果找到了名称，使用名称；否则回退显示编码
+                            names.push(foundName || code);
+                        }
+                    }
+                }
+                displayText = names.join(', ');
+            }
+
+            if (displayText === '') {
+                displayText = '暂无';
+            }
+            $('#handleUnitDisplayText').text(displayText);
+        }
+    }
+
+    // ========== 打处单位处理确认模块 ==========
+
+    // 可使用dealUnitHandled（处理"治安大队"）的部门ID列表
+    var dealUnitAllowedIds = ['1', '47', '48', '49', '51', '53', '65'];
+
+    // 初始化打处单位处理确认模块
+    function initDealUnitConfirmSection() {
+        // 获取人员的打处单位编码列表
+        var handleUnitCodeStr = $('#handleUnitCode').val() || '';
+        var handleUnitCodes = handleUnitCodeStr.split(',').filter(function (item) {
+            return item.trim() !== '';
+        });
+
+        console.log('========== 打处单位处理确认模块初始化 ==========');
+        console.log('当前用户单位ID: ' + currentUserUnitId);
+        console.log('当前用户单位名称: ' + currentUserUnitName);
+        console.log('当前用户单位编码: ' + currentUserDepartCode);
+        console.log('人员打处单位编码列表: ', handleUnitCodes);
+
+        // 判断当前用户单位是否在人员的打处单位列表中
+        var isInDealUnitList = false;
+
+        // 优先使用单位编码匹配（更准确）
+        if (currentUserDepartCode && currentUserDepartCode.trim() !== '') {
+            for (var i = 0; i < handleUnitCodes.length; i++) {
+                if (handleUnitCodes[i] === currentUserDepartCode) {
+                    isInDealUnitList = true;
+                    break;
+                }
+            }
+        }
+
+        // 如果编码匹配失败，尝试使用单位ID匹配（兼容处理）
+        if (!isInDealUnitList && currentUserUnitId && currentUserUnitId.trim() !== '') {
+            for (var i = 0; i < handleUnitCodes.length; i++) {
+                if (handleUnitCodes[i] === currentUserUnitId) {
+                    isInDealUnitList = true;
+                    break;
+                }
+            }
+        }
+
+        // 额外：若用户属于治安大队相关部门（1,47,48,49,51,53,65），且handleUnitCode中含有不在240-263范围的数字，也显示模块
+        var isZadaUser = dealUnitAllowedIds.indexOf(currentUserUnitId) !== -1;
+        // 检查 handleUnitCode 中是否存在不在 240-263 范围内的代码（即"治安大队"）
+        var hasNonPctCode = handleUnitCodes.some(function(code) {
+            var n = parseInt(code, 10);
+            return !isNaN(n) && (n < 240 || n > 263);
+        });
+        var showForNonPct = isZadaUser && hasNonPctCode;
+
+        console.log('是否治安大队相关用户: ' + isZadaUser + ', handleUnitCode含非派出所代码: ' + hasNonPctCode);
+        console.log('当前单位是否在打处单位列表中: ' + isInDealUnitList);
+
+        // 如果当前单位在打处单位列表中，或者是治安大队用户且含非派出所代码，显示模块
+        if (isInDealUnitList || showForNonPct) {
+            // 显示名称：优先显示"治安大队"（当含非派出所代码且是治安大队用户），否则显示当前单位名称
+            var displayName = (showForNonPct && !isInDealUnitList) ? '治安大队' : currentUserUnitName;
+            $('#currentUnitNameDisplay').text(displayName);
+            $('#dealUnitConfirmSection').show();
+            console.log('打处单位处理确认模块已显示，displayName=' + displayName);
+        } else {
+            $('#dealUnitConfirmSection').hide();
+            console.log('打处单位处理确认模块已隐藏');
+        }
     }
 
     function getUsers(departmentid, index, value) {
@@ -1799,17 +2372,18 @@
             }
         });
     }
+
     // 统一的派出所显示/隐藏控制函数
     function togglePoliceDiv(county, type) {
         if (type === 'house') {
             var $div = $('#housepolice').closest('.layui-form-item');
             if (county === '江阴市') {
                 $div.show();
-                $('#housepolice').attr('lay-verify', 'required');
+                // 不使用lay-verify，改为在提交时手动验证
                 $div.find('.layui-form-label').html('户籍地派出所：<span style="color:red;">*</span>');
             } else {
                 $div.hide();
-                $('#housepolice').removeAttr('lay-verify').val('');
+                $('#housepolice').val('');
             }
         } else if (type === 'home') {
             var $div = $('#homepolice_div');
@@ -1817,11 +2391,11 @@
             if (county === '江阴市') {
                 $div.show();
                 $required.show();
-                $('#homepolice').attr('lay-verify', 'required');
+                // 不使用lay-verify，改为在提交时手动验证
             } else {
                 $div.hide();
                 $required.hide();
-                $('#homepolice').removeAttr('lay-verify').val('');
+                $('#homepolice').val('');
             }
         } else if (type === 'du_home') {
             // 涉赌背景tab - 现住地派出所
@@ -1830,24 +2404,24 @@
             if (county === '江阴市') {
                 $div.show();
                 $required.show();
-                $('#du_policeStation').attr('lay-verify', 'required');
+                // 不使用lay-verify，改为在提交时手动验证
             } else {
                 $div.hide();
                 $required.hide();
-                $('#du_policeStation').removeAttr('lay-verify').val('');
+                $('#du_policeStation').val('');
             }
         } else if (type === 'chang_home') {
-            // 涉娼背景tab - 现住地派出所
+            // 涉黄背景tab - 现住地派出所
             var $div = $('#chang_homepolice_div'); // 修改点：匹配你 HTML 里的 id="chang_homepolice_div"
             var $required = $('#chang_homepolice-required'); // 修改点：匹配你 HTML 里的 id="chang_homepolice-required"
             if (county === '江阴市') {
                 $div.show();
                 $required.show();
-                $('#chang_policeStation').attr('lay-verify', 'required');
+                // 不使用lay-verify，改为在提交时手动验证
             } else {
                 $div.hide();
                 $required.hide();
-                $('#chang_policeStation').removeAttr('lay-verify').val('');
+                $('#chang_policeStation').val('');
             }
         }
         layui.form.render('select');
@@ -1859,20 +2433,28 @@
     $(document).ready(function () {
         getDefaultPhoto();//加载默认图片
         var personnelid = "${personnel.id}"; // 确保能获取到 ID
+
         layui.use(['selectInput', 'form'], function () {
             var form = layui.form;
 
-            // 1. 先加载派出所数据
+            // 初始化基础信息tab的省市县级联下拉框（放在layui.use内部）
+            // 1. 初始化现住地省市县
+            initRegionCascade('home', '${personnel.homeProvince}', '${personnel.homeCity}', '${personnel.homeCounty}');
+
+            // 2. 初始化户籍地省市县
+            initRegionCascade('house', '${personnel.houseProvince}', '${personnel.houseCity}', '${personnel.houseCounty}');
+
+            // 3. 先加载派出所数据
             loadJiangyinPoliceData(function () {
 
-                // 2. 户籍地
+                // 4. 户籍地派出所
                 renderPoliceSelect({
                     elem: '#housepolice',
                     initValue: '${personnel.housepolice}',
                     initId: '${personnel.housePoliceStationId}'
                 });
 
-                // 3. 现住地
+                // 5. 现住地派出所
                 renderPoliceSelect({
                     elem: '#homepolice',
                     initValue: '${personnel.homepolice}',
@@ -1885,7 +2467,7 @@
                 //     initValue: ''
                 // });
 
-                // 6. Tab - 涉娼
+                // 6. Tab - 涉黄
                 renderPoliceSelect({
                     elem: '#chang_policeStation',
                     initValue: ''
@@ -1900,6 +2482,15 @@
                 // 初始化打处单位队列
                 initHandleUnitQueue();
                 bindHandleUnitEvents();
+
+                // 初始化打处单位显示权限控制
+                initHandleUnitDisplay();
+
+                // 初始化打处单位处理确认模块
+                initDealUnitConfirmSection();
+
+                // 初始化涉赌、涉黄、陪侍tab的打处单位字段（自动填充当前用户部门）
+                initTabHandleUnitFields();
 
                 form.render('select');
                 // 使用延时确保 DOM 和基础数据字典(loadBasicMsg) 有足够时间准备好
@@ -1919,33 +2510,22 @@
         $('#houseCounty').on('input blur', function () {
             togglePoliceDiv($(this).val().trim(), 'house');
         });
-        $('#homeCounty').on('input blur', function () {
-            togglePoliceDiv($(this).val().trim(), 'home');
-        });
-        $(document).on('input blur', '#du_homeCounty', function () {
-            togglePoliceDiv($(this).val().trim(), 'du_home');
-        });
-
-        // ====== 涉娼 ======
-        $(document).on('input blur', '#chang_homeCounty', function () {
-            togglePoliceDiv($(this).val().trim(), 'chang_home');
-        });
 
         // 页面加载时触发
         togglePoliceDiv($('#houseCounty').val().trim(), 'house');
-        togglePoliceDiv($('#homeCounty').val().trim(), 'home');
 
     });
 
     // // 7. 修改：加载数据字典
     // loadBasicMsg('302', 'dbfs');           // 赌博方式-
     // loadBasicMsg('303', 'dbbw');           // 赌博部位-
-    // loadBasicMsg('305', 'chang_myfs');     // 卖淫方式-
-    // loadBasicMsg('308', 'chang_scbw');     // 涉娼部位-
-    // loadBasicMsg('304', 'chang_scjs'); // 涉娼角色-
+    // loadBasicMsg('305', 'chang_myfs');     // 涉黄方式-
+    // loadBasicMsg('308', 'chang_scbw');     // 涉黄部位-
+    // loadBasicMsg('304', 'chang_scjs'); // 涉黄角色-
+    // loadBasicMsg('306', 'changType'); // 涉黄类型-
     // loadBasicMsg('301', 'personAttribute-du');   // 涉赌人员属性-
     // loadBasicMsg('307', 'collectSource-du');     // 涉赌采集来源-
-    // loadBasicMsg('307', 'collectSource-chang');   // 涉娼采集来源-
+    // loadBasicMsg('307', 'collectSource-chang');   // 涉黄采集来源-
 
     // 加载江阴派出所数据
     function loadJiangyinPoliceData(callback) {
@@ -1972,50 +2552,6 @@
             }
         });
     }
-
-    // 渲染派出所下拉选择框（使用原生 Layui select）
-    // cfg.initValue: 派出所名称
-    // cfg.initId: 派出所ID（优先按ID匹配）
-    // function renderPoliceSelect(cfg) {
-    //     var $select = $(cfg.elem);
-    //     var initValue = cfg.initValue || '';
-    //     var initId = cfg.initId || '';
-    //
-    //     // 清空现有选项（保留placeholder）
-    //     $select.find('option:not(:first)').remove();
-    //
-    //     // 添加派出所列表选项
-    //     var foundById = false;
-    //     if (policeData && policeData.length > 0) {
-    //         policeData.forEach(function (item) {
-    //             var selected = '';
-    //             // 优先按ID匹配
-    //             if (initId && item.departmentid && item.departmentid == initId) {
-    //                 selected = 'selected';
-    //                 foundById = true;
-    //             } else if (!initId && initValue === item.name) {
-    //                 // 如果没有ID，则按名称匹配
-    //                 selected = 'selected';
-    //             }
-    //             var dataAttr = item.departmentid ?  ' data-departmentid="' + item.departmentid + '"' : '';
-    //             // 添加data-departmentid属性存储派出所ID
-    //             $select.append(
-    //                 '<option value="' + item.name + '" data-departmentid="' + (item.departmentid || '') + '" ' + selected + '>' +
-    //                 item.name +
-    //                 '</option>'
-    //             );
-    //         });
-    //     }
-    //
-    //     // 如果初始值不在下拉列表中，也要显示（仅当没有按ID找到时）
-    //     if (!foundById && initValue && policeData.every(function (p) {
-    //         return p.name !== initValue;
-    //     })) {
-    //         $select.append('<option value="' + initValue + '" selected>' + initValue + '</option>');
-    //     }
-    //
-    //     layui.form.render('select');
-    // }
 
     function renderPoliceSelect(cfg) {
         var $select = $(cfg.elem);
@@ -2120,6 +2656,181 @@
             }
         });
     }
+
+    // 8. 省市县级联下拉框函数（使用数据字典basicType=500）
+    // 加载省级数据
+    function loadProvinceData(selectId, callback) {
+        $.ajax({
+            type: 'POST',
+            url: '<c:url value="/getBasicMsgByParentId.do"/>',
+            data: {
+                basicType: 500,
+                parentid: 0  // 查询顶级节点（省份数据，parentid=0）
+            },
+            dataType: 'json',
+            async: false,
+            success: function (data) {
+                var html = '<option value="">请选择省份</option>';
+                if (data && data.length > 0) {
+                    for (var i = 0; i < data.length; i++) {
+                        html += '<option value="' + data[i].basicname + '" data-id="' + data[i].id + '">' + data[i].basicname + '</option>';
+                    }
+                }
+                $('#' + selectId).html(html);
+                layui.form.render('select');
+                if (callback) callback();
+            },
+            error: function (xhr, status, error) {
+                console.error('加载省份数据失败: ' + selectId, error);
+                if (callback) callback();
+            }
+        });
+    }
+
+    // 加载市级数据
+    function loadCityData(provinceSelectId, citySelectId, callback) {
+        var selectedOption = $('#' + provinceSelectId + ' option:selected');
+        var parentId = selectedOption.attr('data-id');
+
+        var html = '<option value="">请选择地级市</option>';
+        if (!parentId) {
+            $('#' + citySelectId).html(html);
+            layui.form.render('select');
+            if (callback) callback();
+            return;
+        }
+
+        $.ajax({
+            type: 'POST',
+            url: '<c:url value="/getBasicMsgByParentId.do"/>',
+            data: {
+                basicType: 500,
+                parentid: parentId
+            },
+            dataType: 'json',
+            async: false,
+            success: function (data) {
+                if (data && data.length > 0) {
+                    for (var i = 0; i < data.length; i++) {
+                        html += '<option value="' + data[i].basicname + '" data-id="' + data[i].id + '">' + data[i].basicname + '</option>';
+                    }
+                }
+                $('#' + citySelectId).html(html);
+                layui.form.render('select');
+                if (callback) callback();
+            },
+            error: function (xhr, status, error) {
+                console.error('加载市级数据失败: ' + citySelectId, error);
+                if (callback) callback();
+            }
+        });
+    }
+
+    // 加载县级数据
+    function loadCountyData(citySelectId, countySelectId, callback) {
+        var selectedOption = $('#' + citySelectId + ' option:selected');
+        var parentId = selectedOption.attr('data-id');
+
+        var html = '<option value="">请选择县级市/区</option>';
+        if (!parentId) {
+            $('#' + countySelectId).html(html);
+            layui.form.render('select');
+            if (callback) callback();
+            return;
+        }
+
+        $.ajax({
+            type: 'POST',
+            url: '<c:url value="/getBasicMsgByParentId.do"/>',
+            data: {
+                basicType: 500,
+                parentid: parentId
+            },
+            dataType: 'json',
+            async: false,
+            success: function (data) {
+                if (data && data.length > 0) {
+                    for (var i = 0; i < data.length; i++) {
+                        html += '<option value="' + data[i].basicname + '" data-id="' + data[i].id + '">' + data[i].basicname + '</option>';
+                    }
+                }
+                $('#' + countySelectId).html(html);
+                layui.form.render('select');
+                if (callback) callback();
+            },
+            error: function (xhr, status, error) {
+                console.error('加载县级数据失败: ' + countySelectId, error);
+                if (callback) callback();
+            }
+        });
+    }
+
+    // 初始化省市县级联下拉框（指定前缀）
+    function initRegionCascade(prefix, initProvince, initCity, initCounty) {
+        var provinceId = prefix + 'Province';
+        var cityId = prefix + 'City';
+        var countyId = prefix + 'County';
+
+        // 加载省份数据
+        loadProvinceData(provinceId, function() {
+            // 如果有初始省份值，设置并加载市
+            if (initProvince) {
+                $('#' + provinceId).val(initProvince);
+                layui.form.render('select');
+                loadCityData(provinceId, cityId, function() {
+                    if (initCity) {
+                        $('#' + cityId).val(initCity);
+                        layui.form.render('select');
+                        loadCountyData(cityId, countyId, function() {
+                            if (initCounty) {
+                                $('#' + countyId).val(initCounty);
+                                layui.form.render('select');
+                                // 触发县级市改变事件，检查派出所显示
+                                $('#' + countyId).trigger('change');
+                            }
+                        });
+                    }
+                });
+            }
+        });
+
+        // 监听省份改变
+        layui.form.on('select(' + provinceId + ')', function(data) {
+            $('#' + cityId).html('<option value="">请选择地级市</option>');
+            $('#' + countyId).html('<option value="">请选择县级市/区</option>');
+            layui.form.render('select');
+
+            if (data.value) {
+                loadCityData(provinceId, cityId);
+            }
+        });
+
+        // 监听市改变
+        layui.form.on('select(' + cityId + ')', function(data) {
+            $('#' + countyId).html('<option value="">请选择县级市/区</option>');
+            layui.form.render('select');
+
+            if (data.value) {
+                loadCountyData(cityId, countyId);
+            }
+        });
+
+        // 监听县级市改变 - 触发派出所显示逻辑
+        layui.form.on('select(' + countyId + ')', function(data) {
+            var county = data.value;
+            // 根据前缀判断是哪个tab
+            if (prefix === 'home') {
+                togglePoliceDiv(county, 'home');
+            } else if (prefix === 'house') {
+                togglePoliceDiv(county, 'house');
+            } else if (prefix === 'du_home') {
+                togglePoliceDiv(county, 'du_home');
+            } else if (prefix === 'chang_home') {
+                togglePoliceDiv(county, 'chang_home');
+            }
+        });
+    }
+
     function safeIntParam(val) {
         return val === undefined || val === null || val === '' ? null : val;
     }
@@ -2146,10 +2857,40 @@
             layer = layui.layer;
 
         // 5. 修改：日期组件
-        laydate.render({elem: '#chsj', format: 'yyyy-MM-dd'});
-        laydate.render({elem: '#chang_chsj', format: 'yyyy-MM-dd'});
-        laydate.render({elem: '#du_collectDate', format: 'yyyy-MM-dd'});
-        laydate.render({elem: '#chang_collectDate', format: 'yyyy-MM-dd'});
+        laydate.render({
+            elem: '#chsj',
+            format: 'yyyy-MM-dd',
+            trigger: 'click',
+            zIndex: 99999999
+        });
+        laydate.render({
+            elem: '#chang_chsj',
+            format: 'yyyy-MM-dd',
+            trigger: 'click',
+            zIndex: 99999999,
+            done: function(value, date) {
+                // 当处罚时间改变时，自动计算是否未成年案件
+                calculateChangIsMinorCase();
+            }
+        });
+        laydate.render({
+            elem: '#du_collectDate',
+            format: 'yyyy-MM-dd',
+            trigger: 'click',
+            zIndex: 99999999
+        });
+        laydate.render({
+            elem: '#chang_collectDate',
+            format: 'yyyy-MM-dd',
+            trigger: 'click',
+            zIndex: 99999999
+        });
+        laydate.render({
+            elem: '#pei_collectDate',
+            format: 'yyyy-MM-dd',
+            trigger: 'click',
+            zIndex: 99999999
+        }); // ✅ 陪侍采集日期组件初始化
 
         treeSelect.render({
             // 选择器
@@ -2283,7 +3024,66 @@
             }
         });
         // 基本信息+分类分级 监听提交
+
+        // ========== 初始化权限检查 ==========
+        console.log('========== 页面加载时权限检查 ==========');
+        console.log('currentUserUnitId: ' + currentUserUnitId);
+        console.log('allowedDepartmentIds: ' + allowedDepartmentIds.join(','));
+        console.log('hasHandleUnitEditPermission: ' + hasHandleUnitEditPermission);
+
+        // 如果没有权限，禁用提交按钮并添加点击提示
+        if (!hasHandleUnitEditPermission) {
+            console.log('用户无修改权限，禁用提交按钮');
+            var $submitBtn = $('button[lay-filter="updateZa"]');
+            $submitBtn.addClass('layui-btn-disabled').attr('disabled', true);
+            $submitBtn.text('无修改权限');
+
+            // 添加点击事件，即使按钮被禁用也显示提示
+            $submitBtn.on('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                layer.msg('您当前没有权限修改此人员信息', {icon: 2, time: 2000});
+                return false;
+            });
+        }
+
         form.on('submit(updateZa)', function (data) {
+            console.log('========== updateZa提交事件触发 ==========');
+            console.log('hasHandleUnitEditPermission: ' + hasHandleUnitEditPermission);
+            console.log('currentUserUnitId: ' + currentUserUnitId);
+            console.log('allowedDepartmentIds: ' + allowedDepartmentIds.join(','));
+
+            // 检查是否有照片（必填项）
+            var hasPhoto = $('#hasPhoto').val();
+            if (hasPhoto === '0' || hasPhoto === '' || !hasPhoto) {
+                layer.msg('请上传人员照片！人员照片为必填项', {icon: 2, time: 3000});
+                return false;
+            }
+
+            // 验证现住地派出所（如果县级市是江阴市）
+            var homeCounty = $('#homeCounty').val();
+            var homePolice = $('#homepolice').val();
+            if (homeCounty === '江阴市' && (!homePolice || homePolice.trim() === "")) {
+                layer.msg('现住地派出所必填项未填写，无法提交！', {icon: 2, time: 3000});
+                return false;
+            }
+
+            // 验证户籍地派出所（如果县级市是江阴市）
+            var houseCounty = $('#houseCounty').val();
+            var housePolice = $('#housepolice').val();
+            if (houseCounty === '江阴市' && (!housePolice || housePolice.trim() === "")) {
+                layer.msg('户籍地派出所必填项未填写，无法提交！', {icon: 2, time: 3000});
+                return false;
+            }
+
+            // 权限检查：无打处单位修改权限的用户不能提交
+            if (!hasHandleUnitEditPermission) {
+                console.log('权限检查失败，显示无权限提示');
+                layer.msg('您当前没有权限', {icon: 2, time: 2000});
+                return false;
+            }
+            console.log('权限检查通过，继续提交');
+
             var url = '<c:url value="/updateZaPerson.do"/>?1=1';
             // if (!$("input[name=homewifi]").prop("checked")) url += "&homewifi=";
             // if (!$("input[name=homewide]").prop("checked")) url += "&homewide=";
@@ -2333,13 +3133,75 @@
             }
             console.log('基本信息提交: 现住派出所=' + selectedHomePolice + ', ID=' + homePoliceStationId + ', 户籍派出所=' + selectedHousePolice + ', ID=' + housePoliceStationId);
 
+            // ========== 打处单位处理确认逻辑 ==========
+            var dealUnitHandled = '0'; // 默认否
+            var removeDealUnit = '0';  // 是否移除打处单位标志
+
+            // 如果打处单位确认模块可见（即当前单位在打处单位列表中）
+            if ($('#dealUnitConfirmSection').is(':visible')) {
+                dealUnitHandled = $('input[name="dealUnitHandled"]:checked').val() || '0';
+                console.log('打处单位处理确认: ' + (dealUnitHandled === '1' ? '是' : '否'));
+
+                // 如果选择"是"，从打处单位列表中移除相应单位
+                if (dealUnitHandled === '1') {
+                    var currentHandleUnitCodes = handleUnitCodeQueue.slice(); // 复制数组
+                    var currentHandleUnitNames = handleUnitQueue.slice();
+
+                    var isZadaUserForRemove = dealUnitAllowedIds.indexOf(currentUserUnitId) !== -1;
+
+                    if (isZadaUserForRemove) {
+                        // 治安大队相关用户：移除 handleUnitCode 中所有不在 240-263 范围内的代码
+                        var filteredCodes = [];
+                        var filteredNames = [];
+                        for (var ri = 0; ri < currentHandleUnitCodes.length; ri++) {
+                            var rCode = currentHandleUnitCodes[ri];
+                            var rNum = parseInt(rCode, 10);
+                            if (!isNaN(rNum) && rNum >= 240 && rNum <= 263) {
+                                // 保留派出所范围内的代码
+                                filteredCodes.push(rCode);
+                                filteredNames.push(currentHandleUnitNames[ri] || rCode);
+                            }
+                            // 不在240-263范围的代码（47、50等）全部移除
+                        }
+
+                        if (filteredCodes.length !== currentHandleUnitCodes.length) {
+                            $('#handleUnit').val(filteredNames.join(','));
+                            $('#handleUnitCode').val(filteredCodes.join(','));
+                            removeDealUnit = '1';
+                            console.log('已移除所有非派出所范围代码，更新后编码: ' + filteredCodes.join(','));
+                        }
+                    } else {
+                        // 非治安大队用户：按原逻辑，优先使用单位编码匹配
+                        var removeIndex = -1;
+                        if (currentUserDepartCode && currentUserDepartCode.trim() !== '') {
+                            removeIndex = currentHandleUnitCodes.indexOf(currentUserDepartCode);
+                        }
+                        if (removeIndex === -1 && currentUserUnitId && currentUserUnitId.trim() !== '') {
+                            removeIndex = currentHandleUnitCodes.indexOf(currentUserUnitId);
+                        }
+                        if (removeIndex !== -1) {
+                            currentHandleUnitCodes.splice(removeIndex, 1);
+                            currentHandleUnitNames.splice(removeIndex, 1);
+                            $('#handleUnit').val(currentHandleUnitNames.join(','));
+                            $('#handleUnitCode').val(currentHandleUnitCodes.join(','));
+                            removeDealUnit = '1';
+                            console.log('已从打处单位列表中移除相应单位');
+                        }
+                    }
+                    console.log('更新后的打处单位: ' + $('#handleUnit').val());
+                    console.log('更新后的打处单位编码: ' + $('#handleUnitCode').val());
+                }
+            }
+
             $("#formZa").ajaxSubmit({
                 url: url,
                 type: 'post',
                 dataType: 'json',
                 data: {
                     homePoliceStationId: safeIntParam(homePoliceStationId),
-                    housePoliceStationId: safeIntParam(housePoliceStationId)
+                    housePoliceStationId: safeIntParam(housePoliceStationId),
+                    dealUnitHandled: dealUnitHandled,
+                    removeDealUnit: removeDealUnit
                 },
                 success: function (data) {
                     var obj = (typeof data === 'string') ? JSON.parse(data) : data;
@@ -2350,16 +3212,29 @@
                         obj = data;
                     }
                     if (obj.flag > 0) {
-                        // 使用 layer.alert 代替 layer.msg 测试，因为 alert 必须点击确定，不会自动消失
-                        top.layer.msg(obj.msg || '治安人员修改成功！', {
-                            icon: 1,
-                            time: 2000, zIndex: 99999999
-                        });
-                        // 如果希望消息显示完后关闭当前弹窗
-                        // var index = parent.layer.getFrameIndex(window.name);
-                        // setTimeout(function(){
-                        //     parent.layer.close(index);
-                        // }, 2000)
+                        var successMsg = obj.msg || '治安人员修改成功！';
+
+                        // 如果移除了打处单位，添加特别提示
+                        if (removeDealUnit === '1') {
+                            successMsg = '治安人员修改成功！当前单位已从打处单位列表中移除，后续将无法对该人员进行操作。';
+                            top.layer.msg(successMsg, {
+                                icon: 1,
+                                time: 3000,
+                                zIndex: 99999999
+                            }, function () {
+                                // 关闭当前弹窗或刷新页面
+                                var index = parent.layer.getFrameIndex(window.name);
+                                if (index) {
+                                    parent.layer.close(index);
+                                }
+                            });
+                        } else {
+                            top.layer.msg(successMsg, {
+                                icon: 1,
+                                time: 2000,
+                                zIndex: 99999999
+                            });
+                        }
                     } else {
                         layer.msg(obj.msg || '操作失败', {icon: 2});
                     }
@@ -2455,13 +3330,36 @@
             })
             layui.layer.full(index);
         });
+
+        // ========== 涉警涉案tab切换监听 ==========
+        element.on('tab(zajqajTab)', function(data){
+            var cardnumber = '${personnel.cardnumber}';
+            console.log('📌 涉警涉案tab切换，index=' + data.index);
+            if(data.index === 0) {
+                // 切换到涉警信息tab
+                console.log('切换到涉警信息tab');
+                if (typeof openzajqxx === 'function') {
+                    openzajqxx(cardnumber);
+                } else {
+                    console.warn('⚠️ openzajqxx function is not defined');
+                }
+            } else if(data.index === 1) {
+                // 切换到涉案信息tab
+                console.log('切换到涉案信息tab');
+                if (typeof openzaajxx === 'function') {
+                    openzaajxx(cardnumber);
+                } else {
+                    console.warn('⚠️ openzaajxx function is not defined');
+                }
+            }
+        });
     });
 
     // ==================== 涉案地址相关函数 ====================
     var maxAddressCount = 5; // 最多填写 5 个涉案地址
 
     // 涉赌背景：添加涉案地址输入框
-    function addDuCaseAddressInput(value) {
+    function addDuCaseAddressInput(value, xValue, yValue) {
         var $container = $('#duCaseAddressContainer');
 
         if ($container.length === 0) {
@@ -2479,9 +3377,12 @@
             return;
         }
 
+        var addressId = 'du_caseAddress_' + new Date().getTime() + '_' + Math.floor(Math.random() * 1000);
         var html = '<div class="layui-form-item address-row" style="margin-bottom: 5px;">' +
             '<div class="layui-input-inline" style="width: 300px;">' +
-            '<input type="text" name="du_caseAddress" value="' + (value || '') + '" placeholder="请输入涉案地址" class="layui-input">' +
+            '<input type="text" name="du_caseAddress" id="' + addressId + '" value="' + (value || '') + '" placeholder="请输入涉案地址" class="layui-input" onclick="openPGisDuCaseAddress(\'' + addressId + '\');" readonly style="background:#efefef;cursor:pointer;">' +
+            '<input type="hidden" name="du_caseAddress_x" id="' + addressId + '_x" value="' + (xValue || '') + '">' +
+            '<input type="hidden" name="du_caseAddress_y" id="' + addressId + '_y" value="' + (yValue || '') + '">' +
             '</div>' +
             '<div class="layui-input-inline" style="width: 100px;">' +
             '<button type="button" class="layui-btn layui-btn-danger btn-remove-address" onclick="removeAddressRow(this)">删除</button>' +
@@ -2492,8 +3393,8 @@
         console.log('✓ 添加涉赌涉案地址成功，当前数量：' + ($container.find('.address-row').length));
     }
 
-    // 涉娼背景：添加涉案地址输入框
-    function addChangCaseAddressInput(value) {
+    // 涉黄背景：添加涉案地址输入框
+    function addChangCaseAddressInput(value, xValue, yValue) {
         var $container = $('#changCaseAddressContainer');
 
         if ($container.length === 0) {
@@ -2511,9 +3412,12 @@
             return;
         }
 
+        var addressId = 'chang_caseAddress_' + new Date().getTime() + '_' + Math.floor(Math.random() * 1000);
         var html = '<div class="layui-form-item address-row" style="margin-bottom: 5px;">' +
             '<div class="layui-input-inline" style="width: 300px;">' +
-            '<input type="text" name="chang_caseAddress" value="' + (value || '') + '" placeholder="请输入涉案地址" class="layui-input">' +
+            '<input type="text" name="chang_caseAddress" id="' + addressId + '" value="' + (value || '') + '" placeholder="请输入涉案地址" class="layui-input" onclick="openPGisChangCaseAddress(\'' + addressId + '\');" readonly style="background:#efefef;cursor:pointer;">' +
+            '<input type="hidden" name="chang_caseAddress_x" id="' + addressId + '_x" value="' + (xValue || '') + '">' +
+            '<input type="hidden" name="chang_caseAddress_y" id="' + addressId + '_y" value="' + (yValue || '') + '">' +
             '</div>' +
             '<div class="layui-input-inline" style="width: 100px;">' +
             '<button type="button" class="layui-btn layui-btn-danger btn-remove-address" onclick="removeAddressRow(this)">删除</button>' +
@@ -2521,7 +3425,7 @@
             '</div>';
 
         $container.append(html);
-        console.log('✓ 添加涉娼涉案地址成功，当前数量：' + ($container.find('.address-row').length));
+        console.log('✓ 添加涉黄涉案地址成功，当前数量：' + ($container.find('.address-row').length));
     }
 
     // ✅ 删除地址行的通用函数
@@ -2534,7 +3438,7 @@
     function collectDuCaseAddressList() {
         var list = [];
         $('#duCaseAddressContainer').find('input[name="du_caseAddress"]').each(function () {
-            var val = $. trim($(this).val());
+            var val = $.trim($(this).val());
             if (val) {
                 list.push(val);
             }
@@ -2543,7 +3447,7 @@
         return list;
     }
 
-    // ✅ 收集涉娼地址
+    // ✅ 收集涉黄地址
     function collectChangCaseAddressList() {
         var list = [];
         $('#changCaseAddressContainer').find('input[name="chang_caseAddress"]').each(function () {
@@ -2552,7 +3456,55 @@
                 list.push(val);
             }
         });
-        console.log('📋 收集涉娼地址：', list);
+        console.log('📋 收集涉黄地址：', list);
+        return list;
+    }
+
+    // 陪侍背景：添加活动场所输入框
+    function addPeiCaseAddressInput(value, xValue, yValue) {
+        var $container = $('#peiCaseAddressContainer');
+
+        if ($container.length === 0) {
+            console.warn('peiCaseAddressContainer 不存在');
+            return;
+        }
+
+        var count = $container.find('.address-row').length;
+        if (count >= maxAddressCount) {
+            if (window.layer && typeof layer.msg === 'function') {
+                layer.msg('最多只能填写 5 个活动场所');
+            } else {
+                alert('最多只能填写 5 个活动场所');
+            }
+            return;
+        }
+
+        var addressId = 'pei_activityVenue_' + new Date().getTime() + '_' + Math.floor(Math.random() * 1000);
+        var html = '<div class="layui-form-item address-row" style="margin-bottom: 5px;">' +
+            '<div class="layui-input-inline" style="width: 300px;">' +
+            '<input type="text" name="pei_activityVenue" id="' + addressId + '" value="' + (value || '') + '" placeholder="请输入活动场所" class="layui-input" onclick="openPGisPeiActivityVenue(\'' + addressId + '\');" readonly style="background:#efefef;cursor:pointer;">' +
+            '<input type="hidden" name="pei_activityVenue_x" id="' + addressId + '_x" value="' + (xValue || '') + '">' +
+            '<input type="hidden" name="pei_activityVenue_y" id="' + addressId + '_y" value="' + (yValue || '') + '">' +
+            '</div>' +
+            '<div class="layui-input-inline" style="width: 100px;">' +
+            '<button type="button" class="layui-btn layui-btn-danger btn-remove-address" onclick="removeAddressRow(this)">删除</button>' +
+            '</div>' +
+            '</div>';
+
+        $container.append(html);
+        console.log('✓ 添加陪侍活动场所成功，当前数量：' + ($container.find('.address-row').length));
+    }
+
+    // ✅ 收集陪侍活动场所
+    function collectPeiCaseAddressList() {
+        var list = [];
+        $('#peiCaseAddressContainer').find('input[name="pei_activityVenue"]').each(function () {
+            var val = $.trim($(this).val());
+            if (val) {
+                list.push(val);
+            }
+        });
+        console.log('📋 收集陪侍活动场所：', list);
         return list;
     }
 
@@ -2563,10 +3515,16 @@
         addDuCaseAddressInput('');
     }
 
-    // ✅ 涉娼新增地址按钮 - 改用 onclick 属性
+    // ✅ 涉黄新增地址按钮 - 改用 onclick 属性
     function handleAddChangCaseAddress() {
-        console.log('🔘 点击了涉娼新增地址按钮');
+        console.log('🔘 点击了涉黄新增地址按钮');
         addChangCaseAddressInput('');
+    }
+
+    // ✅ 陪侍新增地址按钮 - 改用 onclick 属性
+    function handleAddpeiCaseAddress() {
+        console.log('🔘 点击了陪侍新增地址按钮');
+        addPeiCaseAddressInput('');
     }
 
     // ==================== 页面加载初始化 ====================
@@ -2581,11 +3539,19 @@
             }
         }
 
-        // 初始化涉娼地址容器
+        // 初始化涉黄地址容器
         if ($('#changCaseAddressContainer').length > 0) {
             if ($('#changCaseAddressContainer .address-row').length === 0) {
                 addChangCaseAddressInput('');
-                console.log('📦 初始化涉娼地址容器');
+                console.log('📦 初始化涉黄地址容器');
+            }
+        }
+
+        // 初始化陪侍活动场所容器
+        if ($('#peiCaseAddressContainer').length > 0) {
+            if ($('#peiCaseAddressContainer .address-row').length === 0) {
+                addPeiCaseAddressInput('');
+                console.log('📦 初始化陪侍活动场所容器');
             }
         }
 
@@ -2673,6 +3639,79 @@
             return !(!val || val == "");
         })
     }
+
+    /**
+     * 自动计算涉黄是否未成年案件
+     * 根据处罚时间和人员出生日期自动判断
+     */
+    function calculateChangIsMinorCase() {
+        console.log('========== 前端计算未成年案件 ==========');
+        var cardnumber = '${personnel.cardnumber}';
+        var punishDate = $('#chang_chsj').val();
+
+        console.log('身份证号:', cardnumber);
+        console.log('处罚时间:', punishDate);
+
+        // 只支持18位身份证
+        if (!cardnumber || cardnumber.length !== 18) {
+            console.warn('⚠️ 身份证号不合法，无法自动判断是否未成年');
+            return;
+        }
+
+        if (!punishDate || punishDate.length < 10) {
+            console.warn('⚠️ 处罚时间为空或格式错误');
+            return;
+        }
+
+        try {
+            // 出生日期
+            var birthYear = parseInt(cardnumber.substr(6, 4));
+            var birthMonth = parseInt(cardnumber.substr(10, 2));
+            var birthDay = parseInt(cardnumber.substr(12, 2));
+
+            console.log('出生日期: ' + birthYear + '-' + birthMonth + '-' + birthDay);
+
+            // 处罚日期（只取 yyyy-MM-dd）
+            var punish = punishDate.substr(0, 10).split('-');
+            var punishYear = parseInt(punish[0]);
+            var punishMonth = parseInt(punish[1]);
+            var punishDay = parseInt(punish[2]);
+
+            console.log('处罚日期: ' + punishYear + '-' + punishMonth + '-' + punishDay);
+
+            var age = punishYear - birthYear;
+            console.log('初步年龄差: ' + age);
+
+            if (punishMonth < birthMonth ||
+                (punishMonth === birthMonth && punishDay < birthDay)) {
+                age--;
+                console.log('处罚日期未到生日，年龄-1');
+            }
+
+            console.log('✓ 最终计算年龄: ' + age);
+
+            if (age < 18) {
+                console.log('✓ 判定结果: 是未成年案件 (age=' + age + ' < 18)');
+                $('input[name="isMinorCase"][value="1"]').prop('checked', true);
+                $('input[name="isMinorCase"][value="0"]').prop('checked', false);
+            } else {
+                console.log('✓ 判定结果: 非未成年案件 (age=' + age + ' >= 18)');
+                $('input[name="isMinorCase"][value="0"]').prop('checked', true);
+                $('input[name="isMinorCase"][value="1"]').prop('checked', false);
+            }
+
+            layui.form.render('radio');
+
+            // 验证设置是否成功
+            var checkedValue = $('input[name="isMinorCase"]:checked').val();
+            console.log('✓ Radio设置后的选中值: ' + checkedValue);
+            console.log('========================================');
+        } catch (e) {
+            console.error('❌ 计算未成年案件失败', e);
+        }
+    }
+
+
 </script>
 <script type="text/javascript">
     layui.use(['element', 'form', 'jquery', 'table', 'treeSelect', 'zTreeSelectM', 'laydate'], function () {
@@ -2682,14 +3721,7 @@
             laydate = layui.laydate,
             form = layui.form;
 
-        laydate.render({
-            elem: '#chsj'
-            , format: 'yyyy-MM-dd'
-        });
-        laydate.render({
-            elem: '#chang_chsj'
-            , format: 'yyyy-MM-dd'
-        });
+        // 注意：chsj 和 chang_chsj 的日期组件已在页面加载时初始化（第2619-2623行），无需重复初始化
 
         //方法级渲染
         table.render({
@@ -2908,71 +3940,70 @@
         });
 
 
-        form.verify({
-            lssdqk: function (value, item) {
-                if (value == "" && item.ownerDocument.activeElement.id == "duSub") return "请输入历史涉赌情况综述";
-            },
-            chsj: function (value, item) {
-                if (value == "" && item.ownerDocument.activeElement.id == "duSub") return "请选择处罚时间";
-            },
-            chjg: function (value, item) {
-                if (value == "" && item.ownerDocument.activeElement.id == "duSub") return "请输入查获经过";
-            },
-            cfjg: function (value, item) {
-                if (value == "" && item.ownerDocument.activeElement.id == "duSub") {
-                    $(item).next().find("input[type='text']").focus();
-                    return "请选择处罚结果";
-                }
-            },
-            clxq: function (value, item) {
-                if (value == "" && item.ownerDocument.activeElement.id == "duSub") return "请输入处理详情";
-            },
-            dbfs: function (value, item) {
-                if (value == "" && item.ownerDocument.activeElement.id == "duSub") {
-                    return "请选择赌博方式";
-                }
-            },
-            dbbw: function (value, item) {
-                if (value == "" && item.ownerDocument.activeElement.id == "duSub") {
-                    return "请选择赌博部位";
-                }
-            },
-            chang_lsscqk: function (value, item) {
-                if (value == "" && item.ownerDocument.activeElement.id == "changSub") return "请输入历史涉嫖情况综述";
-            },
-            chang_chsj: function (value, item) {
-                if (value == "" && item.ownerDocument.activeElement.id == "changSub") return "请选择处罚时间";
-            },
-            chang_chjg: function (value, item) {
-                if (value == "" && item.ownerDocument.activeElement.id == "changSub") return "请输入查获经过";
-            },
-            chang_cfjg: function (value, item) {
-                if (value == "" && item.ownerDocument.activeElement.id == "changSub") {
-                    $(item).next().find("input[type='text']").focus();
-                    return "请选择处罚结果";
-                }
-            },
-            chang_clxq: function (value, item) {
-                if (value == "" && item.ownerDocument.activeElement.id == "changSub") return "请输入处理详情";
-            },
-            chang_scjs: function (value, item) {
-                if (value == "" && item.ownerDocument.activeElement.id == "changSub") {
-                    return "请选择涉娼角色";
-                }
-            },
-            chang_myfs: function (value, item) {
-                if (value == "" && item.ownerDocument.activeElement.id == "changSub") {
-                    return "请选择涉娼方式";
-                }
-            },
-            chang_scbw: function (value, item) {
-                if (value == "" && item.ownerDocument.activeElement.id == "changSub") {
-                    return "请选择涉娼部位";
-                }
-            }
-        });
+        // 注意：form.verify已被移除，改为在提交时使用layer.msg进行验证提示
 
         form.on('submit(duSub)', function (data) {
+            // ===== 必填项验证（使用layer.msg显示提示） =====
+
+            // 验证现住地派出所（如果县级市是江阴市）
+            var duHomeCounty = $('#du_homeCounty').val();
+            var duPoliceStation = $('#du_policeStation').val();
+            if (duHomeCounty === '江阴市' && (!duPoliceStation || duPoliceStation.trim() === "")) {
+                layer.msg('现住地派出所必填项未填写，无法提交！', {icon: 2, time: 3000});
+                return false;
+            }
+
+            // 验证涉赌情况综述
+            // var duLssdqk = $('#formZaDu #lssdqk').val();
+            // if (!duLssdqk || duLssdqk.trim() === "") {
+            //     layer.msg('涉赌情况综述必填项未填写，无法提交！', {icon: 2, time: 3000});
+            //     return false;
+            // }
+
+            // 验证赌博方式
+            var dbfs = $('#dbfs').val();
+            if (!dbfs || dbfs.trim() === "") {
+                layer.msg('赌博方式必填项未填写，无法提交！', {icon: 2, time: 3000});
+                return false;
+            }
+
+            // 验证赌博部位
+            var dbbw = $('#dbbw').val();
+            if (!dbbw || dbbw.trim() === "") {
+                layer.msg('赌博部位必填项未填写，无法提交！', {icon: 2, time: 3000});
+                return false;
+            }
+
+            // 验证处罚情况
+            var cfjg = $('#cfjg').val();
+            if (!cfjg || cfjg.trim() === "") {
+                layer.msg('处罚情况必填项未填写，无法提交！', {icon: 2, time: 3000});
+                return false;
+            }
+
+            // 验证处罚日期
+            var chsj = $('#chsj').val();
+            if (!chsj || chsj.trim() === "") {
+                layer.msg('处罚日期必填项未填写，无法提交！', {icon: 2, time: 3000});
+                return false;
+            }
+
+            // 验证查获经过
+            // var chjg = $('#chjg').val();
+            // if (!chjg || chjg.trim() === "") {
+            //     layer.msg('查获经过必填项未填写，无法提交！', {icon: 2, time: 3000});
+            //     return false;
+            // }
+
+            // 验证处理详情
+            // var clxq = $('#clxq').val();
+            // if (!clxq || clxq.trim() === "") {
+            //     layer.msg('处理详情必填项未填写，无法提交！', {icon: 2, time: 3000});
+            //     return false;
+            // }
+
+            // ===== 验证通过，继续提交 =====
+
             var duCaseAddressList = collectDuCaseAddressList();
             // 获取选中派出所对应的ID - 优先从DOM获取
             var $duPoliceSelect = $('#du_policeStation');
@@ -2982,9 +4013,9 @@
             // ✅ 修复方案 1：尝试从选项的 attr 获取（最可靠）
             var $selectedOption = $duPoliceSelect.find('option:selected');
             if ($selectedOption.length > 0) {
-            // 先尝试 data() 方法
+                // 先尝试 data() 方法
                 homePoliceStationId = $selectedOption.data('departmentid');
-            // 如果失败，尝试 attr() 方法
+                // 如果失败，尝试 attr() 方法
                 if (!homePoliceStationId) {
                     homePoliceStationId = $selectedOption.attr('data-departmentid');
                 }
@@ -2993,7 +4024,7 @@
             if (!homePoliceStationId && selectedPoliceStation && policeData && policeData.length > 0) {
                 for (var i = 0; i < policeData.length; i++) {
                     if (policeData[i].name === selectedPoliceStation) {
-                        homePoliceStationId = policeData[i]. departmentid || '';
+                        homePoliceStationId = policeData[i].departmentid || '';
                         break;
                     }
                 }
@@ -3009,17 +4040,77 @@
             var duHomex = $('#du_homex').val() || '';
             var duHomey = $('#du_homey').val() || '';
 
-            console.log('涉赌提交现住地址: 省=' + duHomeProvince + ', 市=' + duHomeCity + ', 县=' + duHomeCounty +
-                        ', 镇=' + duHomeTown + ', 详址=' + duHomeplace + ', 经度=' + duHomex + ', 纬度=' + duHomey);
+            console.log('du field: pro=' + duHomeProvince + ', city=' + duHomeCity + ', country=' + duHomeCounty +
+                ', town=' + duHomeTown + ', place=' + duHomeplace + ', x=' + duHomex + ', y=' + duHomey);
 
-            $("#formZaDu").ajaxSubmit({
+            // 收集关联的警情/案件ID
+            var relJqIds = [];
+            var relAjIds = [];
+            if (window.selectedDuRelations && window.selectedDuRelations.length > 0) {
+                window.selectedDuRelations.forEach(function (rel) {
+                    if (rel.type === 'jq') {
+                        relJqIds.push(rel.id);
+                    } else if (rel.type === 'aj') {
+                        relAjIds.push(rel.id);
+                    }
+                });
+            }
+            console.log('du JQ ID:', relJqIds.join(','));
+            console.log('du AJ ID:', relAjIds.join(','));
+
+            // ✅ 处理可能包含逗号的字段（历史数据合并显示导致），只取第一个值
+            var rawPhone = $('#du_phone').val() || '';
+            var phone = rawPhone.split(',')[0].trim();
+
+            var rawLssdqk = $('#lssdqk').val() || '';
+            var lssdqk = rawLssdqk.split(',')[0].trim();
+
+            var rawCollectSource = $('#collectSource-du').val() || '';
+            var collectSource = rawCollectSource.split(',')[0].trim();
+
+            var rawCollectDate = $('#du_collectDate').val() || '';
+            var collectDate = rawCollectDate.split(',')[0].trim();
+
+            var rawPersonAttribute = $('#personAttribute-du').val() || '';
+            var personAttribute = rawPersonAttribute.split(',')[0].trim();
+
+            var rawDbfs = $('#dbfs').val() || '';
+            var dbfs = rawDbfs.split(',')[0].trim();
+
+            var rawDbbw = $('#dbbw').val() || '';
+            var dbbw = rawDbbw.split(',')[0].trim();
+
+            var rawChjg = $('#chjg').val() || '';
+            var chjg = rawChjg.split(',')[0].trim();
+
+            var rawCfjg = $('#cfjg').val() || '';
+            var cfjg = rawCfjg.split(',')[0].trim();
+
+            var rawClxq = $('#clxq').val() || '';
+            var clxq = rawClxq.split(',')[0].trim();
+
+            var rawChsj = $('#chsj').val() || '';
+            var chsj = rawChsj.split(',')[0].trim();
+
+            console.log('✓ 处理后字段值:');
+            console.log('  collectDate: ' + rawCollectDate + ' -> ' + collectDate);
+            console.log('  chsj: ' + rawChsj + ' -> ' + chsj);
+            console.log('  phone: ' + rawPhone + ' -> ' + phone);
+
+            // 获取涉赌前科和打处单位
+            var hasSheduRecord = $('#hasSheduRecord-du').val() || '0';
+            // ✅ 打处单位始终使用当前登录用户的departmentid，不使用历史记录的旧值
+            var handleUnitCode = '<%=userSession != null ? userSession.getLoginUserDepartmentid() : ""%>';
+
+            // ✅ 使用 $.ajax 代替 ajaxSubmit，完全自定义数据，避免表单自动序列化导致字段重复
+            $.ajax({
                 url: '<c:url value="/updateZaDu.do"/>',
+                type: 'POST',
                 data: {
                     personnelid:${personnel.id},
                     id: $('#firstDu').val(),
                     menuid:${menuid},
-                    caseAddressList: duCaseAddressList. join('，'),
-                    updateoperator: '<%=userSession != null ? userSession.getLoginUserName() : ""%>',
+                    // 现住地址字段
                     homePoliceStationId: homePoliceStationId,
                     homeProvince: duHomeProvince,
                     homeCity: duHomeCity,
@@ -3029,25 +4120,82 @@
                     homepolice: selectedPoliceStation,
                     homex: duHomex,
                     homey: duHomey,
-                    validflag: 1
+                    // 联系电话
+                    phone: phone,
+                    // 涉赌前科
+                    hasSheduRecord: hasSheduRecord,
+                    // 打处单位
+                    handleUnitCode: handleUnitCode,
+                    // 历史涉赌情况综述
+                    lssdqk: lssdqk,
+                    // 采集来源
+                    collectSource: collectSource,
+                    // 采集日期
+                    collectDate: collectDate,
+                    // 人员属性
+                    personAttribute: personAttribute,
+                    // 赌博方式
+                    dbfs: dbfs,
+                    // 赌博部位
+                    dbbw: dbbw,
+                    // 查获经过
+                    chjg: chjg,
+                    // 处罚情况
+                    cfjg: cfjg,
+                    // 处理详情
+                    clxq: clxq,
+                    // 处罚时间
+                    chsj: chsj,
+                    // 涉案地址列表
+                    caseAddressList: duCaseAddressList.join('，'),
+                    // 操作人
+                    updateoperator: '<%=userSession != null ? userSession.getLoginUserName() : ""%>',
+                    // 状态
+                    validflag: 1,
+                    // 关联警情和案件ID
+                    relJqIds: relJqIds.join(','),
+                    relAjIds: relAjIds.join(',')
                 },
                 dataType: 'json',
                 async: false,
                 success: function (data) {
-                    var obj = eval('(' + data + ')');
-                    if (obj.flag > 0) {
-                        //弹出loading
-                        var index = top.layer.msg('涉赌背景提交中，请稍候', {icon: 16, time: false, shade: 0.8});
-                        setTimeout(function () {
-                            top.layer.msg(obj.msg);
-                            top.layer.close(index);
-                            //刷新涉赌背景模块
-                            openZaDu(obj.flag);
-                        }, 2000);
-                    } else {
-                        layer.msg(obj.msg);
+                    var obj = data;
+
+                    // 统一兜底解析
+                    if (typeof data === 'string') {
+                        try {
+                            obj = JSON.parse(data);
+                        } catch (e) {
+                            console.error('JSON解析失败:', data);
+                            top.layer.msg('服务端返回数据格式错误', {icon: 2});
+                            return;
+                        }
                     }
 
+                    console.log('涉赌背景提交响应:', obj);
+
+                    if (obj.flag > 0) {
+                        window.selectedPeiRelations = [];
+
+                        var index = top.layer.msg('涉赌背景提交中，请稍候', {
+                            icon: 16,
+                            time: false,
+                            shade: 0.8
+                        });
+
+                        setTimeout(function () {
+                            top.layer.msg(obj.msg || '操作成功');
+                            top.layer.close(index);
+                            openZaPei(obj.flag);
+                        }, 2000);
+
+                    } else {
+                        // ⚠️ 关键：权限不足也在这里
+                        top.layer.msg(obj.msg || '操作失败', {
+                            icon: 2,
+                            time: 3000
+                        });
+                    }
                 },
                 error: function () {
                     layer.alert("请求失败！");
@@ -3056,6 +4204,89 @@
             return false;
         });
         form.on('submit(changSub)', function (data) {
+        console.log('========== 涉黄表单提交 ==========');
+
+        // ✅ 提交前强制重新计算未成年案件，确保值是最新的
+        calculateChangIsMinorCase();
+
+        // 等待一小段时间确保Radio值已更新
+        setTimeout(function() {
+            submitChangForm();
+        }, 50);
+
+        return false; // 阻止表单默认提交
+    });
+
+    // 实际的提交逻辑
+    function submitChangForm() {
+            // ===== 必填项验证（使用layer.msg显示提示） =====
+
+            // 验证现住地派出所（如果县级市是江阴市）
+            var changHomeCounty = $('#chang_homeCounty').val();
+            var changPoliceStation = $('#chang_policeStation').val();
+            if (changHomeCounty === '江阴市' && (!changPoliceStation || changPoliceStation.trim() === "")) {
+                layer.msg('现住地派出所必填项未填写，无法提交！', {icon: 2, time: 3000});
+                return false;
+            }
+
+            // 验证涉嫖情况综述
+            // var changLsscqk = $('#chang_lsscqk').val();
+            // if (!changLsscqk || changLsscqk.trim() === "") {
+            //     layer.msg('涉嫖情况综述必填项未填写，无法提交！', {icon: 2, time: 3000});
+            //     return false;
+            // }
+
+            // 验证涉黄角色
+            var changScjs = $('#chang_scjs').val();
+            if (!changScjs || changScjs.trim() === "") {
+                layer.msg('人员属性必填项未填写，无法提交！', {icon: 2, time: 3000});
+                return false;
+            }
+
+            // 验证涉黄方式
+            var changMyfs = $('#chang_myfs').val();
+            if (!changMyfs || changMyfs.trim() === "") {
+                layer.msg('涉黄方式必填项未填写，无法提交！', {icon: 2, time: 3000});
+                return false;
+            }
+
+            // 验证涉黄类型
+            var changType = $('#changType').val();
+            if (!changType || changType.trim() === "") {
+                layer.msg('涉黄类型必填项未填写，无法提交！', {icon: 2, time: 3000});
+                return false;
+            }
+
+            // 验证处罚情况
+            var changCfjg = $('#chang_cfjg').val();
+            if (!changCfjg || changCfjg.trim() === "") {
+                layer.msg('处罚情况必填项未填写，无法提交！', {icon: 2, time: 3000});
+                return false;
+            }
+
+            // 验证处罚时间
+            var changChsj = $('#chang_chsj').val();
+            if (!changChsj || changChsj.trim() === "") {
+                layer.msg('处罚时间必填项未填写，无法提交！', {icon: 2, time: 3000});
+                return false;
+            }
+
+            // 验证查获经过
+            // var changChjg = $('#chang_chjg').val();
+            // if (!changChjg || changChjg.trim() === "") {
+            //     layer.msg('查获经过必填项未填写，无法提交！', {icon: 2, time: 3000});
+            //     return false;
+            // }
+
+            // 验证处理详情
+            // var changClxq = $('#chang_clxq').val();
+            // if (!changClxq || changClxq.trim() === "") {
+            //     layer.msg('处理详情必填项未填写，无法提交！', {icon: 2, time: 3000});
+            //     return false;
+            // }
+
+            // ===== 验证通过，继续提交 =====
+
             // 收集涉案地址列表
             var changCaseAddressList = collectChangCaseAddressList();
 
@@ -3079,32 +4310,266 @@
                     }
                 }
             }
-            console.log('涉娼背景提交: 派出所=' + selectedChangPolice + ', ID=' + changHomePoliceStationId);
 
-            $("#formZaChang").ajaxSubmit({
+            var changHomeProvince = $('#chang_homeProvince').val() || '';
+            var changHomeCity = $('#chang_homeCity').val() || '';
+            var changHomeCounty = $('#chang_homeCounty').val() || '';
+            var changHomeTown = $('#chang_homeTown').val() || '';
+            var changHomeplace = $('#chang_homeplace').val() || '';
+            var changHomex = $('#chang_homex').val() || '';
+            var changHomey = $('#chang_homey').val() || '';
+
+            console.log('chang field: pro=' + changHomeProvince + ', city=' + changHomeCity + ', country=' + changHomeCounty +
+                ', town=' + changHomeTown + ', place=' + changHomeplace + ', x=' + changHomex + ', y=' + changHomey);
+
+            // 收集关联的警情/案件ID（如果有的话，非必填）
+            var relJqIds = [];
+            var relAjIds = [];
+            if (window.selectedChangRelations && window.selectedChangRelations.length > 0) {
+                window.selectedChangRelations.forEach(function (rel) {
+                    if (rel.type === 'jq') {
+                        relJqIds.push(rel.id);
+                    } else if (rel.type === 'aj') {
+                        relAjIds.push(rel.id);
+                    }
+                });
+            }
+            console.log('chang JQ ID:', relJqIds.join(','));
+            console.log('chang AJ ID:', relAjIds.join(','));
+
+            // ✅ 处理可能包含逗号的字段（历史数据合并显示导致），只取第一个值
+            var rawChangPhone = $('#chang_phone').val() || '';
+            var changPhone = rawChangPhone.split(',')[0].trim();
+
+            var rawChangLsscqk = $('#chang_lsscqk').val() || '';
+            var changLsscqk = rawChangLsscqk.split(',')[0].trim();
+
+            var rawChangCollectSource = $('#collectSource-chang').val() || '';
+            var changCollectSource = rawChangCollectSource.split(',')[0].trim();
+
+            var rawChangCollectDate = $('#chang_collectDate').val() || '';
+            var changCollectDate = rawChangCollectDate.split(',')[0].trim();
+
+            var rawChangScjs = $('#chang_scjs').val() || '';
+            var changScjs = rawChangScjs.split(',')[0].trim();
+
+            var rawChangMyfs = $('#chang_myfs').val() || '';
+            var changMyfs = rawChangMyfs.split(',')[0].trim();
+
+            var rawChangType = $('#changType').val() || '';
+            var changType = rawChangType.split(',')[0].trim();
+
+            var rawChangChjg = $('#chang_chjg').val() || '';
+            var changChjg = rawChangChjg.split(',')[0].trim();
+
+            var rawChangCfjg = $('#chang_cfjg').val() || '';
+            var changCfjg = rawChangCfjg.split(',')[0].trim();
+
+            var rawChangClxq = $('#chang_clxq').val() || '';
+            var changClxq = rawChangClxq.split(',')[0].trim();
+
+            var rawChangChsj = $('#chang_chsj').val() || '';
+            var changChsj = rawChangChsj.split(',')[0].trim();
+
+            console.log('✓ 涉黄处理后字段值:');
+            console.log('  collectDate: ' + rawChangCollectDate + ' -> ' + changCollectDate);
+            console.log('  chang_chsj: ' + rawChangChsj + ' -> ' + changChsj);
+            console.log('  phone: ' + rawChangPhone + ' -> ' + changPhone);
+
+            // ✅ 获取是否未成年案件（从radio按钮获取选中的值）
+            var isMinorCase = $('input[name="isMinorCase"]:checked').val() || '0';
+            console.log('========== 涉黄提交前检查 ==========');
+            console.log('  处罚时间(chang_chsj): ' + changChsj);
+            console.log('  isMinorCase获取值: ' + isMinorCase);
+            console.log('  Radio按钮状态:');
+            $('input[name="isMinorCase"]').each(function() {
+                console.log('    值=' + $(this).val() + ', 选中=' + $(this).prop('checked'));
+            });
+            console.log('====================================');
+
+            // 获取涉黄前科和打处单位
+            var hasShechangRecord = $('#hasShechangRecord-chang').val() || '0';
+            // ✅ 打处单位始终使用当前登录用户的departmentid，不使用历史记录的旧值
+            var changHandleUnitCode = '<%=userSession != null ? userSession.getLoginUserDepartmentid() : ""%>';
+
+            // ✅ 使用 $.ajax 代替 ajaxSubmit，避免表单自动序列化导致字段重复
+            $.ajax({
                 url: '<c:url value="/updateZaChang.do"/>',
+                type: 'POST',
                 data: {
                     personnelid:${personnel.id},
                     id: $('#firstChang').val(),
                     menuid:${menuid},
+                    // 现住地址字段
+                    homePoliceStationId: changHomePoliceStationId,
+                    homeProvince: changHomeProvince,
+                    homeCity: changHomeCity,
+                    homeCounty: changHomeCounty,
+                    homeTown: changHomeTown,
+                    homeplace: changHomeplace,
+                    homepolice: selectedChangPolice,
+                    homex: changHomex,
+                    homey: changHomey,
+                    // 联系电话
+                    phone: changPhone,
+                    // 涉黄前科
+                    hasShechangRecord: hasShechangRecord,
+                    // 打处单位
+                    handleUnitCode: changHandleUnitCode,
+                    // 涉嫖情况综述
+                    chang_lsscqk: changLsscqk,
+                    // 采集来源
+                    collectSource: changCollectSource,
+                    // 采集日期
+                    collectDate: changCollectDate,
+                    // 人员属性（涉黄角色）
+                    chang_scjs: changScjs,
+                    // 涉黄方式
+                    chang_myfs: changMyfs,
+                    // 涉黄类型
+                    changType: changType,
+                    // 查获经过
+                    chang_chjg: changChjg,
+                    // 处罚情况
+                    chang_cfjg: changCfjg,
+                    // 处理详情
+                    chang_clxq: changClxq,
+                    // 处罚时间
+                    chang_chsj: changChsj,
+                    // 是否未成年案件
+                    isMinorCase: isMinorCase,
+                    // 涉案地址列表
                     caseAddressList: changCaseAddressList.join('，'),
-                    homePoliceStationId: changHomePoliceStationId
+                    // 操作人
+                    updateoperator: '<%=userSession != null ? userSession.getLoginUserName() : ""%>',
+                    // 状态
+                    validflag: 1,
+                    // 关联警情和案件ID
+                    relJqIds: relJqIds.join(','),
+                    relAjIds: relAjIds.join(',')
                 },
                 dataType: 'json',
                 async: false,
                 success: function (data) {
-                    var obj = eval('(' + data + ')');
+                    var obj = data;
+
+                    // 统一兜底解析
+                    if (typeof data === 'string') {
+                        try {
+                            obj = JSON.parse(data);
+                        } catch (e) {
+                            console.error('JSON解析失败:', data);
+                            top.layer.msg('服务端返回数据格式错误', {icon: 2});
+                            return;
+                        }
+                    }
+
+                    console.log('涉黄背景提交响应:', obj);
+
                     if (obj.flag > 0) {
-                        //弹出loading
-                        var index = top.layer.msg('涉娼背景提交中，请稍候', {icon: 16, time: false, shade: 0.8});
+                        window.selectedPeiRelations = [];
+
+                        var index = top.layer.msg('涉黄背景提交中，请稍候', {
+                            icon: 16,
+                            time: false,
+                            shade: 0.8
+                        });
+
                         setTimeout(function () {
-                            top.layer.msg(obj.msg);
+                            top.layer.msg(obj.msg || '操作成功');
                             top.layer.close(index);
-                            //刷新涉娼背景模块
-                            openZaChang(obj.flag);
+                            openZaPei(obj.flag);
                         }, 2000);
+
                     } else {
-                        layer.msg(obj.msg);
+                        // ⚠️ 关键：权限不足也在这里
+                        top.layer.msg(obj.msg || '操作失败', {
+                            icon: 2,
+                            time: 3000
+                        });
+                    }
+                },
+                error: function () {
+                    layer.alert("请求失败！");
+                }
+            });
+        } // submitChangForm函数结束
+
+        form.on('submit(peiSub)', function (data) {
+            // 收集活动场所列表
+            var peiActivityVenueList = collectPeiCaseAddressList();
+
+            console.log('pei field =' + peiActivityVenueList.join('，'));
+
+            // 收集关联的警情/案件ID（如果有的话，非必填）
+            var relJqIds = [];
+            var relAjIds = [];
+            if (window.selectedPeiRelations && window.selectedPeiRelations.length > 0) {
+                window.selectedPeiRelations.forEach(function (rel) {
+                    if (rel.type === 'jq') {
+                        relJqIds.push(rel.id);
+                    } else if (rel.type === 'aj') {
+                        relAjIds.push(rel.id);
+                    }
+                });
+            }
+            console.log('pei JQ ID:', relJqIds.join(','));
+            console.log('pei AJ ID:', relAjIds.join(','));
+
+            // ✅ ajaxSubmit会自动序列化表单中的hasShechangRecord字段，无需重复添加
+            $("#formZaPei").ajaxSubmit({
+                url: '<c:url value="/updateZaPei.do"/>',
+                data: {
+                    personnelid:${personnel.id},
+                    id: $('#firstPei').val(),
+                    menuid:${menuid},
+                    // hasShechangRecord已在表单中，ajaxSubmit会自动序列化，无需重复添加
+                    activityVenue: peiActivityVenueList.join('，'),  // ✅ 改为activityVenue匹配后端字段
+                    memo: $('#pei_memo').val(),  // ✅ 角色标签
+                    updateoperator: '<%=userSession != null ? userSession.getLoginUserName() : ""%>',
+                    validflag: 1,
+                    relJqIds: relJqIds.join(','),
+                    relAjIds: relAjIds.join(',')
+                },
+                dataType: 'json',
+                async: false,
+                success: function (data) {
+                    var obj = data;
+
+                    // 统一兜底解析
+                    if (typeof data === 'string') {
+                        try {
+                            obj = JSON.parse(data);
+                        } catch (e) {
+                            console.error('JSON解析失败:', data);
+                            top.layer.msg('服务端返回数据格式错误', {icon: 2});
+                            return;
+                        }
+                    }
+
+                    console.log('陪侍背景提交响应:', obj);
+
+                    if (obj.flag > 0) {
+                        window.selectedPeiRelations = [];
+
+                        var index = top.layer.msg('陪侍背景提交中，请稍候', {
+                            icon: 16,
+                            time: false,
+                            shade: 0.8
+                        });
+
+                        setTimeout(function () {
+                            top.layer.msg(obj.msg || '操作成功');
+                            top.layer.close(index);
+                            openZaPei(obj.flag);
+                        }, 2000);
+
+                    } else {
+                        // ⚠️ 关键：权限不足也在这里
+                        top.layer.msg(obj.msg || '操作失败', {
+                            icon: 2,
+                            time: 3000
+                        });
                     }
                 },
                 error: function () {
@@ -3133,14 +4598,31 @@
         });
         $("#changHistory").click(function () {
             var index = layui.layer.open({
-                title: "涉赌背景历史记录",
+                title: "涉黄背景历史记录",
                 type: 2,  // iframe 层
-                content: locat + "/jsp/personel/za/duhistory.jsp? personnelid=${personnel.id}",
+                content: locat + "/jsp/personel/za/changhistory.jsp?personnelid=${personnel.id}&menuid=${menuid}",
                 area: ['1400px', '600px'],  // ✅ 增加宽度以展示所有列
                 maxmin: true,
                 success: function (layero, index) {
                     setTimeout(function () {
-                        layui.layer.tips('点击此处返回列表', '. layui-layer-setwin . layui-layer-close', {
+                        layui.layer.tips('点击此处返回列表', '.layui-layer-setwin .layui-layer-close', {
+                            tips: 3
+                        });
+                    }, 500)
+                }
+            })
+            layui.layer.full(index);
+        });
+        $("#PeiHistory").click(function () {
+            var index = layui.layer.open({
+                title: "陪侍背景历史记录",
+                type: 2,  // iframe 层
+                content: locat + "/jsp/personel/za/peihistory.jsp?personnelid=${personnel.id}&menuid=${menuid}",
+                area: ['1400px', '600px'],
+                maxmin: true,
+                success: function (layero, index) {
+                    setTimeout(function () {
+                        layui.layer.tips('点击此处返回列表', '.layui-layer-setwin .layui-layer-close', {
                             tips: 3
                         });
                     }, 500)
@@ -3158,182 +4640,222 @@
         loadBasicMsg('301', 'personAttribute-du'); // 涉赌人员属性
         loadBasicMsg('307', 'collectSource-du');   // 涉赌采集来源
 
-        // 2. 无论何时都显示“历史记录”按钮
+        // 2. 无论何时都显示"历史记录"按钮
         $('#duHistory').show();
 
-        // 3. 初始化派出所下拉框（传入空值，显示“请选择”）
+        // 3. 初始化派出所下拉框（传入空值，显示"请选择"）
         renderPoliceSelect({
             elem: '#du_policeStation',
             initValue: ''
         });
 
-        // 4. 执行清空逻辑
+        // 4. 先初始化涉赌tab的省市县级联下拉框（必须在清空之前执行）
+        initRegionCascade('du_home', '', '', '');
+
+        // 5. 执行清空逻辑
         $('#firstDu').val(0); // 标记为新记录，ID设为0
 
-        // 清空文本框、时间插件和隐藏域
-        $('#lssdqk, #chsj, #chjg, #clxq, #du_phone, #du_collectDate, #du_homeProvince, #du_homeCity, #du_homeCounty, #du_homeTown, #du_homeplace, #du_homex, #du_homey').val('');
-        // 下拉框重置
+        // 清空文本框、时间插件和隐藏域（不包括省市县select）
+        $('#lssdqk, #chsj, #chjg, #clxq, #du_phone, #du_collectDate, #du_homeTown, #du_homeplace, #du_homex, #du_homey').val('');
+        // 下拉框重置（不包括省市县select）
         $('#cfjg, #personAttribute-du, #collectSource-du, #dbfs, #dbbw').val('');
 
-        // 5. 涉案地址初始化：清空容器并只给一个空输入框
+        // 6. 涉案地址初始化：清空容器并只给一个空输入框
         $('#duCaseAddressContainer').empty();
         addDuCaseAddressInput(''); // 调用您之前定义的函数生成第一个空框
 
-        // 6. 隐藏原本因为有数据才显示的派出所区域
+        // 7. 隐藏原本因为有数据才显示的派出所区域
         togglePoliceDiv('', 'du_home');
 
-        // 7. 【关键】重新渲染表单，使清空后的状态生效
+        // 8. 【关键】重新渲染表单，使清空后的状态生效
         layui.form.render();
     }
 
     function openZaChang(personnelid) {
-        $.ajax({
-            type: 'POST',
-            url: '<c:url value="/getZaChangByPersonnelid.do?personnelid="/>' + personnelid,
-            dataType: 'json',
-            async: false,
-            success: function (data) {
-                if (data.firstChang > 0) {
-                    var zaChang = data.zaChang;
-                    $('#firstChang').val(zaChang.id);//存放zaChang id
-                    $('#changHistory').show();
-                    $('#chang_lsscqk').val(zaChang.chang_lsscqk);
-                    $('#chang_chsj').val(zaChang.chang_chsj);
-                    $('#chang_chjg').val(zaChang.chang_chjg);
-                    $('#chang_clxq').val(zaChang.chang_clxq);
-                    $('#chang_phone').val(zaChang.phone);
-                    $('#chang_collectDate').val(zaChang.collectDate);
+        loadBasicMsg('304', 'chang_scjs');               // 涉黄角色
+        loadBasicMsg('305', 'chang_myfs');               // 涉黄方式
+        loadBasicMsg('306', 'changType');                // 涉黄类型
+        loadBasicMsg('307', 'collectSource-chang');     // 采集来源
 
-                    // 处罚结果
-                    if (zaChang.chang_cfjg) {
-                        $("#chang_cfjg").val(zaChang.chang_cfjg);
-                    }
-                    // 采集来源
-                    if (zaChang.collectSource) {
-                        $("#collectSource-chang").val(zaChang.collectSource);
-                    }
-                    // 涉黄方式
-                    if (zaChang.chang_myfs) {
-                        if ($("#chang_myfs option[value='" + zaChang.chang_myfs + "']").length == 0) {
-                            $('#chang_myfs').append("<option value='" + zaChang.chang_myfs + "'>" + zaChang.chang_myfs + "</option>");
-                        }
-                        $("#chang_myfs").val(zaChang.chang_myfs);
-                    }
-                    // 涉娼部位
-                    if (zaChang.chang_scbw) {
-                        if ($("#chang_scbw option[value='" + zaChang.chang_scbw + "']").length == 0) {
-                            $('#chang_scbw').append("<option value='" + zaChang.chang_scbw + "'>" + zaChang.chang_scbw + "</option>");
-                        }
-                        $("#chang_scbw").val(zaChang.chang_scbw);
-                    }
-                    // 涉娼角色（使用chang_scjs显示）
-                    if (zaChang.chang_scjs) {
-                        if ($("#chang_scjs option[value='" + zaChang.chang_scjs + "']").length == 0) {
-                            $('#chang_scjs').append("<option value='" + zaChang.chang_scjs + "'>" + zaChang.chang_scjs + "</option>");
-                        }
-                        $("#chang_scjs").val(zaChang.chang_scjs);
-                    }
-                    layui.form.render('select');
+        // 2. 无论何时都显示"历史记录"按钮
+        $('#changHistory').show();
 
-                    // 涉案地址回显
-                    $('#changCaseAddressContainer').empty(); // 清空容器
-                    var addressList = zaChang.caseAddressArray || [];
-                    if (addressList.length === 0) {
-                        addChangCaseAddressInput('');
-                    } else {
-                        addressList.forEach(function (addr) {
-                            addChangCaseAddressInput(addr);
-                        });
-                    }
-                } else {
-                    $('#firstChang').val(0);
-                    $('#changHistory').hide();
-                }
-            }
+        // 3. 初始化派出所下拉框（传入空值，显示"请选择"）
+        renderPoliceSelect({
+            elem: '#chang_policeStation',
+            initValue: ''
         });
+
+        // 4. 先初始化涉黄tab的省市县级联下拉框（必须在清空之前执行）
+        initRegionCascade('chang_home', '', '', '');
+
+        // 5. 执行清空逻辑
+        $('#firstChang').val(0); // 标记为新记录，ID设为0
+        // 清空文本框、时间插件和隐藏域（不包括省市县select）
+        $('#chang_lsscqk, #chang_chsj, #chang_chjg, #chang_clxq, #chang_phone, #chang_collectDate, #chang_homeTown, #chang_homeplace, #chang_homex, #chang_homey').val('');
+        // 下拉框重置（不包括省市县select）
+        $('#chang_cfjg, #chang_scjs, #collectSource-chang, #chang_myfs, #changType').val('');
+
+        // 6. 涉案地址初始化：清空容器并只给一个空输入框
+        $('#changCaseAddressContainer').empty();
+        addChangCaseAddressInput(''); // 调用您之前定义的函数生成第一个空框
+
+        // 7. 隐藏原本因为有数据才显示的派出所区域
+        togglePoliceDiv('', 'chang_home');
+
+        // 8. 【关键】重新渲染表单，使清空后的状态生效
+        layui.form.render();
+    }
+
+    function openZaPei(personnelid) {
+        // 1. 基础字典数据加载
+        loadBasicMsg('310', 'pei_memo');// 陪侍角色标签
+        loadBasicMsg('311', 'collectSource-pei');   // 陪侍采集来源
+
+        // 2. 无论何时都显示"历史记录"按钮
+        $('#PeiHistory').show();
+
+        // 3. 执行清空逻辑
+        $('#firstPei').val(0); // 标记为新记录，ID设为0
+
+        // 清空文本框和时间插件
+        $('#otherMemo, #pei_collectDate, #pei_caseName, #pei_relatedCaseId').val('');
+        // 下拉框重置
+        $('#collectSource-pei').val('');
+
+        // 4. 活动场所初始化：清空容器并只给一个空输入框
+        $('#peiCaseAddressContainer').empty();
+        addPeiCaseAddressInput(''); // 调用函数生成第一个空框
+
+        // 5. 【关键】重新渲染表单，使清空后的状态生效
+        layui.form.render();
     }
 
     function openAttributelabel() {
-        //清空页面
         $("#zTree").html("");
-        $('#attributelabel').html("");
-        var zslabel1 = ",${personnel.zslabel1},";
+        $("#attributelabel").html("");
+
+        // 获取人员已拥有的标签，确保过滤掉空字符串
+        var zslabel1Str = "${personnel.zslabel1}" || "";
+        var zslabel2Str = "${personnel.zslabel2}" || "";
+
+        var zslabel1Array = zslabel1Str.split(",").filter(function(id) {
+            return id && id.trim() !== "";
+        });
+        var zslabel2Array = zslabel2Str.split(",").filter(function(id) {
+            return id && id.trim() !== "";
+        });
+
+        console.log("一级标签:", zslabel1Array);
+        console.log("子标签:", zslabel2Array);
+
+        // 如果没有一级标签，显示提示信息
+        if (zslabel1Array.length === 0) {
+            $("#attributelabel").append(
+                "<table class='layui-table' lay-skin='line'>" +
+                "  <thead>" +
+                "    <tr>" +
+                "      <th width='30%'>一级标签</th>" +
+                "      <th width='70%'>子标签</th>" +
+                "    </tr>" +
+                "  </thead>" +
+                "  <tbody>" +
+                "    <tr>" +
+                "      <td colspan='2' style='text-align:center;color:#999;'>暂无标签</td>" +
+                "    </tr>" +
+                "  </tbody>" +
+                "</table>"
+            );
+            return;
+        }
+
+        // 创建table结构
+        var tableHtml =
+            "<table class='layui-table' lay-skin='line'>" +
+            "  <thead>" +
+            "    <tr>" +
+            "      <th width='30%'>一级标签</th>" +
+            "      <th width='70%'>子标签</th>" +
+            "    </tr>" +
+            "  </thead>" +
+            "  <tbody id='labelTableBody'>" +
+            "  </tbody>" +
+            "</table>";
+
+        $("#attributelabel").append(tableHtml);
+
+        // 获取所有一级标签
         $.ajax({
             type: 'POST',
             url: '<c:url value="/getRootAttributeLabel.do" />',
             dataType: 'json',
             async: false,
-            success: function (data) {
-                $.each(data, function (num, item) {
-                    if (zslabel1.indexOf("," + item.id + ",") > -1) {
-                        $("#zTree").append("<input type='checkbox' name='attributeLable' value='" + item.id + "' lay-filter='attributeLable' title='" + item.attributelabel + "' checked disabled>");
-                        $('#attributelabel').append("<div class='layui-col-md11' style='left:-30px;'><div class='layui-form-item my-form-item'><label class='layui-form-label'>" + item.attributelabel +
-                            "</label><div class='layui-input-block'><div id='attribute" + item.id + "'></div></div></div></div>" +
-                            "<div class='layui-col-md1' style='left:-30px;'><div class='layui-form-item my-form-item'><button onclick='addLabel(" + item.id + ",&quot;" + item.attributelabel + "&quot;)' class='layui-btn layui-bg-green layui-btn-sm layui-icon my-btn-more'>&#xe624;更多</button></div></div></div>");
-                        if (item.id == 9) {
-                            var _zTreeSelectM = layui.zTreeSelectM({
-                                elem: '#attribute' + item.id,//元素容器【必填】
-                                data: '<c:url value="/getChildrenLabelByParentid.do"/>?parentid=' + item.id,
-                                type: 'get',  //设置了长度
-                                max: 20,//最多选中个数，默认5
-                                selected: [${personnel.zslabel2}],//默认值
-                                name: 'attributelabel2',//input的name 不设置与选择器相同(去#.)
-                                delimiter: ',',//值的分隔符
-                                field: {idName: 'id', titleName: 'name'},//候选项数据的键名
-                                tips: '风险二级及以下标签：',
-                                zTreeSetting: { //zTree设置
-                                    check: {
-                                        enable: true,
-                                        chkboxType: {"Y": "p", "N": "p"}
-                                    },
-                                    data: {
-                                        simpleData: {
-                                            enable: false
-                                        },
-                                        key: {
-                                            name: 'name',
-                                            children: 'children'
-                                        }
-                                    }
-                                }
-                            });
-                        } else {
-                            var _zTreeSelectM = layui.zTreeSelectM({
-                                elem: '#attribute' + item.id,//元素容器【必填】
-                                data: '<c:url value="/getChildrenLabelByParentid.do"/>?parentid=' + item.id,
-                                type: 'get',  //设置了长度
-                                max: 5,//最多选中个数，默认5
-                                selected: [${personnel.zslabel2}],//默认值
-                                name: 'attributelabel2',//input的name 不设置与选择器相同(去#.)
-                                delimiter: ',',//值的分隔符
-                                field: {idName: 'id', titleName: 'name'},//候选项数据的键名
-                                tips: '风险二级及以下标签：',
-                                zTreeSetting: { //zTree设置
-                                    check: {
-                                        enable: true,
-                                        chkboxType: {"Y": "", "N": ""}
-                                    },
-                                    data: {
-                                        simpleData: {
-                                            enable: false
-                                        },
-                                        key: {
-                                            name: 'name',
-                                            children: 'children'
-                                        }
-                                    }
-                                }
-                            });
-                        }
-                    } else {
-                        $("#zTree").append("<input type='checkbox' name='attributeLable' value='" + item.id + "' lay-filter='attributeLable' title='" + item.attributelabel + "'>");
-                    }
-                });
-                layui.form.render();
+            success: function (rootLabels) {
 
+                // 遍历人员已拥有的每个一级标签
+                $.each(rootLabels, function (num, rootLabel) {
+
+                    // 只展示人员已拥有的一级标签
+                    if (zslabel1Array.indexOf(String(rootLabel.id)) === -1) {
+                        return true; // continue
+                    }
+
+                    // 获取该一级标签对应的所有子标签
+                    $.ajax({
+                        type: 'GET',
+                        url: '<c:url value="/getChildrenLabelByParentid.do"/>',
+                        data: { parentid: rootLabel.id },
+                        dataType: 'json',
+                        async: false,
+                        success: function (childLabels) {
+
+                            // 筛选出人员已拥有的子标签名称
+                            var ownedChildLabels = [];
+                            if (childLabels && childLabels.length > 0) {
+                                console.log("子标签数据:", childLabels);
+                                $.each(childLabels, function (i, childLabel) {
+                                    // TreeSelect返回的JSON中，字段名是name而不是attributelabel
+                                    if (childLabel && childLabel.id) {
+                                        if (zslabel2Array.indexOf(String(childLabel.id)) !== -1) {
+                                            // 优先使用name字段，如果没有则使用title字段
+                                            var labelName = childLabel.name || childLabel.title || "";
+                                            if (labelName && labelName.trim() !== "") {
+                                                ownedChildLabels.push(labelName);
+                                            }
+                                        }
+                                    }
+                                });
+                            }
+
+                            console.log("筛选出的子标签名称:", ownedChildLabels);
+
+                            // 构建子标签显示内容
+                            var childLabelsHtml = "";
+                            if (ownedChildLabels.length > 0) {
+                                // 有子标签，用顿号分隔显示
+                                childLabelsHtml = ownedChildLabels.join("、");
+                            } else {
+                                // 无子标签
+                                childLabelsHtml = "<span style='color:#999;'>无子标签</span>";
+                            }
+
+                            // 添加一行到table
+                            var rowHtml =
+                                "<tr>" +
+                                "  <td style='font-weight:600;'>" + rootLabel.attributelabel + "</td>" +
+                                "  <td>" + childLabelsHtml + "</td>" +
+                                "</tr>";
+
+                            $("#labelTableBody").append(rowHtml);
+                        }
+                    });
+                });
+
+                layui.form.render();
             }
         });
     }
+
 
     function openGoodsShow() {
         //方法级渲染
@@ -3407,7 +4929,7 @@
     function echoZaDuData(data) {
         console.log('📥 从历史记录接收数据:', data);
 
-        layui.use('form', function() {
+        layui.use('form', function () {
             var form = layui.form;
 
             // ✅ 设置 ID（用于后续更新）
@@ -3421,7 +4943,7 @@
             $('#du_homeplace').val(data.homeDetail || '');
 
             // ✅ 派出所
-            if(data.homePoliceStationName) {
+            if (data.homePoliceStationName) {
                 $('#du_policeStation').val(data.homePoliceStationName);
             }
 
@@ -3446,11 +4968,41 @@
             // ✅ 赌博部位
             $('#dbbw').val(data.dbbw || '');
 
+            // ✅ 涉赌前科
+            $('#hasSheduRecord-du').val(data.hasSheduRecord || '0');
+
+            // ✅ 打处单位显示（仅显示历史记录的单位名称供参考，不覆盖隐藏字段）
+            // du_handleUnitCode 始终保持当前登录用户的 departmentid，提交时使用当前用户部门
+            if (data.handleUnitCode) {
+                var code = parseInt(data.handleUnitCode);
+                var unitName = '';
+                if (code >= 240 && code <= 263) {
+                    if (policeData && policeData.length > 0) {
+                        for (var i = 0; i < policeData.length; i++) {
+                            if (policeData[i].departmentid == data.handleUnitCode) {
+                                unitName = policeData[i].name;
+                                break;
+                            }
+                        }
+                    }
+                    if (!unitName) {
+                        unitName = '部门' + data.handleUnitCode;
+                    }
+                } else {
+                    unitName = '治安大队';
+                }
+                // ⚠️ 不覆盖 du_handleUnitCode，仅更新显示名称供参考
+                // 提交时 du_handleUnitCode 仍为当前登录用户的 departmentid
+                $('#du_handleUnit').val(unitName + '（记录）');
+            }
+
             // ✅ 查获经过
             $('#chjg').val(data.chjg || '');
 
-            // ✅ 处罚结果
-            $('#cfjg').val(data.cfjg || '');
+            // ✅ 处罚情况：如存在cfjg字段则直接回显，否则不覆盖
+            if (data.cfjg) {
+                $('#cfjg').val(data.cfjg);
+            }
 
             // ✅ 处理详情
             $('#clxq').val(data.clxq || '');
@@ -3459,14 +5011,20 @@
             $('#chsj').val(data.chsj || '');
 
             // ✅ 涉案地址列表 - 重新生成地址行
-            if(data.caseAddressList) {
+            if (data.caseAddressList) {
                 $('#duCaseAddressContainer').empty();
-                var addresses = data.caseAddressList. split('，');
-                addresses.forEach(function(addr) {
-                    if(addr. trim()) {
+                var addresses = data.caseAddressList.split('，');
+                addresses.forEach(function (addr) {
+                    if (addr.trim()) {
                         addDuCaseAddressInput(addr);
                     }
                 });
+            }
+
+            // ✅ 加载关联的警情和案件
+            if (data.id) {
+                console.log('📌 加载涉赌关联关系，duId:', data.id);
+                loadExistingDuRel(data.id);
             }
 
             // ✅ 重新渲染表单
@@ -3482,13 +5040,188 @@
         });
     }
 
+    // ✅ 涉黄背景数据回显方法
+    function echoZaChangData(data) {
+        console.log('📥 涉黄背景数据回显:', data);
+
+        layui.use('form', function () {
+            var form = layui.form;
+
+            // ✅ 设置 ID
+            $('#firstChang').val(data.id || 0);
+
+            // ✅ 现住地址 - 省市县镇
+            $('#chang_homeProvince').val(data.homeProvince || '');
+            $('#chang_homeCity').val(data.homeCity || '');
+            $('#chang_homeCounty').val(data.homeCounty || '');
+            $('#chang_homeTown').val(data.homeTown || '');
+            $('#chang_homeplace').val(data.homeDetail || '');
+
+            // ✅ 派出所
+            if (data.homePoliceStationName) {
+                $('#chang_policeStation').val(data.homePoliceStationName);
+            }
+            // ✅ 联系电话
+            $('#chang_phone').val(data.phone || '');
+
+            // ✅ 涉嫖情况综述
+            $('#chang_lsscqk').val(data.chang_lsscqk || '');
+
+            // ✅ 处罚时间
+            $('#chang_chsj').val(data.chang_chsj || '');
+
+            // ✅ 查获经过
+            $('#chang_chjg').val(data.chang_chjg || '');
+
+            // ✅ 处理详情
+            $('#chang_clxq').val(data.chang_clxq || '');
+
+            // ✅ 联系电话
+            $('#chang_phone').val(data.phone || '');
+
+            // ✅ 采集日期
+            $('#chang_collectDate').val(data.collectDate || '');
+
+            // ✅ 处罚情况：如存在chang_cfjg字段则直接回显，否则不覆盖
+            if (data.chang_cfjg) {
+                $('#chang_cfjg').val(data.chang_cfjg);
+            }
+
+            // ✅ 采集来源
+            $('#collectSource-chang').val(data.collectSource || '');
+
+            // ✅ 涉黄方式
+            $('#chang_myfs').val(data.chang_myfs || '');
+
+            // ✅ 涉黄类型
+            $('#changType').val(data.changType || '');
+
+            // ✅ 人员属性（涉黄角色）
+            $('#chang_scjs').val(data.chang_scjs || '');
+
+            // ✅ 涉黄前科
+            $('#hasShechangRecord-chang').val(data.hasShechangRecord || '0');
+
+            // ✅ 打处单位显示（仅显示历史记录的单位名称供参考，不覆盖隐藏字段）
+            // chang_handleUnitCode 始终保持当前登录用户的 departmentid，提交时使用当前用户部门
+            if (data.handleUnitCode) {
+                var code = parseInt(data.handleUnitCode);
+                var unitName = '';
+                if (code >= 240 && code <= 263) {
+                    if (policeData && policeData.length > 0) {
+                        for (var i = 0; i < policeData.length; i++) {
+                            if (policeData[i].departmentid == data.handleUnitCode) {
+                                unitName = policeData[i].name;
+                                break;
+                            }
+                        }
+                    }
+                    if (!unitName) {
+                        unitName = '部门' + data.handleUnitCode;
+                    }
+                } else {
+                    unitName = '治安大队';
+                }
+                // ⚠️ 不覆盖 chang_handleUnitCode，仅更新显示名称供参考
+                // 提交时 chang_handleUnitCode 仍为当前登录用户的 departmentid
+                $('#chang_handleUnit').val(unitName + '（记录）');
+            }
+
+            // ✅ 未成年案件 - 根据处罚时间自动计算
+            // 先调用计算函数，而不是直接设置值
+            if (data.chang_chsj) {
+                setTimeout(function() {
+                    calculateChangIsMinorCase();
+                }, 100);
+            }
+
+
+            // ✅ 涉案地址列表 - 重新生成地址行
+            if (data.caseAddressList) {
+                $('#changCaseAddressContainer').empty();
+                var addresses = data.caseAddressList.split('，');
+                addresses.forEach(function (addr) {
+                    if (addr.trim()) {
+                        addChangCaseAddressInput(addr);
+                    }
+                });
+            }
+
+            // ✅ 加载关联的警情和案件
+            if (data.id) {
+                console.log('📌 加载涉黄关联关系，changId:', data.id);
+                loadExistingChangRel(data.id);
+            }
+
+            // ✅ 重新渲染表单
+            form.render();
+
+            // ✅ 滚动到涉赌表单位置
+            var changFormPosition = $('#formZaChang').offset().top - 100;
+            $('html, body').animate({
+                scrollTop: changFormPosition
+            }, 500);
+
+            console.log('✓ 涉黄数据回显完成');
+        });
+    }
+
+    // ✅ 陪侍记录数据回显方法
+    function echoZaPeiData(data) {
+        console.log('📥 陪侍记录数据回显:', data);
+
+        layui.use('form', function () {
+            var form = layui.form;
+
+            // ✅ 设置 ID
+            $('#firstPei').val(data.id || 0);
+
+            // ✅ 陪侍情况综述 - 使用otherMemo字段
+            $('#otherMemo').val(data.otherMemo || '');
+
+            // ✅ 采集日期
+            $('#pei_collectDate').val(data.collectDate || '');
+
+            // ✅ 采集来源
+            $('#collectSource-pei').val(data.collectSource || '');
+
+            // ✅ 角色标签
+            $('#pei_memo').val(data.memo || '');
+
+            // ✅ 涉黄前科
+            $('#hasShechangRecord-pei').val(data.hasShechangRecord || '0');
+
+            // ✅ 活动场所列表 - 重新生成地址行
+            if (data.activityVenue) {
+                $('#peiCaseAddressContainer').empty();
+                var addresses = data.activityVenue.split('，');
+                addresses.forEach(function (addr) {
+                    if (addr.trim()) {
+                        addPeiCaseAddressInput(addr);
+                    }
+                });
+            }
+            // ✅ 加载关联的警情和案件
+            if (data.id) {
+                console.log('📌 加载陪侍关联关系，peiId:', data.id);
+                loadExistingPeiRel(data.id);
+            }
+            // ✅ 重新渲染表单
+            form.render();
+
+            // ✅ 滚动到涉赌表单位置
+            var peiFormPosition = $('#formZaPei').offset().top - 100;
+            $('html, body').animate({
+                scrollTop: peiFormPosition
+            }, 500);
+
+            console.log('✓ 陪侍数据回显完成');
+        });
+    }
+
 </script>
 
 
-
-
-<script type="text/javascript" src="<c:url value="/jsp/personel/personel221018.js"/>"></script>
-<!-- 头像编辑、关联信息 、社会关系 数据处理js -->
 <script type="text/javascript">
     function openPGis(type, name) {
         var place = $("#" + type + "place").val().trim();
@@ -3532,6 +5265,7 @@
             type: 2,
             content: '<c:url value="/jsp/personel/za/selectAddressHistory.jsp"/>?personnelid=' + personnelid,
             area: ['900px', '500px'],
+            offset: '50px',
             maxmin: true
         });
     }
@@ -3573,7 +5307,7 @@
         window.addEventListener('message', f1);
     }
 
-    // 涉娼背景tab专用地图选点函数
+    // 涉黄背景tab专用地图选点函数
     function openPGisChang(type, name) {
         var place = $("#chang_homeplace").val().trim();
         var x = $("#chang_homex").val();
@@ -3610,13 +5344,124 @@
         window.addEventListener('message', f1);
     }
 
+    // 涉赌背景tab - 涉案地址地图选点函数（支持动态多个）
+    function openPGisDuCaseAddress(addressId) {
+        var place = $("#" + addressId).val().trim();
+        var x = $("#" + addressId + "_x").val();
+        var y = $("#" + addressId + "_y").val();
+        var f1 = function (event) {
+            place = event.data.mc;
+            x = event.data.lx;
+            y = event.data.ly;
+            $("#" + addressId).val(place);
+            $("#" + addressId + "_x").val(x);
+            $("#" + addressId + "_y").val(y);
+            layer.close(index);
+            window.removeEventListener('message', f1, false);
+        };
+        var index = layui.layer.open({
+            title: "涉案地址标准地址修改",
+            offset: ["50"],
+            type: 2,
+            content: 'http://50.64.128.70:8080/ldpt/#/dtMapPoint?dzmc=' + place + '&lx=' + x + '&ly=' + y,
+            area: ['800', '600px'],
+            maxmin: true,
+            success: function (layero, index) {
+                setTimeout(function () {
+                    layui.layer.tips('点击此处返回列表', '.layui-layer-setwin .layui-layer-close', {
+                        tips: 3
+                    });
+                }, 500)
+            },
+            cancel: function () {
+                window.removeEventListener('message', f1, false);
+            }
+        })
+        layui.layer.full(index);
+        window.addEventListener('message', f1);
+    }
+
+    // 涉黄背景tab - 涉案地址地图选点函数（支持动态多个）
+    function openPGisChangCaseAddress(addressId) {
+        var place = $("#" + addressId).val().trim();
+        var x = $("#" + addressId + "_x").val();
+        var y = $("#" + addressId + "_y").val();
+        var f1 = function (event) {
+            place = event.data.mc;
+            x = event.data.lx;
+            y = event.data.ly;
+            $("#" + addressId).val(place);
+            $("#" + addressId + "_x").val(x);
+            $("#" + addressId + "_y").val(y);
+            layer.close(index);
+            window.removeEventListener('message', f1, false);
+        };
+        var index = layui.layer.open({
+            title: "涉案地址标准地址修改",
+            offset: ["50"],
+            type: 2,
+            content: 'http://50.64.128.70:8080/ldpt/#/dtMapPoint?dzmc=' + place + '&lx=' + x + '&ly=' + y,
+            area: ['800', '600px'],
+            maxmin: true,
+            success: function (layero, index) {
+                setTimeout(function () {
+                    layui.layer.tips('点击此处返回列表', '.layui-layer-setwin .layui-layer-close', {
+                        tips: 3
+                    });
+                }, 500)
+            },
+            cancel: function () {
+                window.removeEventListener('message', f1, false);
+            }
+        })
+        layui.layer.full(index);
+        window.addEventListener('message', f1);
+    }
+
+    // 陪侍背景tab - 活动场所地图选点函数（支持动态多个）
+    function openPGisPeiActivityVenue(addressId) {
+        var place = $("#" + addressId).val().trim();
+        var x = $("#" + addressId + "_x").val();
+        var y = $("#" + addressId + "_y").val();
+        var f1 = function (event) {
+            place = event.data.mc;
+            x = event.data.lx;
+            y = event.data.ly;
+            $("#" + addressId).val(place);
+            $("#" + addressId + "_x").val(x);
+            $("#" + addressId + "_y").val(y);
+            layer.close(index);
+            window.removeEventListener('message', f1, false);
+        };
+        var index = layui.layer.open({
+            title: "活动场所标准地址修改",
+            offset: ["50"],
+            type: 2,
+            content: 'http://50.64.128.70:8080/ldpt/#/dtMapPoint?dzmc=' + place + '&lx=' + x + '&ly=' + y,
+            area: ['800', '600px'],
+            maxmin: true,
+            success: function (layero, index) {
+                setTimeout(function () {
+                    layui.layer.tips('点击此处返回列表', '.layui-layer-setwin .layui-layer-close', {
+                        tips: 3
+                    });
+                }, 500)
+            },
+            cancel: function () {
+                window.removeEventListener('message', f1, false);
+            }
+        })
+        layui.layer.full(index);
+        window.addEventListener('message', f1);
+    }
+
     // 涉赌背景tab - 根据县级市判断派出所显示
     function checkDuPoliceStation() {
         var county = $('#du_homeCounty').val().trim();
         togglePoliceDiv(county, 'du_home');
     }
 
-    // 涉娼背景tab - 根据县级市判断派出所显示
+    // 涉黄背景tab - 根据县级市判断派出所显示
     function checkChangPoliceStation() {
         var county = $('#chang_homeCounty').val().trim();
         togglePoliceDiv(county, 'chang_home');
@@ -3634,6 +5479,1230 @@
                 $("#workunit").val(data.zaExtend.workunit);
             }
         });
+    }
+
+    // ========== 涉警涉案函数定义 ==========
+    // 从personel221018.js复制的函数
+    /**
+     * 打开关联警情信息（只读展示，附带涉赌/涉黄/陪侍关联ID）
+     * @param sfzh 身份证号
+     */
+    function openzajqxx(sfzh) {
+        layui.table.render({
+            elem: '#jqxxTable',
+            toolbar: true,
+            defaultToolbar: ['filter', 'exports', 'print'],
+            url: locat + "/queryZaJqxxWithRel.do?sfzh=" + sfzh,
+            method: 'post',
+            cols: [[
+                {field: 'id', type: 'radio', fixed: 'true', align: "center"},
+                {field: 'jjrqsj', title: '接警时间', width: 180, align: "center"},
+                {field: 'bjnr', title: '报警内容', width: 150, align: "center"},
+                {field: 'bjlx', title: '报警类型', width: 150, align: "center"},
+                {field: 'sfdd', title: '事发地点', width: 150, align: "center"},
+                {field: 'cljgnr', title: '处理结果内容', width: 150, align: "center"},
+                {field: 'cjdwmc', title: '处警单位名称', width: 150, align: "center"},
+                {
+                    field: 'du_ids',
+                    title: '关联涉赌',
+                    width: 120,
+                    align: "center",
+                    templet: function(d) {
+                        return d.du_ids ? '<span style="color:#1E9FFF;">' + d.du_ids + '</span>' : '<span style="color:#ccc;">-</span>';
+                    }
+                },
+                {
+                    field: 'chang_ids',
+                    title: '关联涉黄',
+                    width: 120,
+                    align: "center",
+                    templet: function(d) {
+                        return d.chang_ids ? '<span style="color:#1E9FFF;">' + d.chang_ids + '</span>' : '<span style="color:#ccc;">-</span>';
+                    }
+                },
+                {
+                    field: 'pei_ids',
+                    title: '关联陪侍',
+                    width: 120,
+                    align: "center",
+                    templet: function(d) {
+                        return d.pei_ids ? '<span style="color:#1E9FFF;">' + d.pei_ids + '</span>' : '<span style="color:#ccc;">-</span>';
+                    }
+                },
+                {
+                    title: '关联详情',
+                    width: 100,
+                    align: 'center',
+                    templet: function(d) {
+                        if(d.du_ids || d.chang_ids || d.pei_ids){
+                            return '<button class="layui-btn layui-btn-xs layui-btn-normal" onclick="showJqRelDetail(' + d.id + ',\'' + (d.du_ids || '') + '\',\'' + (d.chang_ids || '') + '\',\'' + (d.pei_ids || '') + '\')">查看</button>';
+                        } else {
+                            return '<span style="color:#ccc;">无关联</span>';
+                        }
+                    }
+                }
+            ]],
+            page: true,
+            limit: 10
+        });
+    }
+
+    /**
+     * 打开关联案件信息（只读展示，附带涉赌/涉黄/陪侍关联ID）
+     * @param sfzh 身份证号
+     */
+    function openzaajxx(sfzh) {
+        layui.table.render({
+            elem: '#ajxxTable',
+            toolbar: true,
+            defaultToolbar: ['filter', 'exports', 'print'],
+            url: locat + "/queryZaAjxxWithRel.do?sfzh=" + sfzh,
+            method: 'post',
+            cols: [[
+                {field: 'id', type: 'radio', fixed: 'true', align: "center"},
+                {field: 'jjbh', title: '案件编号', width: 180, align: "center"},
+                {field: 'slsj', title: '受理时间', width: 180, align: "center"},
+                {field: 'ajlb', title: '案件类别', width: 150, align: "center"},
+                {field: 'ajmc', title: '案件名称', width: 150, align: "center"},
+                {field: 'sldwmc', title: '受理单位', width: 150, align: "center"},
+                {field: 'jyaq', title: '简要案情', width: 150, align: "center"},
+                {field: 'cfqk', title: '处罚情况', width: 180, align: "center"},
+                {
+                    field: 'cfrq',
+                    title: '处罚日期',
+                    width: 150,
+                    align: "center",
+                    templet: function(d) {
+                        if (d.cfrq && d.cfrq.length === 14) {
+                            // 格式：20260318134727 -> 2026-03-18
+                            return d.cfrq.substring(0, 4) + '-' + d.cfrq.substring(4, 6) + '-' + d.cfrq.substring(6, 8);
+                        }
+                        return d.cfrq || '';
+                    }
+                },
+                {
+                    field: 'du_ids',
+                    title: '关联涉赌',
+                    width: 120,
+                    align: "center",
+                    templet: function(d) {
+                        return d.du_ids ? '<span style="color:#1E9FFF;">' + d.du_ids + '</span>' : '<span style="color:#ccc;">-</span>';
+                    }
+                },
+                {
+                    field: 'chang_ids',
+                    title: '关联涉黄',
+                    width: 120,
+                    align: "center",
+                    templet: function(d) {
+                        return d.chang_ids ? '<span style="color:#1E9FFF;">' + d.chang_ids + '</span>' : '<span style="color:#ccc;">-</span>';
+                    }
+                },
+                {
+                    field: 'pei_ids',
+                    title: '关联陪侍',
+                    width: 120,
+                    align: "center",
+                    templet: function(d) {
+                        return d.pei_ids ? '<span style="color:#1E9FFF;">' + d.pei_ids + '</span>' : '<span style="color:#ccc;">-</span>';
+                    }
+                },
+                {
+                    title: '关联详情',
+                    width: 100,
+                    align: 'center',
+                    templet: function(d) {
+                        if(d.du_ids || d.chang_ids || d.pei_ids){
+                            return '<button class="layui-btn layui-btn-xs layui-btn-normal" onclick="showAjRelDetail(' + d.id + ',\'' + (d.du_ids || '') + '\',\'' + (d.chang_ids || '') + '\',\'' + (d.pei_ids || '') + '\')">查看</button>';
+                        } else {
+                            return '<span style="color:#ccc;">无关联</span>';
+                        }
+                    }
+                }
+            ]],
+            page: true,
+            limit: 10
+        });
+    }
+
+    /**
+     * 显示警情关联详情（涉赌/涉黄/陪侍记录）
+     */
+    function showJqRelDetail(jqId, duIds, changIds, peiIds) {
+        var content = '<div style="padding:20px;">';
+
+        // 涉赌记录详情
+        if(duIds && duIds.trim()){
+            content += '<h3 style="color:#1E9FFF;border-bottom:2px solid #1E9FFF;padding-bottom:5px;">关联涉赌记录</h3>';
+            content += '<div id="duRelDetail" style="margin-bottom:20px;"></div>';
+        }
+
+        // 涉黄记录详情
+        if(changIds && changIds.trim()){
+            content += '<h3 style="color:#1E9FFF;border-bottom:2px solid #1E9FFF;padding-bottom:5px;">关联涉黄记录</h3>';
+            content += '<div id="changRelDetail" style="margin-bottom:20px;"></div>';
+        }
+
+        // 陪侍记录详情
+        if(peiIds && peiIds.trim()){
+            content += '<h3 style="color:#1E9FFF;border-bottom:2px solid #1E9FFF;padding-bottom:5px;">关联陪侍记录</h3>';
+            content += '<div id="peiRelDetail" style="margin-bottom:20px;"></div>';
+        }
+
+        content += '</div>';
+
+        layui.layer.open({
+            title: '警情关联详情',
+            type: 1,
+            content: content,
+            area: ['900px', '70%'],
+            offset: '50px',
+            success: function(){
+                if(duIds && duIds.trim()) loadDuDetails(duIds.split(','), '#duRelDetail');
+                if(changIds && changIds.trim()) loadChangDetails(changIds.split(','), '#changRelDetail');
+                if(peiIds && peiIds.trim()) loadPeiDetails(peiIds.split(','), '#peiRelDetail');
+            }
+        });
+    }
+
+    /**
+     * 显示案件关联详情（涉赌/涉黄/陪侍记录）
+     */
+    function showAjRelDetail(ajId, duIds, changIds, peiIds) {
+        var content = '<div style="padding:20px;">';
+
+        if(duIds && duIds.trim()){
+            content += '<h3 style="color:#1E9FFF;border-bottom:2px solid #1E9FFF;padding-bottom:5px;">关联涉赌记录</h3>';
+            content += '<div id="duRelDetail" style="margin-bottom:20px;"></div>';
+        }
+
+        if(changIds && changIds.trim()){
+            content += '<h3 style="color:#1E9FFF;border-bottom:2px solid #1E9FFF;padding-bottom:5px;">关联涉黄记录</h3>';
+            content += '<div id="changRelDetail" style="margin-bottom:20px;"></div>';
+        }
+
+        if(peiIds && peiIds.trim()){
+            content += '<h3 style="color:#1E9FFF;border-bottom:2px solid #1E9FFF;padding-bottom:5px;">关联陪侍记录</h3>';
+            content += '<div id="peiRelDetail" style="margin-bottom:20px;"></div>';
+        }
+
+        content += '</div>';
+
+        layui.layer.open({
+            title: '案件关联详情',
+            type: 1,
+            content: content,
+            area: ['900px', '70%'],
+            offset: '50px',
+            success: function(){
+                if(duIds && duIds.trim()) loadDuDetails(duIds.split(','), '#duRelDetail');
+                if(changIds && changIds.trim()) loadChangDetails(changIds.split(','), '#changRelDetail');
+                if(peiIds && peiIds.trim()) loadPeiDetails(peiIds.split(','), '#peiRelDetail');
+            }
+        });
+    }
+
+    /**
+     * 加载涉赌记录详情
+     */
+    function loadDuDetails(duIds, container) {
+        var html = '<table class="layui-table" lay-size="sm">';
+        html += '<thead><tr><th>ID</th><th>处罚日期</th><th>处罚情况</th><th>人员属性</th><th>赌博方式</th><th>赌博部位</th>' +
+            '<th>涉案地址</th><th>采集来源</th></tr></thead><tbody>';
+
+        var loadedCount = 0;
+        duIds.forEach(function(id){
+            if(!id || !id.trim()) return;
+            $.ajax({
+                url: locat + '/getZaDuById.do',
+                data: {id: id.trim()},
+                type: 'POST',
+                dataType: 'json',
+                async: false,
+                success: function(data){
+                    if(data){
+                        html += '<tr>';
+                        html += '<td>' + (data.id || '-') + '</td>';
+                        html += '<td>' + (data.chsj || '-') + '</td>';
+                        html += '<td>' + (data.cfjg || '-') + '</td>';
+                        html += '<td>' + (data.personAttribute || '-') + '</td>';
+                        html += '<td>' + (data.dbfs || '-') + '</td>';
+                        html += '<td>' + (data.dbbw || '-') + '</td>';
+                        html += '<td>' + (data.caseAddressList || '-') + '</td>';
+                        html += '<td>' + (data.collectSource || '-') + '</td>';
+                        html += '</tr>';
+                        loadedCount++;
+                    }
+                }
+            });
+        });
+
+        if(loadedCount === 0){
+            html += '<tr><td colspan="5" style="text-align:center;color:#999;">暂无数据</td></tr>';
+        }
+
+        html += '</tbody></table>';
+        $(container).html(html);
+    }
+
+    /**
+     * 加载涉黄记录详情
+     */
+    function loadChangDetails(changIds, container) {
+        var html = '<table class="layui-table" lay-size="sm">';
+        html += '<thead><tr><th>ID</th><th>处罚时间</th><th>处罚情况</th><th>人员属性</th><th>涉黄方式</th><th>涉黄类型</th><th>涉案地址</th><th>采集来源</th></tr></thead><tbody>';
+
+        var loadedCount = 0;
+        changIds.forEach(function(id){
+            if(!id || !id.trim()) return;
+            $.ajax({
+                url: locat + '/getZaChangById.do',
+                data: {id: id.trim()},
+                type: 'POST',
+                dataType: 'json',
+                async: false,
+                success: function(data){
+                    if(data){
+                        html += '<tr>';
+                        html += '<td>' + (data.id || '-') + '</td>';
+                        html += '<td>' + (data.chang_chsj || '-') + '</td>';
+                        html += '<td>' + (data.chang_cfjg || '-') + '</td>';
+                        html += '<td>' + (data.chang_scjs || '-') + '</td>';
+                        html += '<td>' + (data.chang_myfs || '-') + '</td>';
+                        html += '<td>' + (data.changType || '-') + '</td>';
+                        html += '<td>' + (data.caseAddressList || '-') + '</td>';
+                        html += '<td>' + (data.collectSource || '-') + '</td>';
+                        html += '</tr>';
+                        loadedCount++;
+                    }
+                }
+            });
+        });
+
+        if(loadedCount === 0){
+            html += '<tr><td colspan="5" style="text-align:center;color:#999;">暂无数据</td></tr>';
+        }
+
+        html += '</tbody></table>';
+        $(container).html(html);
+    }
+
+    /**
+     * 加载陪侍记录详情
+     */
+    function loadPeiDetails(peiIds, container) {
+        var html = '<table class="layui-table" lay-size="sm">';
+        html += '<thead><tr><th>ID</th><th>采集时间</th><th>活动地点</th><th>采集来源</th></tr></thead><tbody>';
+
+        var loadedCount = 0;
+        peiIds.forEach(function(id){
+            if(!id || !id.trim()) return;
+            $.ajax({
+                url: locat + '/getZaPeiById.do',
+                data: {id: id.trim()},
+                type: 'POST',
+                dataType: 'json',
+                async: false,
+                success: function(data){
+                    if(data){
+                        html += '<tr>';
+                        html += '<td>' + (data.id || '-') + '</td>';
+                        html += '<td>' + (data.collectDate || '-') + '</td>';
+                        html += '<td>' + (data.activityVenue || '-') + '</td>';
+                        html += '<td>' + (data.collectSource || '-') + '</td>';
+                        html += '</tr>';
+                        loadedCount++;
+                    }
+                }
+            });
+        });
+
+        if(loadedCount === 0){
+            html += '<tr><td colspan="5" style="text-align:center;color:#999;">暂无数据</td></tr>';
+        }
+
+        html += '</tbody></table>';
+        $(container).html(html);
+    }
+
+
+    // ========== 涉警涉案初始化 ==========
+    $(document).ready(function() {
+
+        // 页面加载完成后，初始化涉警信息表格
+        setTimeout(function() {
+            if (typeof openzajqxx === 'function') {
+                openzajqxx('${personnel.cardnumber}');
+            } else {
+                console.warn('⚠️ openzajqxx function is not defined yet');
+            }
+        }, 100);
+    });
+
+    // ========== 涉赌关联案件选择函数 ==========
+    // 存储已选择的涉赌关联记录
+    window.selectedDuRelations = window.selectedDuRelations || [];
+    // 存储已选择的涉黄关联记录
+    window.selectedChangRelations = window.selectedChangRelations || [];
+    // 存储已选择的陪侍关联记录
+    window.selectedPeiRelations = window.selectedPeiRelations || [];
+
+    /**
+     * 加载涉赌记录的已有关联关系（警情和案件）
+     * @param duId 涉赌记录ID
+     */
+    function loadExistingDuRel(duId) {
+        if (!duId || duId <= 0) {
+            console.log('无效的duId，跳过加载关联关系');
+            return;
+        }
+
+        var locat = (window.location + '').split('/');
+        if ('main' == locat[3]) {
+            locat = locat[0] + '//' + locat[2];
+        } else {
+            locat = locat[0] + '//' + locat[2] + '/' + locat[3];
+        }
+
+        console.log('🔍 开始加载涉赌关联关系，duId:', duId);
+
+        // ✅ 调用 queryDuRelations.do 获取详细信息
+        $.ajax({
+            url: locat + '/queryDuRelations.do',
+            data: {duId: duId},
+            type: 'POST',
+            dataType: 'json',
+            async: false,
+            success: function(result) {
+                if (result && result.code === 0) {
+                    console.log('✓ 查询到涉赌关联详情:', result);
+
+                    // 清空之前的选择
+                    window.selectedDuRelations = [];
+
+                    // 加载关联的警情详情
+                    if (result.jqList && result.jqList.length > 0) {
+                        result.jqList.forEach(function(jq) {
+                            window.selectedDuRelations.push({
+                                type: 'jq',
+                                id: jq.id,
+                                name: (jq.jjsj || '') + '-' + (jq.bjnr || '')
+                            });
+                        });
+                        console.log('✓ 加载 ' + result.jqList.length + ' 条警情');
+                    }
+
+                    // 加载关联的案件详情
+                    if (result.ajList && result.ajList.length > 0) {
+                        result.ajList.forEach(function(aj) {
+                            window.selectedDuRelations.push({
+                                type: 'aj',
+                                id: aj.id,
+                                name: (aj.ajbh || '') + '-' + (aj.ajmc || '')
+                            });
+                        });
+                        console.log('✓ 加载 ' + result.ajList.length + ' 条案件');
+                    }
+
+                    // 更新显示
+                    updateDuRelationDisplay();
+
+                    console.log('✅ 涉赌关联关系加载完成，共 ' + window.selectedDuRelations.length + ' 条');
+                } else {
+                    console.error('❌ 查询关联关系失败:', result);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('❌ 加载涉赌关联关系失败:', error);
+            }
+        });
+    }
+
+    /**
+     * 加载涉黄记录的已有关联关系（警情和案件）
+     * @param changId 涉黄记录ID
+     */
+    function loadExistingChangRel(changId) {
+        if (!changId || changId <= 0) {
+            console.log('无效的changId，跳过加载关联关系');
+            return;
+        }
+
+        var locat = (window.location + '').split('/');
+        if ('main' == locat[3]) {
+            locat = locat[0] + '//' + locat[2];
+        } else {
+            locat = locat[0] + '//' + locat[2] + '/' + locat[3];
+        }
+
+        console.log('🔍 开始加载涉黄关联关系，changId:', changId);
+
+        // ✅ 调用 queryChangRelations.do 获取详细信息
+        $.ajax({
+            url: locat + '/queryChangRelations.do',
+            data: {changId: changId},
+            type: 'POST',
+            dataType: 'json',
+            async: false,
+            success: function(result) {
+                if (result && result.code === 0) {
+                    console.log('✓ 查询到涉chang关联详情:', result);
+
+                    // 清空之前的选择
+                    window.selectedChangRelations = [];
+
+                    // 加载关联的警情详情
+                    if (result.jqList && result.jqList.length > 0) {
+                        result.jqList.forEach(function(jq) {
+                            window.selectedChangRelations.push({
+                                type: 'jq',
+                                id: jq.id,
+                                name: (jq.jjsj || '') + '-' + (jq.bjnr || '')
+                            });
+                        });
+                        console.log('✓ 加载 ' + result.jqList.length + ' 条警情');
+                    }
+
+                    // 加载关联的案件详情
+                    if (result.ajList && result.ajList.length > 0) {
+                        result.ajList.forEach(function(aj) {
+                            window.selectedChangRelations.push({
+                                type: 'aj',
+                                id: aj.id,
+                                name: (aj.ajbh || '') + '-' + (aj.ajmc || '')
+                            });
+                        });
+                        console.log('✓ 加载 ' + result.ajList.length + ' 条案件');
+                    }
+
+                    // 更新显示
+                    updateChangRelationDisplay();
+
+                    console.log('✅ 涉chang关联关系加载完成，共 ' + window.selectedChangRelations.length + ' 条');
+                } else {
+                    console.error('❌ 查询关联关系失败:', result);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('❌ 加载涉chang关联关系失败:', error);
+            }
+        });
+    }
+
+    /**
+     * 加载涉pei记录的已有关联关系（警情和案件）
+     * @param peiId 涉赌记录ID
+     */
+    function loadExistingPeiRel(peiId) {
+        if (!peiId || peiId <= 0) {
+            console.log('无效的peiId，跳过加载关联关系');
+            return;
+        }
+
+        var locat = (window.location + '').split('/');
+        if ('main' == locat[3]) {
+            locat = locat[0] + '//' + locat[2];
+        } else {
+            locat = locat[0] + '//' + locat[2] + '/' + locat[3];
+        }
+
+        console.log('🔍 开始加载陪侍关联关系，peiId:', peiId);
+
+        // ✅ 调用 queryPeiRelations.do 获取详细信息
+        $.ajax({
+            url: locat + '/queryPeiRelations.do',
+            data: {peiId: peiId},
+            type: 'POST',
+            dataType: 'json',
+            async: false,
+            success: function(result) {
+                if (result && result.code === 0) {
+                    console.log('✓ 查询到陪侍关联详情:', result);
+
+                    // 清空之前的选择
+                    window.selectedPeiRelations = [];
+
+                    // 加载关联的警情详情
+                    if (result.jqList && result.jqList.length > 0) {
+                        result.jqList.forEach(function(jq) {
+                            window.selectedPeiRelations.push({
+                                type: 'jq',
+                                id: jq.id,
+                                name: (jq.jjsj || '') + '-' + (jq.bjnr || '')
+                            });
+                        });
+                        console.log('✓ 加载 ' + result.jqList.length + ' 条警情');
+                    }
+
+                    // 加载关联的案件详情
+                    if (result.ajList && result.ajList.length > 0) {
+                        result.ajList.forEach(function(aj) {
+                            window.selectedPeiRelations.push({
+                                type: 'aj',
+                                id: aj.id,
+                                name: (aj.ajbh || '') + '-' + (aj.ajmc || '')
+                            });
+                        });
+                        console.log('✓ 加载 ' + result.ajList.length + ' 条案件');
+                    }
+
+                    // 更新显示
+                    updatePeiRelationDisplay();
+
+                    console.log('✅ 陪侍关联关系加载完成，共 ' + window.selectedPeiRelations.length + ' 条');
+                } else {
+                    console.error('❌ 查询关联关系失败:', result);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('❌ 加载陪侍关联关系失败:', error);
+            }
+        });
+    }
+
+    /**
+     * 选择涉赌关联警情/案件
+     * @param sfzh 身份证号
+     * @param duId 涉赌记录ID（用于回显已有关联）
+     */
+    function selectdujqaj(sfzh, duId) {
+        var locat = (window.location + '').split('/');
+        if ('main' == locat[3]) {
+            locat = locat[0] + '//' + locat[2];
+        } else {
+            locat = locat[0] + '//' + locat[2] + '/' + locat[3];
+        }
+
+        layui.layer.open({
+            type: 1,
+            title: '选择关联警情/案件',
+            area: ['1000px', '600px'],
+            offset: '50px',
+            shade: 0.3,
+            content: '<div style="padding:20px;">' +
+                '<div id="duRelSelectContainer">' +
+                '<h3 style="color:#1E9FFF;border-bottom:2px solid #1E9FFF;padding:10px 0;margin-bottom:10px;">--涉警记录--</h3>' +
+                '<table class="layui-hide" id="duJqSelectTable" lay-filter="duJqSelectTable"></table>' +
+                '<h3 style="color:#1E9FFF;border-bottom:2px solid #1E9FFF;padding:10px 0;margin:20px 0 10px 0;">--涉案记录--</h3>' +
+                '<table class="layui-hide" id="duAjSelectTable" lay-filter="duAjSelectTable"></table>' +
+                '</div>' +
+                '</div>',
+            success: function(layero, index) {
+
+                // 渲染涉警记录表格
+                layui.table.render({
+                    elem: '#duJqSelectTable',
+                    url: locat + "/queryZaJqxxWithRel.do?sfzh=" + sfzh,
+                    method: 'post',
+                    height: 220,
+                    cols: [[
+                        {type: 'checkbox', fixed: 'left'},
+                        {field: 'jjrqsj', title: '接警时间', width: 160, align: "center", templet: function(d){ return formatRawDate(d.jjrqsj); }},
+                        {field: 'bjnr', title: '报警内容', width: 200, align: "center"},
+                        {field: 'bjlx', title: '报警类型', width: 120, align: "center"},
+                        {field: 'sfdd', title: '事发地点', width: 180, align: "center"}
+                    ]],
+                    page: true,
+                    limit: 10,
+                    limits: [10, 20, 30, 50]
+                });
+
+                // 渲染涉案记录表格
+                layui.table.render({
+                    elem: '#duAjSelectTable',
+                    url: locat + "/queryZaAjxxWithRel.do?sfzh=" + sfzh,
+                    method: 'post',
+                    height: 220,
+                    cols: [[
+                        {type: 'checkbox', fixed: 'left'},
+                        {field: 'jjbh', title: '案件编号', width: 150, align: "center"},
+                        {field: 'slsj', title: '受理时间', width: 160, align: "center", templet: function(d){ return formatRawDate(d.slsj); }},
+                        {field: 'ajlb', title: '案件类别', width: 120, align: "center"},
+                        {field: 'ajmc', title: '案件名称', width: 180, align: "center"},
+                        {field: 'sldwmc', title: '受理单位', width: 150, align: "center"},
+                        {field: 'cfqk', title: '处罚情况', width: 150, align: "center"},
+                        {field: 'cfrq', title: '处罚日期', width: 160, align: "center", templet: function(d){ return formatRawDate(d.cfrq); }}
+                    ]],
+                    page: true,
+                    limit: 10,
+                    limits: [10, 20, 30, 50]
+                });
+            },
+            btn: ['确定选择', '取消'],
+            yes: function(index, layero) {
+                // 获取选中的警情记录
+                var jqCheckStatus = layui.table.checkStatus('duJqSelectTable');
+                var jqData = jqCheckStatus.data;
+
+                // 获取选中的案件记录
+                var ajCheckStatus = layui.table.checkStatus('duAjSelectTable');
+                var ajData = ajCheckStatus.data;
+
+                // 初始化数组（如果不存在）
+                if (!window.selectedDuRelations) {
+                    window.selectedDuRelations = [];
+                }
+
+                var addedCount = 0;
+
+                // 添加选中的警情（检查是否已存在）
+                jqData.forEach(function(row) {
+                    var exists = window.selectedDuRelations.some(function(rel) {
+                        return rel.type === 'jq' && rel.id === row.id;
+                    });
+                    if (!exists) {
+                        window.selectedDuRelations.push({
+                            type: 'jq',
+                            id: row.id,
+                            name: (row.jjrqsj || '') + ' - ' + (row.bjnr || ''),
+                            data: row
+                        });
+                        addedCount++;
+                    }
+                });
+
+                // 添加选中的案件（检查是否已存在）
+                ajData.forEach(function(row) {
+                    var exists = window.selectedDuRelations.some(function(rel) {
+                        return rel.type === 'aj' && rel.id === row.id;
+                    });
+                    if (!exists) {
+                        window.selectedDuRelations.push({
+                            type: 'aj',
+                            id: row.id,
+                            name: (row.jjbh || '') + ' - ' + (row.ajmc || ''),
+                            data: row
+                        });
+                        addedCount++;
+                    }
+                });
+
+                // 涉赌tab：自动填写字段
+                if(jqData.length > 0) {
+                    // 选择了警情，填写"警情"
+                    $('#collectSource-du').val('警情');
+                    layui.form.render('select');
+                } else if(ajData.length > 0) {
+                    // 选择了案件，填写"案件"、处罚情况、处罚日期
+                    $('#collectSource-du').val('案件');
+
+                    // 取第一条案件数据
+                    var firstAj = ajData[0];
+
+                    // ✅ 修复：直接将cfqk填写到处罚情况输入框（不管是否与数据字典匹配）
+                    if(firstAj.cfqk) {
+                        var $cfjgSelect = $('#cfjg');
+                        var cfqkValue = firstAj.cfqk;
+
+                        // 检查选项是否存在
+                        var optionExists = $cfjgSelect.find('option[value="' + cfqkValue + '"]').length > 0;
+
+                        // 如果选项不存在，添加新选项
+                        if (!optionExists) {
+                            $cfjgSelect.append('<option value="' + cfqkValue + '">' + cfqkValue + '</option>');
+                        }
+
+                        // 设置值
+                        $cfjgSelect.val(cfqkValue);
+                        console.log('涉赌-自动填写处罚情况: ' + cfqkValue);
+                    }
+
+                    // ✅ 修复：直接将cfrq填写到处罚日期输入框
+                    if(firstAj.cfrq) {
+                        $('#chsj').val(firstAj.cfrq);
+                        console.log('涉赌-自动填写处罚日期: ' + firstAj.cfrq);
+                    }
+
+                    layui.form.render('select');
+                }
+
+                // 更新显示
+                updateDuRelationDisplay();
+
+                layui.layer.close(index);
+
+                if(addedCount > 0) {
+                    layui.layer.msg('已添加 ' + addedCount + ' 条记录，共 ' + window.selectedDuRelations.length + ' 条', {icon: 1});
+                } else if(jqData.length > 0 || ajData.length > 0) {
+                    layui.layer.msg('所选记录已存在', {icon: 0});
+                }
+            }
+        });
+    }
+
+    /**
+     * 将原始紧凑日期字符串（如 20160320134727）转换为标准格式（2016-03-20 13:47:27）
+     */
+    function formatRawDate(val) {
+        if (!val) return '';
+        var s = String(val).replace(/\D/g, '');
+        if (s.length >= 8) {
+            var y = s.substring(0, 4);
+            var mo = s.substring(4, 6);
+            var d = s.substring(6, 8);
+            var result = y + '-' + mo + '-' + d;
+            if (s.length >= 12) {
+                var h = s.substring(8, 10);
+                var mi = s.substring(10, 12);
+                result += ' ' + h + ':' + mi;
+                if (s.length >= 14) {
+                    result += ':' + s.substring(12, 14);
+                }
+            }
+            return result;
+        }
+        return val;
+    }
+
+    /**
+     * 更新涉赌关联记录显示
+     */
+    function updateDuRelationDisplay() {
+        // 找到输入框所在的整个 form-item 容器
+        var formItem = $('#du_caseName').closest('.layui-form-item');
+        formItem.find('.du-relation-list').remove();
+
+        if (window.selectedDuRelations && window.selectedDuRelations.length > 0) {
+            // 更新输入框显示
+            $('#du_caseName').val('已选择 ' + window.selectedDuRelations.length + ' 条关联记录');
+
+            // 构建已添加列表HTML（放在输入框下方）
+            var html = '<div class="du-relation-list" style="margin-top:10px;border:1px solid #e6e6e6;padding:10px;border-radius:4px;background:#f8f8f8;width:100%;">';
+            html += '<div style="margin-bottom:8px;font-weight:bold;color:#333;">已添加列表：</div>';
+
+            window.selectedDuRelations.forEach(function(rel, index) {
+                var typeText = rel.type === 'jq'
+                    ? '<span style="display:inline-block;padding:2px 8px;background:#1E9FFF;color:#fff;border-radius:3px;font-size:12px;">警情</span>'
+                    : '<span style="display:inline-block;padding:2px 8px;background:#FF5722;color:#fff;border-radius:3px;font-size:12px;">案件</span>';
+
+                html += '<div class="relation-item" style="padding:8px;margin:5px 0;background:#fff;border:1px solid #e6e6e6;border-radius:3px;display:flex;justify-content:space-between;align-items:center;">';
+                html += '<span style="flex:1;padding-right:10px;">' + typeText + ' <span style="margin-left:8px;color:#666;">' + rel.name + '</span></span>';
+                html += '<button class="layui-btn layui-btn-xs layui-btn-danger" onclick="removeDuRelation(' + index + ')"><i class="layui-icon layui-icon-delete"></i> 删除</button>';
+                html += '</div>';
+            });
+
+            html += '</div>';
+            formItem.append(html);
+        } else {
+            $('#du_caseName').val('');
+        }
+    }
+
+    /**
+     * 删除涉赌关联记录
+     */
+    function removeDuRelation(index) {
+        if (window.selectedDuRelations && index >= 0 && index < window.selectedDuRelations.length) {
+            window.selectedDuRelations.splice(index, 1);
+            updateDuRelationDisplay();
+            layui.layer.msg('已删除', {icon: 1, time: 1000});
+        }
+    }
+
+    // ============================================================
+    // 涉黄关联案件功能
+    // ============================================================
+
+    /**
+     * 涉黄-选择关联警情/案件
+     */
+    function selectchangjqaj(sfzh, changId) {
+        var locat = (window.location + '').split('/');
+        if ('main' == locat[3]) {
+            locat = locat[0] + '//' + locat[2];
+        } else {
+            locat = locat[0] + '//' + locat[2] + '/' + locat[3];
+        }
+
+        layui.layer.open({
+            type: 1,
+            title: '选择关联警情/案件',
+            area: ['1000px', '600px'],
+            offset: '50px',
+            shade: 0.3,
+            content: '<div style="padding:20px;">' +
+                '<div id="changRelSelectContainer">' +
+                '<h3 style="color:#1E9FFF;border-bottom:2px solid #1E9FFF;padding:10px 0;margin-bottom:10px;">--涉警记录--</h3>' +
+                '<table class="layui-hide" id="changJqSelectTable" lay-filter="changJqSelectTable"></table>' +
+                '<h3 style="color:#1E9FFF;border-bottom:2px solid #1E9FFF;padding:10px 0;margin:20px 0 10px 0;">--涉案记录--</h3>' +
+                '<table class="layui-hide" id="changAjSelectTable" lay-filter="changAjSelectTable"></table>' +
+                '</div>' +
+                '</div>',
+            success: function(layero, index) {
+
+                // 渲染涉警记录表格
+                layui.table.render({
+                    elem: '#changJqSelectTable',
+                    url: locat + "/queryZaJqxxWithRel.do?sfzh=" + sfzh,
+                    method: 'post',
+                    height: 220,
+                    cols: [[
+                        {type: 'checkbox', fixed: 'left'},
+                        {field: 'jjrqsj', title: '接警时间', width: 160, align: "center", templet: function(d){ return formatRawDate(d.jjrqsj); }},
+                        {field: 'bjnr', title: '报警内容', width: 200, align: "center"},
+                        {field: 'bjlx', title: '报警类型', width: 120, align: "center"},
+                        {field: 'sfdd', title: '事发地点', width: 180, align: "center"}
+                    ]],
+                    page: true,
+                    limit: 10,
+                    limits: [10, 20, 30, 50]
+                });
+
+                // 渲染涉案记录表格
+                layui.table.render({
+                    elem: '#changAjSelectTable',
+                    url: locat + "/queryZaAjxxWithRel.do?sfzh=" + sfzh,
+                    method: 'post',
+                    height: 220,
+                    cols: [[
+                        {type: 'checkbox', fixed: 'left'},
+                        {field: 'jjbh', title: '案件编号', width: 150, align: "center"},
+                        {field: 'slsj', title: '受理时间', width: 160, align: "center", templet: function(d){ return formatRawDate(d.slsj); }},
+                        {field: 'ajlb', title: '案件类别', width: 120, align: "center"},
+                        {field: 'ajmc', title: '案件名称', width: 180, align: "center"},
+                        {field: 'sldwmc', title: '受理单位', width: 150, align: "center"},
+                        {field: 'cfqk', title: '处罚情况', width: 150, align: "center"},
+                        {field: 'cfrq', title: '处罚日期', width: 160, align: "center", templet: function(d){ return formatRawDate(d.cfrq); }}
+                    ]],
+                    page: true,
+                    limit: 10,
+                    limits: [10, 20, 30, 50]
+                });
+            },
+            btn: ['确定选择', '取消'],
+            yes: function(index, layero) {
+                // 获取选中的警情记录
+                var jqCheckStatus = layui.table.checkStatus('changJqSelectTable');
+                var jqData = jqCheckStatus.data;
+
+                // 获取选中的案件记录
+                var ajCheckStatus = layui.table.checkStatus('changAjSelectTable');
+                var ajData = ajCheckStatus.data;
+
+                // 初始化数组（如果不存在）
+                if (!window.selectedChangRelations) {
+                    window.selectedChangRelations = [];
+                }
+
+                var addedCount = 0;
+
+                // 添加选中的警情（检查是否已存在）
+                jqData.forEach(function(row) {
+                    var exists = window.selectedChangRelations.some(function(rel) {
+                        return rel.type === 'jq' && rel.id === row.id;
+                    });
+                    if (!exists) {
+                        window.selectedChangRelations.push({
+                            type: 'jq',
+                            id: row.id,
+                            name: (row.jjrqsj || '') + ' - ' + (row.bjnr || ''),
+                            data: row
+                        });
+                        addedCount++;
+                    }
+                });
+
+                // 添加选中的案件（检查是否已存在）
+                ajData.forEach(function(row) {
+                    var exists = window.selectedChangRelations.some(function(rel) {
+                        return rel.type === 'aj' && rel.id === row.id;
+                    });
+                    if (!exists) {
+                        window.selectedChangRelations.push({
+                            type: 'aj',
+                            id: row.id,
+                            name: (row.jjbh || '') + ' - ' + (row.ajmc || ''),
+                            data: row
+                        });
+                        addedCount++;
+                    }
+                });
+
+                // 涉黄tab：自动填写字段
+                if(jqData.length > 0) {
+                    // 选择了警情，填写"警情"
+                    $('#collectSource-chang').val('警情');
+                    layui.form.render('select');
+                } else if(ajData.length > 0) {
+                    // 选择了案件，填写"案件"、处罚情况、处罚时间
+                    $('#collectSource-chang').val('案件');
+
+                    // 取第一条案件数据
+                    var firstAj = ajData[0];
+
+                    // ✅ 修复：直接将cfqk填写到处罚情况输入框（不管是否与数据字典匹配）
+                    if(firstAj.cfqk) {
+                        var $changCfjgSelect = $('#chang_cfjg');
+                        var cfqkValue = firstAj.cfqk;
+
+                        // 检查选项是否存在
+                        var optionExists = $changCfjgSelect.find('option[value="' + cfqkValue + '"]').length > 0;
+
+                        // 如果选项不存在，添加新选项
+                        if (!optionExists) {
+                            $changCfjgSelect.append('<option value="' + cfqkValue + '">' + cfqkValue + '</option>');
+                        }
+
+                        // 设置值
+                        $changCfjgSelect.val(cfqkValue);
+                        console.log('涉黄-自动填写处罚情况: ' + cfqkValue);
+                    }
+
+                    // ✅ 修复：直接将cfrq填写到处罚时间输入框
+                    if(firstAj.cfrq) {
+                        $('#chang_chsj').val(firstAj.cfrq);
+                        console.log('涉黄-自动填写处罚时间: ' + firstAj.cfrq);
+                    }
+
+                    layui.form.render('select');
+                }
+
+                // 更新显示
+                updateChangRelationDisplay();
+
+                layui.layer.close(index);
+
+                if(addedCount > 0) {
+                    layui.layer.msg('已添加 ' + addedCount + ' 条记录，共 ' + window.selectedChangRelations.length + ' 条', {icon: 1});
+                } else if(jqData.length > 0 || ajData.length > 0) {
+                    layui.layer.msg('所选记录已存在', {icon: 0});
+                }
+            }
+        });
+    }
+
+    /**
+     * 更新涉黄关联记录显示
+     */
+    function updateChangRelationDisplay() {
+        // 找到输入框所在的整个 form-item 容器
+        var formItem = $('#chang_caseName').closest('.layui-form-item');
+        formItem.find('.chang-relation-list').remove();
+
+        if (window.selectedChangRelations && window.selectedChangRelations.length > 0) {
+            // 更新输入框显示
+            $('#chang_caseName').val('已选择 ' + window.selectedChangRelations.length + ' 条关联记录');
+
+            // 构建已添加列表HTML（放在输入框下方）
+            var html = '<div class="chang-relation-list" style="margin-top:10px;border:1px solid #e6e6e6;padding:10px;border-radius:4px;background:#f8f8f8;width:100%;">';
+            html += '<div style="margin-bottom:8px;font-weight:bold;color:#333;">已添加列表：</div>';
+
+            window.selectedChangRelations.forEach(function(rel, index) {
+                var typeText = rel.type === 'jq'
+                    ? '<span style="display:inline-block;padding:2px 8px;background:#1E9FFF;color:#fff;border-radius:3px;font-size:12px;">警情</span>'
+                    : '<span style="display:inline-block;padding:2px 8px;background:#FF5722;color:#fff;border-radius:3px;font-size:12px;">案件</span>';
+
+                html += '<div class="relation-item" style="padding:8px;margin:5px 0;background:#fff;border:1px solid #e6e6e6;border-radius:3px;display:flex;justify-content:space-between;align-items:center;">';
+                html += '<span style="flex:1;padding-right:10px;">' + typeText + ' <span style="margin-left:8px;color:#666;">' + rel.name + '</span></span>';
+                html += '<button class="layui-btn layui-btn-xs layui-btn-danger" onclick="removeChangRelation(' + index + ')"><i class="layui-icon layui-icon-delete"></i> 删除</button>';
+                html += '</div>';
+            });
+
+            html += '</div>';
+            formItem.append(html);
+        } else {
+            $('#chang_caseName').val('');
+        }
+    }
+
+    /**
+     * 删除涉黄关联记录
+     */
+    function removeChangRelation(index) {
+        if (window.selectedChangRelations && index >= 0 && index < window.selectedChangRelations.length) {
+            window.selectedChangRelations.splice(index, 1);
+            updateChangRelationDisplay();
+            layui.layer.msg('已删除', {icon: 1, time: 1000});
+        }
+    }
+
+    // ============================================================
+    // 陪侍关联案件功能
+    // ============================================================
+
+    /**
+     * 陪侍-选择关联警情/案件
+     */
+    function selectpeijqaj(sfzh, peiId) {
+        var locat = (window.location + '').split('/');
+        if ('main' == locat[3]) {
+            locat = locat[0] + '//' + locat[2];
+        } else {
+            locat = locat[0] + '//' + locat[2] + '/' + locat[3];
+        }
+
+        layui.layer.open({
+            type: 1,
+            title: '选择关联警情/案件',
+            area: ['1000px', '600px'],
+            offset: '50px',
+            shade: 0.3,
+            content: '<div style="padding:20px;">' +
+                '<div id="peiRelSelectContainer">' +
+                '<h3 style="color:#1E9FFF;border-bottom:2px solid #1E9FFF;padding:10px 0;margin-bottom:10px;">--涉警记录--</h3>' +
+                '<table class="layui-hide" id="peiJqSelectTable" lay-filter="peiJqSelectTable"></table>' +
+                '<h3 style="color:#1E9FFF;border-bottom:2px solid #1E9FFF;padding:10px 0;margin:20px 0 10px 0;">--涉案记录--</h3>' +
+                '<table class="layui-hide" id="peiAjSelectTable" lay-filter="peiAjSelectTable"></table>' +
+                '</div>' +
+                '</div>',
+            success: function(layero, index) {
+
+                // 渲染涉警记录表格
+                layui.table.render({
+                    elem: '#peiJqSelectTable',
+                    url: locat + "/queryZaJqxxWithRel.do?sfzh=" + sfzh,
+                    method: 'post',
+                    height: 220,
+                    cols: [[
+                        {type: 'checkbox', fixed: 'left'},
+                        {field: 'jjrqsj', title: '接警时间', width: 150, align: "center"},
+                        {field: 'bjnr', title: '报警内容', width: 200, align: "center"},
+                        {field: 'bjlx', title: '报警类型', width: 120, align: "center"},
+                        {field: 'sfdd', title: '事发地点', width: 180, align: "center"}
+                    ]],
+                    page: true,
+                    limit: 10,
+                    limits: [10, 20, 30, 50]
+                });
+
+                // 渲染涉案记录表格
+                layui.table.render({
+                    elem: '#peiAjSelectTable',
+                    url: locat + "/queryZaAjxxWithRel.do?sfzh=" + sfzh,
+                    method: 'post',
+                    height: 220,
+                    cols: [[
+                        {type: 'checkbox', fixed: 'left'},
+                        {field: 'jjbh', title: '案件编号', width: 150, align: "center"},
+                        {field: 'slsj', title: '受理时间', width: 150, align: "center"},
+                        {field: 'ajlb', title: '案件类别', width: 120, align: "center"},
+                        {field: 'ajmc', title: '案件名称', width: 180, align: "center"},
+                        {field: 'sldwmc', title: '受理单位', width: 150, align: "center"},
+                        {field: 'cfqk', title: '处罚情况', width: 150, align: "center"},
+                        {field: 'cfrq', title: '处罚日期', width: 150, align: "center"}
+                    ]],
+                    page: true,
+                    limit: 10,
+                    limits: [10, 20, 30, 50]
+                });
+            },
+            btn: ['确定选择', '取消'],
+            yes: function(index, layero) {
+                // 获取选中的警情记录
+                var jqCheckStatus = layui.table.checkStatus('peiJqSelectTable');
+                var jqData = jqCheckStatus.data;
+
+                // 获取选中的案件记录
+                var ajCheckStatus = layui.table.checkStatus('peiAjSelectTable');
+                var ajData = ajCheckStatus.data;
+
+                // 初始化数组（如果不存在）
+                if (!window.selectedPeiRelations) {
+                    window.selectedPeiRelations = [];
+                }
+
+                var addedCount = 0;
+
+                // 添加选中的警情（检查是否已存在）
+                jqData.forEach(function(row) {
+                    var exists = window.selectedPeiRelations.some(function(rel) {
+                        return rel.type === 'jq' && rel.id === row.id;
+                    });
+                    if (!exists) {
+                        window.selectedPeiRelations.push({
+                            type: 'jq',
+                            id: row.id,
+                            name: (row.jjrqsj || '') + ' - ' + (row.bjnr || ''),
+                            data: row
+                        });
+                        addedCount++;
+                    }
+                });
+
+                // 添加选中的案件（检查是否已存在）
+                ajData.forEach(function(row) {
+                    var exists = window.selectedPeiRelations.some(function(rel) {
+                        return rel.type === 'aj' && rel.id === row.id;
+                    });
+                    if (!exists) {
+                        window.selectedPeiRelations.push({
+                            type: 'aj',
+                            id: row.id,
+                            name: (row.jjbh || '') + ' - ' + (row.ajmc || ''),
+                            data: row
+                        });
+                        addedCount++;
+                    }
+                });
+
+                // 陪侍tab：自动填写字段
+                if(jqData.length > 0) {
+                    // 选择了警情，填写"涉警"
+                    $('#collectSource-pei').val('涉警');
+                    layui.form.render('select');
+                } else if(ajData.length > 0) {
+                    // 选择了案件，填写"涉案"
+                    $('#collectSource-pei').val('涉案');
+                    layui.form.render('select');
+                }
+
+                // 更新显示
+                updatePeiRelationDisplay();
+
+                layui.layer.close(index);
+
+                if(addedCount > 0) {
+                    layui.layer.msg('已添加 ' + addedCount + ' 条记录，共 ' + window.selectedPeiRelations.length + ' 条', {icon: 1});
+                } else if(jqData.length > 0 || ajData.length > 0) {
+                    layui.layer.msg('所选记录已存在', {icon: 0});
+                }
+            }
+        });
+    }
+
+    /**
+     * 更新陪侍关联记录显示
+     */
+    function updatePeiRelationDisplay() {
+        // 找到输入框所在的整个 form-item 容器
+        var formItem = $('#pei_caseName').closest('.layui-form-item');
+        formItem.find('.pei-relation-list').remove();
+
+        if (window.selectedPeiRelations && window.selectedPeiRelations.length > 0) {
+            // 更新输入框显示
+            $('#pei_caseName').val('已选择 ' + window.selectedPeiRelations.length + ' 条关联记录');
+
+            // 构建已添加列表HTML（放在输入框下方）
+            var html = '<div class="pei-relation-list" style="margin-top:10px;border:1px solid #e6e6e6;padding:10px;border-radius:4px;background:#f8f8f8;width:100%;">';
+            html += '<div style="margin-bottom:8px;font-weight:bold;color:#333;">已添加列表：</div>';
+
+            window.selectedPeiRelations.forEach(function(rel, index) {
+                var typeText = rel.type === 'jq'
+                    ? '<span style="display:inline-block;padding:2px 8px;background:#1E9FFF;color:#fff;border-radius:3px;font-size:12px;">警情</span>'
+                    : '<span style="display:inline-block;padding:2px 8px;background:#FF5722;color:#fff;border-radius:3px;font-size:12px;">案件</span>';
+
+                html += '<div class="relation-item" style="padding:8px;margin:5px 0;background:#fff;border:1px solid #e6e6e6;border-radius:3px;display:flex;justify-content:space-between;align-items:center;">';
+                html += '<span style="flex:1;padding-right:10px;">' + typeText + ' <span style="margin-left:8px;color:#666;">' + rel.name + '</span></span>';
+                html += '<button class="layui-btn layui-btn-xs layui-btn-danger" onclick="removePeiRelation(' + index + ')"><i class="layui-icon layui-icon-delete"></i> 删除</button>';
+                html += '</div>';
+            });
+
+            html += '</div>';
+            formItem.append(html);
+        } else {
+            $('#pei_caseName').val('');
+        }
+    }
+
+    /**
+     * 删除陪侍关联记录
+     */
+    function removePeiRelation(index) {
+        if (window.selectedPeiRelations && index >= 0 && index < window.selectedPeiRelations.length) {
+            window.selectedPeiRelations.splice(index, 1);
+            updatePeiRelationDisplay();
+            layui.layer.msg('已删除', {icon: 1, time: 1000});
+        }
     }
 
 </script>
