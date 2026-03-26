@@ -89,16 +89,87 @@
 		where t.sfzh = '$sfzh$'
 		order BY  t.jjrqsj desc
 	</select>
+
+	<!-- 涉警信息（附带关联信息：涉赌/涉娼/陪侍记录ID）-->
+	<select id="queryZaJqxxWithRel_count" parameterClass="xdjqxx" resultClass="Integer">
+		select count(1) from f_xt_xd_jqxx_new t
+		where t.sfzh = '$sfzh$'
+	</select>
+	<select id="queryZaJqxxWithRel" parameterClass="xdjqxx" resultClass="java.util.HashMap">
+		SELECT
+			t.*,
+			GROUP_CONCAT(DISTINCT du_rel.du_id ORDER BY du_rel.du_id) AS du_ids,
+			GROUP_CONCAT(DISTINCT chang_rel.chang_id ORDER BY chang_rel.chang_id) AS chang_ids,
+			GROUP_CONCAT(DISTINCT pei_rel.pei_id ORDER BY pei_rel.pei_id) AS pei_ids
+		FROM f_xt_xd_jqxx_new t
+		LEFT JOIN p_zaperson_du_jq_rel_t du_rel ON t.id = du_rel.jq_id AND du_rel.validflag = 1
+		LEFT JOIN p_zaperson_chang_jq_rel_t chang_rel ON t.id = chang_rel.jq_id AND chang_rel.validflag = 1
+		LEFT JOIN p_zaperson_pei_jq_rel_t pei_rel ON t.id = pei_rel.jq_id AND pei_rel.validflag = 1
+		WHERE t.sfzh = '$sfzh$'
+		GROUP BY t.id
+		ORDER BY t.jjrqsj DESC
+	</select>
+
 	<!-- 涉案信息-->
 	<select id="searchxdajxx_count" parameterClass="xdajxx" resultClass="Integer">
 		select count(1) from f_xt_xd_ajxx_new t
 		where t.sfzh = '$sfzh$'
 	</select>
 	<select id="searchxdajxx" parameterClass="xdajxx" resultClass="xdajxx">
-		select * from f_xt_xd_ajxx_new t
-		where t.sfzh = '$sfzh$'
-		order BY  t.slsj desc
+		SELECT t.id, t.sfzh, t.xm, t.jjbh, t.ajlb, t.ajmc, t.slsj, t.sldw, t.sldwmc, t.jyaq,
+		       t.flag, t.insert_time,
+		       clcs.JDSJ AS cfrq,
+		       dic.item  AS cfqk
+		FROM f_xt_xd_ajxx_new t
+		LEFT JOIN (
+		    SELECT GMSFHM, AJBH, JDSJ, JDJG
+		    FROM t_xjw_aj_clcs_jgzxb t1
+		    WHERE JDSJ = (
+		        SELECT MAX(JDSJ)
+		        FROM t_xjw_aj_clcs_jgzxb t2
+		        WHERE t2.GMSFHM = t1.GMSFHM
+		          AND t2.AJBH = t1.AJBH
+		    )
+		) clcs ON clcs.GMSFHM = t.sfzh AND clcs.AJBH = t.jjbh
+		LEFT JOIN f_xt_ajxx_dic dic ON dic.code = clcs.JDJG
+		WHERE t.sfzh = '$sfzh$'
+		ORDER BY t.slsj DESC
 	</select>
+
+	<!-- 涉案信息（附带关联信息：涉赌/涉娼/陪侍记录ID）-->
+	<select id="queryZaAjxxWithRel_count" parameterClass="xdajxx" resultClass="Integer">
+		select count(1) from f_xt_xd_ajxx_new t
+		where t.sfzh = '$sfzh$'
+	</select>
+	<select id="queryZaAjxxWithRel" parameterClass="xdajxx" resultClass="java.util.HashMap">
+		SELECT
+			t.id, t.sfzh, t.xm, t.jjbh, t.ajlb, t.ajmc, t.slsj, t.sldw, t.sldwmc, t.jyaq,
+			t.flag, t.insert_time,
+			clcs.JDSJ AS cfrq,
+			dic.item  AS cfqk,
+			GROUP_CONCAT(DISTINCT du_rel.du_id ORDER BY du_rel.du_id) AS du_ids,
+			GROUP_CONCAT(DISTINCT chang_rel.chang_id ORDER BY chang_rel.chang_id) AS chang_ids,
+			GROUP_CONCAT(DISTINCT pei_rel.pei_id ORDER BY pei_rel.pei_id) AS pei_ids
+		FROM f_xt_xd_ajxx_new t
+		LEFT JOIN (
+		    SELECT GMSFHM, AJBH, JDSJ, JDJG
+		    FROM t_xjw_aj_clcs_jgzxb t1
+		    WHERE JDSJ = (
+		        SELECT MAX(JDSJ)
+		        FROM t_xjw_aj_clcs_jgzxb t2
+		        WHERE t2.GMSFHM = t1.GMSFHM
+		          AND t2.AJBH = t1.AJBH
+		    )
+		) clcs ON clcs.GMSFHM = t.sfzh AND clcs.AJBH = t.jjbh
+		LEFT JOIN f_xt_ajxx_dic dic ON dic.code = clcs.JDJG
+		LEFT JOIN p_zaperson_du_aj_rel_t du_rel ON t.id = du_rel.aj_id AND du_rel.validflag = 1
+		LEFT JOIN p_zaperson_chang_aj_rel_t chang_rel ON t.id = chang_rel.aj_id AND chang_rel.validflag = 1
+		LEFT JOIN p_zaperson_pei_aj_rel_t pei_rel ON t.id = pei_rel.aj_id AND pei_rel.validflag = 1
+		WHERE t.sfzh = '$sfzh$'
+		GROUP BY t.id
+		ORDER BY t.slsj DESC
+	</select>
+
 	<!-- 一标三识 -->
 	<select id="findYbssRkByCardnumber" parameterClass="String" resultClass="String">
 		SELECT IFNULL(ID,concat(COUNT(ID),'')) from f_ybss_rk where IDNUMBER='$cardnumber$' and HISTORY='0'
@@ -188,5 +259,34 @@
 	<select id="getYujingById" parameterClass="int" resultClass="yujing">
 		SELECT * from f_yujing_t 
 		WHERE id = $id$
+	</select>
+
+	<!-- 根据身份证号列表批量查询案件信息 -->
+	<select id="getAjxxByCardnumbers" parameterClass="string" resultClass="java.util.HashMap">
+		SELECT t.id, t.sfzh, t.xm, t.jjbh, t.ajlb, t.ajmc, t.slsj, t.sldw, t.sldwmc, t.jyaq,
+		       t.flag, t.insert_time,
+		       clcs.JDSJ AS cfrq,
+		       dic.item  AS cfqk
+		FROM f_xt_xd_ajxx_new t
+		LEFT JOIN (
+		    SELECT GMSFHM, AJBH, JDSJ, JDJG
+		    FROM t_xjw_aj_clcs_jgzxb t1
+		    WHERE JDSJ = (
+		        SELECT MAX(JDSJ)
+		        FROM t_xjw_aj_clcs_jgzxb t2
+		        WHERE t2.GMSFHM = t1.GMSFHM
+		          AND t2.AJBH = t1.AJBH
+		    )
+		) clcs ON clcs.GMSFHM = t.sfzh AND clcs.AJBH = t.jjbh
+		LEFT JOIN f_xt_ajxx_dic dic ON dic.code = clcs.JDJG
+		WHERE t.sfzh IN ($value$)
+		ORDER BY t.sfzh, t.slsj DESC
+	</select>
+
+	<!-- 根据身份证号列表批量查询警情信息 -->
+	<select id="getJqxxByCardnumbers" parameterClass="string" resultClass="java.util.HashMap">
+		SELECT * FROM f_xt_xd_jqxx_new
+		WHERE sfzh IN ($value$)
+		ORDER BY sfzh, jjrqsj DESC
 	</select>
 </sqlMap>

@@ -1,6 +1,7 @@
 package com.szrj.business.model.interfaces;
-
+//修改
 public class XdJqxx {
+	private String id;
 	private String sfzh;
 	private String xm;	
 	private String jjbh;
@@ -14,6 +15,12 @@ public class XdJqxx {
 	private String cjlb;	
 	private String flag;
 	private String insert_time;
+	public String getId() {
+		return id;
+	}
+	public void setId(String id) {
+		this.id = id;
+	}
 	public String getSfzh() {
 		return sfzh;
 	}

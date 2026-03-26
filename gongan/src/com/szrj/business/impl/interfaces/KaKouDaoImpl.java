@@ -61,6 +61,30 @@ public class KaKouDaoImpl extends BaseDaoiBatis implements KaKouDao {
 		return pm;
 	}
 	
+	/**
+	 * 查询涉警信息并附带关联信息（涉赌/涉娼/陪侍记录ID）
+	 */
+	public NewPageModel queryZaJqxxWithRel(XdJqxx xdjqxx, NewPageModel pm)
+			throws DataAccessException {
+		int total = (Integer)getSqlMapClientTemplate().queryForObject("kakou.queryZaJqxxWithRel_count",xdjqxx);
+		pm.setTotal(total);
+		pm.setup();
+		pm.setRows(getSqlMapClientTemplate().queryForList("kakou.queryZaJqxxWithRel",xdjqxx,pm.getStart(),pm.getTruepagesize()));
+		return pm;
+	}
+
+	/**
+	 * 查询涉案信息并附带关联信息（涉赌/涉娼/陪侍记录ID）
+	 */
+	public NewPageModel queryZaAjxxWithRel(XdAjxx xdajxx, NewPageModel pm)
+			throws DataAccessException {
+		int total = (Integer)getSqlMapClientTemplate().queryForObject("kakou.queryZaAjxxWithRel_count",xdajxx);
+		pm.setTotal(total);
+		pm.setup();
+		pm.setRows(getSqlMapClientTemplate().queryForList("kakou.queryZaAjxxWithRel",xdajxx,pm.getStart(),pm.getTruepagesize()));
+		return pm;
+	}
+
 	@SuppressWarnings("unchecked")
 	public List<String> gettrajectoryKKtypes() throws DataAccessException {
 		return (List<String>)getSqlMapClientTemplate().queryForList("kakou.gettrajectoryKKtypes");
@@ -98,5 +122,21 @@ public class KaKouDaoImpl extends BaseDaoiBatis implements KaKouDao {
 	}
 	public Yujing getYujingById(int id) throws DataAccessException {
 		return (Yujing)getSqlMapClientTemplate().queryForObject("kakou.getYujingById",id);
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Object> getAjxxByCardnumbers(String cardnumbers) throws DataAccessException {
+		if (cardnumbers == null || cardnumbers.trim().isEmpty()) {
+			return new java.util.ArrayList<Object>();
+		}
+		return getSqlMapClientTemplate().queryForList("kakou.getAjxxByCardnumbers", cardnumbers);
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Object> getJqxxByCardnumbers(String cardnumbers) throws DataAccessException {
+		if (cardnumbers == null || cardnumbers.trim().isEmpty()) {
+			return new java.util.ArrayList<Object>();
+		}
+		return getSqlMapClientTemplate().queryForList("kakou.getJqxxByCardnumbers", cardnumbers);
 	}
 }

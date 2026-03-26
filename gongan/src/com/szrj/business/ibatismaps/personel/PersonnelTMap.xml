@@ -45,11 +45,11 @@ u1.staffName as jurisdictpolice,u2.staffName as incontrolleve,rt.telnumber
 		INSERT INTO p_personnel_t
 		(cardnumber,personname,personlabel,sexes,persontype,attributelabels,jdunit1,jdpolice1,pphone1,zslabel1,lslabel1,
 		jdunit2,jdpolice2,pphone2,validflag,addoperator,addoperatorid,addtime,memo,houseplace,homeplace,checkmethod,
-		records,nation,marrystatus,education,workplace)
+		records,nation,marrystatus,education,workplace,handle_unit_code)
 		VALUES
 		('$cardnumber$','$personname$','$personlabel$','$sexes$','$persontype$','$attributelabels$','$jdunit1$','$jdpolice1$',
 		'$pphone1$','$zslabel1$','$lslabel1$','$jdunit2$','$jdpolice2$','$pphone2$',$validflag$,'$addoperator$',$addoperatorid$,
-		'$addtime$','$memo$','$houseplace$','$homeplace$','$checkmethod$','$records$','$nation$','$marrystatus$','$education$','$workplace$')
+		'$addtime$','$memo$','$houseplace$','$homeplace$','$checkmethod$','$records$','$nation$','$marrystatus$','$education$','$workplace$','$handleUnitCode$')
 		<selectKey resultClass="Integer" keyProperty="id">SELECT LAST_INSERT_ID() AS ID</selectKey>
 	</insert>
 	<!-- 删除 -->
@@ -74,11 +74,19 @@ u1.staffName as jurisdictpolice,u2.staffName as incontrolleve,rt.telnumber
 		workx='$workx$',worky='$worky$',
 		feature='$feature$',speciality='$speciality$',records='$records$',checkmethod='$checkmethod$',
 		personlabel='$personlabel$',attributelabels='$attributelabels$',
-		maintainrate1=$maintainrate1$,maintainrate1=$maintainrate2$,
-		maintainrate1=$maintainrate3$,maintainrate1=$maintainrate4$,
 		updateoperator='$updateoperator$',updatetime='$updatetime$',memo='$memo$',
 		jdunit1='$jdunit1$',jdpolice1='$jdpolice1$',pphone1='$pphone1$',zslabel1='$zslabel1$',
 		jdunit2='$jdunit2$',jdpolice2='$jdpolice2$',pphone2='$pphone2$'
+		<isNotNull prepend="," property="maintainrate1">maintainrate1=$maintainrate1$</isNotNull>
+		<isNotNull prepend="," property="maintainrate2">maintainrate2=$maintainrate2$</isNotNull>
+		<isNotNull prepend="," property="maintainrate3">maintainrate3=$maintainrate3$</isNotNull>
+		<isNotNull prepend="," property="maintainrate4">maintainrate4=$maintainrate4$</isNotNull>
+		WHERE id = $id$
+	</update>
+	<!-- 单独更新打处单位编码 -->
+	<update id="updateHandleUnitCode" parameterClass="map">
+		UPDATE p_personnel_t
+		SET handle_unit_code='$handleUnitCode$'
 		WHERE id = $id$
 	</update>
 	<update id="updateSK" parameterClass="personnel">
@@ -95,18 +103,21 @@ u1.staffName as jurisdictpolice,u2.staffName as incontrolleve,rt.telnumber
 		workx='$workx$',worky='$worky$',
 		feature='$feature$',speciality='$speciality$',records='$records$',checkmethod='$checkmethod$',
 		personlabel='$personlabel$',attributelabels='$attributelabels$',
-		maintainrate1=$maintainrate1$,maintainrate1=$maintainrate2$,
-		maintainrate1=$maintainrate3$,maintainrate1=$maintainrate4$,
 		updateoperator='$updateoperator$',updatetime='$updatetime$',memo='$memo$',
-		jdunit1='$jdunit1$',jdpolice1='$jdpolice1$',pphone1='$pphone1$',zslabel1='$zslabel1$',
+		jdunit1='$jdunit1$',jdpolice1='$jdpolice1$',pphone1='$pphone1$',zslabel1='$zslabel1$',zslabel2='$zslabel2$',
 		jdunit2='$jdunit2$',jdpolice2='$jdpolice2$',pphone2='$pphone2$',
 		house_province='$houseProvince$',house_city='$houseCity$',house_county='$houseCounty$',house_town='$houseTown$',
 		home_province='$homeProvince$',home_city='$homeCity$',home_county='$homeCounty$',home_town='$homeTown$',
 		handle_unit='$handleUnit$',handle_unit_code='$handleUnitCode$',
 		home_police_station_id=#homePoliceStationId#,
 		house_police_station_id=#housePoliceStationId#
+		<isNotNull prepend="," property="maintainrate1">maintainrate1=$maintainrate1$</isNotNull>
+		<isNotNull prepend="," property="maintainrate2">maintainrate2=$maintainrate2$</isNotNull>
+		<isNotNull prepend="," property="maintainrate3">maintainrate3=$maintainrate3$</isNotNull>
+		<isNotNull prepend="," property="maintainrate4">maintainrate4=$maintainrate4$</isNotNull>
 		<isNotNull prepend="," property="hasSheduRecord">has_shedu_record=$hasSheduRecord$</isNotNull>
 		<isNotNull prepend="," property="hasSechangRecord">has_shechang_record=$hasSechangRecord$</isNotNull>
+		<isNotNull prepend="," property="isPeishi">is_peishi=$isPeishi$</isNotNull>
 		<isNotNull prepend="," property="isMinor">is_minor=$isMinor$</isNotNull>
 		WHERE id = $id$
 	</update>
@@ -124,11 +135,13 @@ u1.staffName as jurisdictpolice,u2.staffName as incontrolleve,rt.telnumber
 		workx='$workx$',worky='$worky$',
 		feature='$feature$',speciality='$speciality$',records='$records$',checkmethod='$checkmethod$',
 		personlabel='$personlabel$',attributelabels='$attributelabels$',
-		maintainrate1=$maintainrate1$,maintainrate1=$maintainrate2$,
-		maintainrate1=$maintainrate3$,maintainrate1=$maintainrate4$,
 		updateoperator='$updateoperator$',updatetime='$updatetime$',memo='$memo$',
 		jdunit1='$jdunit1$',jdpolice1='$jdpolice1$',pphone1='$pphone1$',zslabel1='$zslabel1$',
 		jdunit2='$jdunit2$',jdpolice2='$jdpolice2$',pphone2='$pphone2$'
+		<isNotNull prepend="," property="maintainrate1">maintainrate1=$maintainrate1$</isNotNull>
+		<isNotNull prepend="," property="maintainrate2">maintainrate2=$maintainrate2$</isNotNull>
+		<isNotNull prepend="," property="maintainrate3">maintainrate3=$maintainrate3$</isNotNull>
+		<isNotNull prepend="," property="maintainrate4">maintainrate4=$maintainrate4$</isNotNull>
 		WHERE id = $id$
 	</update>
 	<select id="findPersonInPersonnel" parameterClass="String" resultClass="int">
@@ -258,7 +271,7 @@ u1.staffName as jurisdictpolice,u2.staffName as incontrolleve,rt.telnumber
 				pt.cardnumber like '%$cardnumber$%'
 			</isNotEmpty>
 			<isNotEmpty prepend="AND" property="personname">
-				pt.personname like '%$personname$%'
+				pt.personname like '%$personname$'
 			</isNotEmpty>
 			<isNotEmpty prepend="AND" property="telnumber">
 				IFNULL((SELECT count(id) FROM p_relation_telnumber_t WHERE personnelid=pt.id AND validflag>0 AND telnumber like '%$telnumber$%'),0)>0
@@ -275,12 +288,16 @@ u1.staffName as jurisdictpolice,u2.staffName as incontrolleve,rt.telnumber
 			<isNotEmpty prepend="AND" property="persontype">
 				pt.persontype = '$persontype$'
 			</isNotEmpty>
-			<isNotEqual prepend="AND" property="unitFilter" compareValue="0">
-				(pt.jdunit1 = $unitFilter$  or pt.jdunit2 = $unitFilter$)
-	        </isNotEqual>
-			<isNotEqual prepend="AND" property="personFilter" compareValue="0">
-				(pt.jdpolice1 = $personFilter$ or pt.jdpolice2 = $personFilter$)
-	        </isNotEqual>
+			<isNotEmpty property="unitFilter">
+				<isNotEqual prepend="AND" property="unitFilter" compareValue="0">
+					(pt.jdunit1 = $unitFilter$  or pt.jdunit2 = $unitFilter$)
+		        </isNotEqual>
+			</isNotEmpty>
+			<isNotEmpty property="personFilter">
+				<isNotEqual prepend="AND" property="personFilter" compareValue="0">
+					(pt.jdpolice1 = $personFilter$ or pt.jdpolice2 = $personFilter$)
+		        </isNotEqual>
+			</isNotEmpty>
 			<isNotEmpty prepend="AND" property="sqlall">
 				($sqlall$)
 			</isNotEmpty>
@@ -325,12 +342,16 @@ u1.staffName as jurisdictpolice,u2.staffName as incontrolleve,rt.telnumber
 			<isNotEmpty prepend="AND" property="persontype">
 				pt.persontype = '$persontype$'
 			</isNotEmpty>
-			<isNotEqual prepend="AND" property="unitFilter" compareValue="0">
-				(pt.jdunit1 = $unitFilter$  or pt.jdunit2 = $unitFilter$)
-	        </isNotEqual>
-			<isNotEqual prepend="AND" property="personFilter" compareValue="0">
-				(pt.jdpolice1 = $personFilter$ or pt.jdpolice2 = $personFilter$)
-	        </isNotEqual>
+			<isNotEmpty property="unitFilter">
+				<isNotEqual prepend="AND" property="unitFilter" compareValue="0">
+					(pt.jdunit1 = $unitFilter$  or pt.jdunit2 = $unitFilter$)
+		        </isNotEqual>
+			</isNotEmpty>
+			<isNotEmpty property="personFilter">
+				<isNotEqual prepend="AND" property="personFilter" compareValue="0">
+					(pt.jdpolice1 = $personFilter$ or pt.jdpolice2 = $personFilter$)
+		        </isNotEqual>
+			</isNotEmpty>
 			<isNotEmpty prepend="AND" property="sqlall">
 				($sqlall$)
 			</isNotEmpty>
@@ -710,8 +731,6 @@ u1.staffName as jurisdictpolice,u2.staffName as incontrolleve,rt.telnumber
 		select count(DISTINCT p.id)
 		from p_personnel_t p
 		LEFT JOIN sys_user_t u1 on p.jdpolice1=u1.id
-		LEFT JOIN p_zaperson_du_t du on p.id=du.personnelid and du.validflag=1
-		LEFT JOIN p_zaperson_chang_t ch on p.id=ch.personnelid and ch.validflag=1
 		where p.validflag>0 and p.isrisk=1 and FIND_IN_SET($zslabel1$,p.zslabel1)
 		<dynamic prepend="">
 			<isNotEmpty prepend="AND" property="cardnumber">
@@ -747,30 +766,6 @@ u1.staffName as jurisdictpolice,u2.staffName as incontrolleve,rt.telnumber
 			<isNotEmpty prepend="AND" property="persontype">
 				p.persontype = '$persontype$'
 			</isNotEmpty>
-			<isNotEmpty prepend="AND" property="duPersonAttribute">
-				du.person_attribute = '$duPersonAttribute$'
-			</isNotEmpty>
-			<isNotEmpty prepend="AND" property="duMethod">
-				du.du_method = '$duMethod$'
-			</isNotEmpty>
-			<isNotEmpty prepend="AND" property="duPart">
-				du.du_part = '$duPart$'
-			</isNotEmpty>
-			<isNotEmpty prepend="AND" property="changPersonAttribute">
-				ch.person_attribute = '$changPersonAttribute$'
-			</isNotEmpty>
-			<isNotEmpty prepend="AND" property="changMethod">
-				ch.chang_method = '$changMethod$'
-			</isNotEmpty>
-			<isNotEmpty prepend="AND" property="changType">
-				ch.chang_type = '$changType$'
-			</isNotEmpty>
-			<isNotEmpty prepend="AND" property="punishDateStart">
-				(du.punish_date >= '$punishDateStart$' OR ch.punish_date >= '$punishDateStart$')
-			</isNotEmpty>
-			<isNotEmpty prepend="AND" property="punishDateEnd">
-				(du.punish_date &lt;= '$punishDateEnd$' OR ch.punish_date &lt;= '$punishDateEnd$')
-			</isNotEmpty>
 			<isGreaterEqual prepend="AND" property="hasSheduRecord" compareValue="0">
 				p.has_shedu_record = $hasSheduRecord$
 			</isGreaterEqual>
@@ -780,31 +775,161 @@ u1.staffName as jurisdictpolice,u2.staffName as incontrolleve,rt.telnumber
 			<isGreaterEqual prepend="AND" property="isMinor" compareValue="0">
 				CASE WHEN TIMESTAMPDIFF(YEAR, STR_TO_DATE(SUBSTRING(p.cardnumber, 7, 8), '%Y%m%d'), CURDATE()) &lt; 18 THEN 1 ELSE 0 END = $isMinor$
 			</isGreaterEqual>
+			<isNotEmpty prepend="AND" property="handleUnitCode">
+				FIND_IN_SET('$handleUnitCode$', p.handle_unit_code)
+			</isNotEmpty>
+			<!-- 治安人员查询不需要 unitFilter 和 personFilter 权限过滤 -->
+			<!--
 			<isNotEqual prepend="AND" property="unitFilter" compareValue="0">
 				(p.jdunit1 = $unitFilter$  or p.jdunit2 = $unitFilter$)
 	        </isNotEqual>
 			<isNotEqual prepend="AND" property="personFilter" compareValue="0">
 				(p.jdpolice1 = $personFilter$ or p.jdpolice2 = $personFilter$)
 	        </isNotEqual>
-	        <isNotEmpty prepend="AND" property="sqlall">
+	        -->
+			<isNotEmpty prepend="AND" property="sqlall">
 				$sqlall$
 			</isNotEmpty>
-		</dynamic>
-	</select>
-	<select id="searchZaPersonnel" parameterClass="personnel" resultClass="personnel">
-		select DISTINCT p.*,
+			<!-- 涉赌条件查询：只要有任一涉赌条件，就需要在涉赌记录表中存在符合条件的记录 -->
+			<isNotEmpty property="duPersonAttribute">
+				AND EXISTS (
+					SELECT 1 FROM p_zaperson_du_t du
+					WHERE du.personnelid = p.id AND du.validflag = 1
+					AND du.person_attribute = '$duPersonAttribute$'
+					<isNotEmpty prepend="AND " property="duMethod">du.dbfs = '$duMethod$'</isNotEmpty>
+					<isNotEmpty prepend="AND " property="duPart">du.dbbw = '$duPart$'</isNotEmpty>
+				)
+			</isNotEmpty>
+			<isEmpty property="duPersonAttribute">
+				<isNotEmpty property="duMethod">
+					AND EXISTS (
+						SELECT 1 FROM p_zaperson_du_t du
+						WHERE du.personnelid = p.id AND du.validflag = 1
+						AND du.dbfs = '$duMethod$'
+						<isNotEmpty prepend="AND " property="duPart">du.dbbw = '$duPart$'</isNotEmpty>
+					)
+				</isNotEmpty>
+				<isEmpty property="duMethod">
+					<isNotEmpty property="duPart">
+						AND EXISTS (
+							SELECT 1 FROM p_zaperson_du_t du
+							WHERE du.personnelid = p.id AND du.validflag = 1
+							AND du.dbbw = '$duPart$'
+						)
+					</isNotEmpty>
+				</isEmpty>
+			</isEmpty>
+			<!-- 涉娼条件查询：只要有任一涉娼条件，就需要在涉娼记录表中存在符合条件的记录 -->
+			<isNotEmpty property="changPersonAttribute">
+				AND EXISTS (
+					SELECT 1 FROM p_zaperson_chang_t ch
+					WHERE ch.personnelid = p.id AND ch.validflag = 1
+					AND ch.chang_scjs = '$changPersonAttribute$'
+					<isNotEmpty prepend="AND " property="changMethod">ch.chang_myfs = '$changMethod$'</isNotEmpty>
+					<isNotEmpty prepend="AND " property="changType">ch.chang_type = '$changType$'</isNotEmpty>
+					<isGreaterEqual prepend="AND " property="isMinorCase" compareValue="0">ch.is_minor_case = $isMinorCase$</isGreaterEqual>
+				)
+			</isNotEmpty>
+			<isEmpty property="changPersonAttribute">
+				<isNotEmpty property="changMethod">
+					AND EXISTS (
+						SELECT 1 FROM p_zaperson_chang_t ch
+						WHERE ch.personnelid = p.id AND ch.validflag = 1
+						AND ch.chang_myfs = '$changMethod$'
+						<isNotEmpty prepend="AND " property="changType">ch.chang_type = '$changType$'</isNotEmpty>
+						<isGreaterEqual prepend="AND " property="isMinorCase" compareValue="0">ch.is_minor_case = $isMinorCase$</isGreaterEqual>
+					)
+				</isNotEmpty>
+				<isEmpty property="changMethod">
+					<isNotEmpty property="changType">
+						AND EXISTS (
+							SELECT 1 FROM p_zaperson_chang_t ch
+							WHERE ch.personnelid = p.id AND ch.validflag = 1
+							AND ch.chang_type = '$changType$'
+							<isGreaterEqual prepend="AND " property="isMinorCase" compareValue="0">ch.is_minor_case = $isMinorCase$</isGreaterEqual>
+						)
+					</isNotEmpty>
+					<isEmpty property="changType">
+						<isGreaterEqual property="isMinorCase" compareValue="0">
+							AND EXISTS (
+								SELECT 1 FROM p_zaperson_chang_t ch
+								WHERE ch.personnelid = p.id AND ch.validflag = 1
+								AND ch.is_minor_case = $isMinorCase$
+							)
+						</isGreaterEqual>
+					</isEmpty>
+				</isEmpty>
+			</isEmpty>
+                        <!-- 涉案处罚时间搜索（从t_xjw_aj_clcs_jgzxb表的JDSJ字段查询，JDSJ为8位yyyyMMdd格式，前端直接传yyyyMMdd） -->
+                        <!-- 修复：将起止日期合并到同一个EXISTS子查询，确保同一条记录同时满足起止条件；排除JDSJ为空的记录 -->
+                        <isNotEmpty property="punishDateStart">
+                                <isNotEmpty property="punishDateEnd">
+                                        AND EXISTS (
+                                                SELECT 1 FROM f_xt_xd_ajxx_new aj
+                                                JOIN t_xjw_aj_clcs_jgzxb clcs ON clcs.GMSFHM = aj.sfzh AND clcs.AJBH = aj.jjbh
+                                                WHERE aj.sfzh = p.cardnumber
+                                                AND clcs.JDSJ IS NOT NULL AND clcs.JDSJ != ''
+                                                AND clcs.JDSJ &gt;= '$punishDateStart$'
+                                                AND clcs.JDSJ &lt;= '$punishDateEnd$'
+                                        )
+                                </isNotEmpty>
+                                <isEmpty property="punishDateEnd">
+                                        AND EXISTS (
+                                                SELECT 1 FROM f_xt_xd_ajxx_new aj
+                                                JOIN t_xjw_aj_clcs_jgzxb clcs ON clcs.GMSFHM = aj.sfzh AND clcs.AJBH = aj.jjbh
+                                                WHERE aj.sfzh = p.cardnumber
+                                                AND clcs.JDSJ IS NOT NULL AND clcs.JDSJ != ''
+                                                AND clcs.JDSJ &gt;= '$punishDateStart$'
+                                        )
+                                </isEmpty>
+                        </isNotEmpty>
+                        <isEmpty property="punishDateStart">
+                                <isNotEmpty property="punishDateEnd">
+                                        AND EXISTS (
+                                                SELECT 1 FROM f_xt_xd_ajxx_new aj
+                                                JOIN t_xjw_aj_clcs_jgzxb clcs ON clcs.GMSFHM = aj.sfzh AND clcs.AJBH = aj.jjbh
+                                                WHERE aj.sfzh = p.cardnumber
+                                                AND clcs.JDSJ IS NOT NULL AND clcs.JDSJ != ''
+                                                AND clcs.JDSJ &lt;= '$punishDateEnd$'
+                                        )
+                                </isNotEmpty>
+                        </isEmpty>
+                        <!-- 陪侍人员角色标签搜索 -->
+                        <isNotEmpty property="peiMemo">
+                                AND EXISTS (
+                                        SELECT 1 FROM p_zaperson_pei_t pei
+                                        WHERE pei.personnelid = p.id AND pei.validflag = 1
+                                        AND pei.memo = '$peiMemo$'
+                                )
+                        </isNotEmpty>
+                </dynamic>
+        </select>
+        <select id="searchZaPersonnel" parameterClass="personnel" resultClass="personnel">
+		select DISTINCT p.id, p.cardnumber, p.personname, p.sexes, p.persontype, p.nation,
+		p.houseplace, p.homeplace, p.workplace, p.validflag, p.addoperator, p.addoperatorid,
+		p.addtime, p.updateoperator, p.updatetime, p.memo, p.jdunit1, p.jdpolice1, p.pphone1,
+		p.jdunit2, p.jdpolice2, p.pphone2, p.zslabel1, p.zslabel2, p.lslabel1, p.lslabel2,
+		p.isrisk, p.usedname, p.nickname, p.personheight, p.marrystatus, p.education,
+		p.netskillhabit, p.soldierstatus, p.heathstatus, p.politicalposition, p.faith,
+		p.housepolice, p.homepolice, p.homewifi, p.homewide, p.housex, p.housey, p.homex, p.homey,
+		p.workx, p.worky, p.workpolice, p.workwifi, p.workwide, p.feature, p.speciality,
+		p.records, p.checkmethod, p.maintainrate1, p.maintainrate2, p.maintainrate3, p.maintainrate4,
+		p.personlabel, p.attributelabels,
 		p.house_province AS houseProvince,
 		p.house_city AS houseCity,
 		p.house_county AS houseCounty,
 		p.house_town AS houseTown,
+		p.house_police_station_id AS housePoliceStationId,
 		p.home_province AS homeProvince,
 		p.home_city AS homeCity,
 		p.home_county AS homeCounty,
 		p.home_town AS homeTown,
+		p.home_police_station_id AS homePoliceStationId,
 		p.handle_unit AS handleUnit,
 		p.handle_unit_code AS handleUnitCode,
 		p.has_shedu_record AS hasSheduRecord,
 		p.has_shechang_record AS hasSechangRecord,
+		p.is_peishi AS isPeishi,
 		d1.departname AS jurisdictunit,u1.staffName as jurisdictpolice,
 		CASE
 			WHEN TIMESTAMPDIFF(YEAR, STR_TO_DATE(SUBSTRING(p.cardnumber, 7, 8), '%Y%m%d'), CURDATE()) &lt; 18
@@ -814,8 +939,6 @@ u1.staffName as jurisdictpolice,u2.staffName as incontrolleve,rt.telnumber
 		from p_personnel_t p
 		LEFT JOIN sys_department_t d1 on p.jdunit1=d1.id
 		LEFT JOIN sys_user_t u1 on p.jdpolice1=u1.id
-		LEFT JOIN p_zaperson_du_t du on p.id=du.personnelid and du.validflag=1
-		LEFT JOIN p_zaperson_chang_t ch on p.id=ch.personnelid and ch.validflag=1
 		where p.validflag>0 and p.isrisk=1 and FIND_IN_SET($zslabel1$,p.zslabel1)
 		<dynamic prepend="">
 			<isNotEmpty prepend="AND" property="cardnumber">
@@ -851,30 +974,6 @@ u1.staffName as jurisdictpolice,u2.staffName as incontrolleve,rt.telnumber
 			<isNotEmpty prepend="AND" property="persontype">
 				p.persontype = '$persontype$'
 			</isNotEmpty>
-			<isNotEmpty prepend="AND" property="duPersonAttribute">
-				du.person_attribute = '$duPersonAttribute$'
-			</isNotEmpty>
-			<isNotEmpty prepend="AND" property="duMethod">
-				du.du_method = '$duMethod$'
-			</isNotEmpty>
-			<isNotEmpty prepend="AND" property="duPart">
-				du.du_part = '$duPart$'
-			</isNotEmpty>
-			<isNotEmpty prepend="AND" property="changPersonAttribute">
-				ch.person_attribute = '$changPersonAttribute$'
-			</isNotEmpty>
-			<isNotEmpty prepend="AND" property="changMethod">
-				ch.chang_method = '$changMethod$'
-			</isNotEmpty>
-			<isNotEmpty prepend="AND" property="changType">
-				ch.chang_type = '$changType$'
-			</isNotEmpty>
-			<isNotEmpty prepend="AND" property="punishDateStart">
-				(du.punish_date >= '$punishDateStart$' OR ch.punish_date >= '$punishDateStart$')
-			</isNotEmpty>
-			<isNotEmpty prepend="AND" property="punishDateEnd">
-				(du.punish_date &lt;= '$punishDateEnd$' OR ch.punish_date &lt;= '$punishDateEnd$')
-			</isNotEmpty>
 			<isGreaterEqual prepend="AND" property="hasSheduRecord" compareValue="0">
 				p.has_shedu_record = $hasSheduRecord$
 			</isGreaterEqual>
@@ -884,18 +983,136 @@ u1.staffName as jurisdictpolice,u2.staffName as incontrolleve,rt.telnumber
 			<isGreaterEqual prepend="AND" property="isMinor" compareValue="0">
 				CASE WHEN TIMESTAMPDIFF(YEAR, STR_TO_DATE(SUBSTRING(p.cardnumber, 7, 8), '%Y%m%d'), CURDATE()) &lt; 18 THEN 1 ELSE 0 END = $isMinor$
 			</isGreaterEqual>
+			<isNotEmpty prepend="AND" property="handleUnitCode">
+				FIND_IN_SET('$handleUnitCode$', p.handle_unit_code)
+			</isNotEmpty>
+			<!-- 治安人员查询不需要 unitFilter 和 personFilter 权限过滤 -->
+			<!--
 			<isNotEqual prepend="AND" property="unitFilter" compareValue="0">
 				(p.jdunit1 = $unitFilter$  or p.jdunit2 = $unitFilter$)
 	        </isNotEqual>
 			<isNotEqual prepend="AND" property="personFilter" compareValue="0">
 				(p.jdpolice1 = $personFilter$ or p.jdpolice2 = $personFilter$)
 	        </isNotEqual>
-	        <isNotEmpty prepend="AND" property="sqlall">
+	        -->
+			<isNotEmpty prepend="AND" property="sqlall">
 				$sqlall$
+			</isNotEmpty>
+			<!-- 涉赌条件查询：只要有任一涉赌条件，就需要在涉赌记录表中存在符合条件的记录 -->
+			<isNotEmpty property="duPersonAttribute">
+				AND EXISTS (
+					SELECT 1 FROM p_zaperson_du_t du
+					WHERE du.personnelid = p.id AND du.validflag = 1
+					AND du.person_attribute = '$duPersonAttribute$'
+					<isNotEmpty prepend="AND " property="duMethod">du.dbfs = '$duMethod$'</isNotEmpty>
+					<isNotEmpty prepend="AND " property="duPart">du.dbbw = '$duPart$'</isNotEmpty>
+				)
+			</isNotEmpty>
+			<isEmpty property="duPersonAttribute">
+				<isNotEmpty property="duMethod">
+					AND EXISTS (
+						SELECT 1 FROM p_zaperson_du_t du
+						WHERE du.personnelid = p.id AND du.validflag = 1
+						AND du.dbfs = '$duMethod$'
+						<isNotEmpty prepend="AND " property="duPart">du.dbbw = '$duPart$'</isNotEmpty>
+					)
+				</isNotEmpty>
+				<isEmpty property="duMethod">
+					<isNotEmpty property="duPart">
+						AND EXISTS (
+							SELECT 1 FROM p_zaperson_du_t du
+							WHERE du.personnelid = p.id AND du.validflag = 1
+							AND du.dbbw = '$duPart$'
+						)
+					</isNotEmpty>
+				</isEmpty>
+			</isEmpty>
+			<!-- 涉娼条件查询：只要有任一涉娼条件，就需要在涉娼记录表中存在符合条件的记录 -->
+			<isNotEmpty property="changPersonAttribute">
+				AND EXISTS (
+					SELECT 1 FROM p_zaperson_chang_t ch
+					WHERE ch.personnelid = p.id AND ch.validflag = 1
+					AND ch.chang_scjs = '$changPersonAttribute$'
+					<isNotEmpty prepend="AND " property="changMethod">ch.chang_myfs = '$changMethod$'</isNotEmpty>
+					<isNotEmpty prepend="AND " property="changType">ch.chang_type = '$changType$'</isNotEmpty>
+					<isGreaterEqual prepend="AND " property="isMinorCase" compareValue="0">ch.is_minor_case = $isMinorCase$</isGreaterEqual>
+				)
+			</isNotEmpty>
+			<isEmpty property="changPersonAttribute">
+				<isNotEmpty property="changMethod">
+					AND EXISTS (
+						SELECT 1 FROM p_zaperson_chang_t ch
+						WHERE ch.personnelid = p.id AND ch.validflag = 1
+						AND ch.chang_myfs = '$changMethod$'
+						<isNotEmpty prepend="AND " property="changType">ch.chang_type = '$changType$'</isNotEmpty>
+						<isGreaterEqual prepend="AND " property="isMinorCase" compareValue="0">ch.is_minor_case = $isMinorCase$</isGreaterEqual>
+					)
+				</isNotEmpty>
+				<isEmpty property="changMethod">
+					<isNotEmpty property="changType">
+						AND EXISTS (
+							SELECT 1 FROM p_zaperson_chang_t ch
+							WHERE ch.personnelid = p.id AND ch.validflag = 1
+							AND ch.chang_type = '$changType$'
+							<isGreaterEqual prepend="AND " property="isMinorCase" compareValue="0">ch.is_minor_case = $isMinorCase$</isGreaterEqual>
+						)
+					</isNotEmpty>
+					<isEmpty property="changType">
+						<isGreaterEqual property="isMinorCase" compareValue="0">
+							AND EXISTS (
+								SELECT 1 FROM p_zaperson_chang_t ch
+								WHERE ch.personnelid = p.id AND ch.validflag = 1
+								AND ch.is_minor_case = $isMinorCase$
+							)
+						</isGreaterEqual>
+					</isEmpty>
+				</isEmpty>
+			</isEmpty>
+			<!-- 涉案处罚时间搜索（从t_xjw_aj_clcs_jgzxb表的JDSJ字段查询，JDSJ为8位yyyyMMdd格式） -->
+			<!-- 修复：将起止日期合并到同一个EXISTS子查询，确保同一条记录同时满足起止条件；排除JDSJ为空的记录 -->
+			<isNotEmpty property="punishDateStart">
+				<isNotEmpty property="punishDateEnd">
+					AND EXISTS (
+						SELECT 1 FROM f_xt_xd_ajxx_new aj
+						JOIN t_xjw_aj_clcs_jgzxb clcs ON clcs.GMSFHM = aj.sfzh AND clcs.AJBH = aj.jjbh
+						WHERE aj.sfzh = p.cardnumber
+						AND clcs.JDSJ IS NOT NULL AND clcs.JDSJ != ''
+						AND clcs.JDSJ &gt;= REPLACE('$punishDateStart$', '-', '')
+						AND clcs.JDSJ &lt;= REPLACE('$punishDateEnd$', '-', '')
+					)
+				</isNotEmpty>
+				<isEmpty property="punishDateEnd">
+					AND EXISTS (
+						SELECT 1 FROM f_xt_xd_ajxx_new aj
+						JOIN t_xjw_aj_clcs_jgzxb clcs ON clcs.GMSFHM = aj.sfzh AND clcs.AJBH = aj.jjbh
+						WHERE aj.sfzh = p.cardnumber
+						AND clcs.JDSJ IS NOT NULL AND clcs.JDSJ != ''
+						AND clcs.JDSJ &gt;= REPLACE('$punishDateStart$', '-', '')
+					)
+				</isEmpty>
+			</isNotEmpty>
+			<isEmpty property="punishDateStart">
+				<isNotEmpty property="punishDateEnd">
+					AND EXISTS (
+						SELECT 1 FROM f_xt_xd_ajxx_new aj
+						JOIN t_xjw_aj_clcs_jgzxb clcs ON clcs.GMSFHM = aj.sfzh AND clcs.AJBH = aj.jjbh
+						WHERE aj.sfzh = p.cardnumber
+						AND clcs.JDSJ IS NOT NULL AND clcs.JDSJ != ''
+						AND clcs.JDSJ &lt;= REPLACE('$punishDateEnd$', '-', '')
+					)
+				</isNotEmpty>
+			</isEmpty>
+			<!-- 陪侍人员角色标签搜索 -->
+			<isNotEmpty property="peiMemo">
+				AND EXISTS (
+					SELECT 1 FROM p_zaperson_pei_t pei
+					WHERE pei.personnelid = p.id AND pei.validflag = 1
+					AND pei.memo = '$peiMemo$'
+				)
 			</isNotEmpty>
 		</dynamic>
 	</select>
-	
+
 	<update id="updateCyPersonRisk" parameterClass="personnel">
 		UPDATE p_personnel_t
 		SET zslabel1='$zslabel1$',isrisk='$isrisk$', updateoperator = '$updateoperator$', updatetime = '$updatetime$'
@@ -916,7 +1133,7 @@ u1.staffName as jurisdictpolice,u2.staffName as incontrolleve,rt.telnumber
 				from(
 						select * from sys_department_t
 						where id!=55 and id!=264 and validflag>0 and departtype=4 order by id
-					)A			
+						)A
 				LEFT JOIN (
 						SELECT p.id,g.jointcontrollevel,p.jdunit1,p.jdunit2 FROM p_personnel_t p
 						LEFT JOIN  p_wen_grade_t g on p.id=g.personnelid and g.jointcontrollevel!='自控' and g.jointcontrollevel!='存档' and g.validflag>0
@@ -1208,12 +1425,6 @@ u1.staffName as jurisdictpolice,u2.staffName as incontrolleve,rt.telnumber
         WHERE id = #id#
 	</update>
 
-	<!-- 更新人员手机号码 -->
-	<update id="updatePhone" parameterClass="personnel">
-		UPDATE p_personnel_t
-		SET phone='$phone$'
-		WHERE id = $id$
-	</update>
 
 	<!-- 更新涉赌前科标记 -->
 	<update id="updateHasSheduRecord" parameterClass="personnel">
@@ -1226,6 +1437,13 @@ u1.staffName as jurisdictpolice,u2.staffName as incontrolleve,rt.telnumber
 	<update id="updateHasSechangRecord" parameterClass="personnel">
 		UPDATE p_personnel_t
 		SET has_shechang_record=$hasSechangRecord$
+		WHERE id = $id$
+	</update>
+
+	<!-- 更新陪侍人员标记 -->
+	<update id="updateIsPeishi" parameterClass="personnel">
+		UPDATE p_personnel_t
+		SET is_peishi=$isPeishi$
 		WHERE id = $id$
 	</update>
 
@@ -1251,4 +1469,204 @@ u1.staffName as jurisdictpolice,u2.staffName as incontrolleve,rt.telnumber
 		WHERE personnelid = #value# AND validflag = 1
 		ORDER BY addtime DESC
 	</select>
+
+	<!-- ========== 导出相关查询 ========== -->
+	<!-- 根据查询条件获取人员ID列表（用于专项导出） -->
+	<select id="getPersonnelIdsByCondition" parameterClass="com.szrj.business.model.personel.PersonnelExtend" resultClass="java.lang.Integer">
+		SELECT pt.id
+		FROM p_personnel_t pt
+		WHERE pt.validflag > 0 AND pt.isrisk = 1
+		<dynamic prepend="">
+			<isNotEmpty prepend="AND" property="labelsql">
+				$labelsql$
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="personname">
+				pt.personname LIKE '%$personname$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="cardnumber">
+				pt.cardnumber LIKE '%$cardnumber$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="jdunit1">
+				pt.jdunit1 = '$jdunit1$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="jdunit2">
+				pt.jdunit2 = '$jdunit2$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="sexes">
+				pt.sexes = '$sexes$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="homeProvince">
+				pt.home_province = '$homeProvince$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="homeCity">
+				pt.home_city = '$homeCity$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="homeCounty">
+				pt.home_county = '$homeCounty$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="homeTown">
+				pt.home_town = '$homeTown$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="homePoliceStationId">
+				pt.home_police_station_id = $homePoliceStationId$
+			</isNotEmpty>
+		</dynamic>
+		ORDER BY pt.id
+	</select>
+
+	<!-- 根据查询条件获取未成年人员ID列表 -->
+	<select id="getMinorPersonnelIdsByCondition" parameterClass="com.szrj.business.model.personel.PersonnelExtend" resultClass="java.lang.Integer">
+		SELECT pt.id
+		FROM p_personnel_t pt
+		WHERE pt.validflag > 0 AND pt.isrisk = 1
+        <!-- 动态计算年龄（仅18位身份证） -->
+        <isNotNull prepend="AND" property="isMinor">
+            LENGTH(pt.cardnumber) = 18
+            AND
+            CASE
+            WHEN TIMESTAMPDIFF(
+            YEAR,
+            STR_TO_DATE(SUBSTRING(pt.cardnumber, 7, 8), '%Y%m%d'),
+            CURDATE()
+            ) &lt; 18
+            THEN 1
+            ELSE 0
+            END = #isMinor#
+        </isNotNull>
+
+        <!-- 治安分类标签条件（如：2046-治安分类） -->
+        <isNotEmpty prepend="AND" property="zslabel1">
+            FIND_IN_SET('$zslabel1$', pt.zslabel1)
+        </isNotEmpty>
+
+        <!-- 电话号码条件 -->
+        <isNotEmpty prepend="AND" property="telnumber">
+            EXISTS (
+            SELECT 1
+            FROM p_relation_telnumber_t t
+            WHERE t.personnelid = pt.id
+            AND t.validflag > 0
+            AND t.telnumber LIKE '%$telnumber$%'
+            )
+        </isNotEmpty>
+
+		<dynamic prepend="">
+			<isNotEmpty prepend="AND" property="personname">
+				pt.personname LIKE '%$personname$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="cardnumber">
+				pt.cardnumber LIKE '%$cardnumber$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="jdunit1">
+				pt.jdunit1 = '$jdunit1$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="jdunit2">
+				pt.jdunit2 = '$jdunit2$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="sexes">
+				pt.sexes = '$sexes$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="homeProvince">
+				pt.home_province = '$homeProvince$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="homeCity">
+				pt.home_city = '$homeCity$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="homeCounty">
+				pt.home_county = '$homeCounty$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="homeTown">
+				pt.home_town = '$homeTown$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="homePoliceStationId">
+				pt.home_police_station_id = $homePoliceStationId$
+			</isNotEmpty>
+		</dynamic>
+		ORDER BY pt.id
+	</select>
+
+	<!-- 根据查询条件 + 人员ID范围限制获取人员ID列表 -->
+	<select id="getPersonnelIdsByConditionWithIdLimit" parameterClass="com.szrj.business.model.personel.PersonnelExtend" resultClass="java.lang.Integer">
+		SELECT pt.id
+		FROM p_personnel_t pt
+		WHERE pt.validflag > 0 AND pt.isrisk = 1
+		<isNotEmpty prepend="AND" property="personnelIdListStr">
+			FIND_IN_SET(pt.id, '$personnelIdListStr$')
+		</isNotEmpty>
+		<dynamic prepend="">
+			<isNotEmpty prepend="AND" property="personname">
+				pt.personname LIKE '%$personname$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="cardnumber">
+				pt.cardnumber LIKE '%$cardnumber$%'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="jdunit1">
+				pt.jdunit1 = '$jdunit1$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="jdunit2">
+				pt.jdunit2 = '$jdunit2$'
+			</isNotEmpty>
+			<isNotEmpty prepend="AND" property="sexes">
+				pt.sexes = '$sexes$'
+			</isNotEmpty>
+		</dynamic>
+		ORDER BY pt.id
+	</select>
+
+	<!-- 根据人员ID列表批量查询人员基础信息 -->
+	<select id="getPersonnelByIds" parameterClass="string" resultClass="personnel">
+		SELECT pt.id, pt.cardnumber, pt.personname, pt.sexes, pt.usedname, pt.nickname,
+		pt.nation, pt.marrystatus, pt.education, pt.persontype, pt.personheight,
+		pt.houseplace, pt.homeplace, pt.workplace,
+		pt.homex, pt.homey,
+		pt.home_province AS homeProvince, pt.home_city AS homeCity,
+		pt.home_county AS homeCounty, pt.home_town AS homeTown,
+		pt.house_province AS houseProvince, pt.house_city AS houseCity,
+		pt.house_county AS houseCounty, pt.house_town AS houseTown,
+		pt.home_police_station_id AS homePoliceStationId,
+		pt.is_minor AS isMinor,
+		pt.has_shedu_record AS hasSheduRecord,
+		pt.has_shechang_record AS hasSechangRecord,
+		pt.zslabel1, pt.zslabel2,
+		pt.handle_unit AS handleUnit, pt.handle_unit_code AS handleUnitCode,
+		d.departname AS homePoliceStationName,
+		(SELECT telnumber
+		 FROM p_relation_telnumber_t rtt
+		 WHERE rtt.personnelid = pt.id AND rtt.validflag > 0
+		 ORDER BY rtt.addtime DESC
+		 LIMIT 1) AS telnumber,
+		pt.addtime, pt.updatetime
+		FROM p_personnel_t pt
+		LEFT JOIN sys_department_t_new d ON pt.home_police_station_id = d.id AND d.validflag > 0
+		WHERE pt.validflag > 0 AND FIND_IN_SET(pt.id, '$value$')
+		ORDER BY pt.id
+	</select>
+
+	<!-- 为未成年人添加zslabel2标签5002 -->
+	<update id="addMinorLabel">
+		UPDATE p_personnel_t
+		SET zslabel2 = CASE
+			WHEN zslabel2 IS NULL OR zslabel2 = '' THEN '5002'
+			WHEN FIND_IN_SET('5002', zslabel2) = 0 THEN CONCAT(zslabel2, ',5002')
+			ELSE zslabel2
+		END
+		WHERE validflag > 0
+		AND getAge(cardnumber) <![CDATA[ < ]]> 18
+		AND (zslabel2 IS NULL OR zslabel2 = '' OR FIND_IN_SET('5002', zslabel2) = 0)
+	</update>
+
+	<!-- 为已成年人删除zslabel2标签5002 -->
+	<update id="removeMinorLabel">
+		UPDATE p_personnel_t
+		SET zslabel2 = CASE
+			WHEN LOCATE(',5002,', CONCAT(',', zslabel2, ',')) > 0
+				THEN TRIM(BOTH ',' FROM REPLACE(CONCAT(',', zslabel2, ','), ',5002,', ','))
+			WHEN zslabel2 = '5002' THEN ''
+			ELSE zslabel2
+		END
+		WHERE validflag > 0
+		AND getAge(cardnumber) <![CDATA[ >= ]]> 18
+		AND FIND_IN_SET('5002', zslabel2) > 0
+	</update>
 </sqlMap>
+

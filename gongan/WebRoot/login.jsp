@@ -95,8 +95,10 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 		  });
 		  //监听提交
 		  form.on('submit(formLoginShuzi)', function(data){
-		    window.location.href="https://50.64.40.168:8453/JYRiskManage/temp.jsp"
-		    return false;
+              // window.location.href="https://50.64.40.168:8453/JYRiskManage/temp.jsp"
+              // 修改为本地地址
+              window.location.href="<c:url value='/temp.jsp'/>";
+              return false;
 		  });
 		  form.on('submit(formLogin)', function(data){
 		  var usercode = $("#loginname").val();

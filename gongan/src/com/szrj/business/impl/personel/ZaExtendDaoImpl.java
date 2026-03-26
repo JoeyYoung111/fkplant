@@ -52,6 +52,10 @@ public class ZaExtendDaoImpl extends BaseDaoiBatis implements ZaExtendDao{
 		return (ZaDu)getSqlMapClientTemplate().queryForObject("zaExtend.getZaDuByPersonnelid", personnelid);
 	}
 
+	public ZaDu getZaDuById(int duId) throws DataAccessException {
+		return (ZaDu)getSqlMapClientTemplate().queryForObject("zaExtend.getZaDuById", duId);
+	}
+
 	public NewPageModel searchZaDu(ZaDu zaDu, NewPageModel pm)
 			throws DataAccessException {
 		int total = (Integer) getSqlMapClientTemplate().queryForObject("zaExtend.searchZaDu_count", zaDu);
@@ -65,6 +69,10 @@ public class ZaExtendDaoImpl extends BaseDaoiBatis implements ZaExtendDao{
 		return (Integer)getSqlMapClientTemplate().update("zaExtend.updateZaDu", zaDu);
 	}
 	
+	public int deleteZaDuById(int duId) throws DataAccessException {
+		return getSqlMapClientTemplate().delete("zaExtend.deleteZaDuById", duId);
+	}
+
 	public int addZaChang(ZaChang zaChang) throws DataAccessException {
 		return (Integer)getSqlMapClientTemplate().insert("zaExtend.addZaChang", zaChang);
 	}
@@ -74,6 +82,10 @@ public class ZaExtendDaoImpl extends BaseDaoiBatis implements ZaExtendDao{
 		return (ZaChang)getSqlMapClientTemplate().queryForObject("zaExtend.getZaChangByPersonnelid", personnelid);
 	}
 	
+	public ZaChang getZaChangById(int changId) throws DataAccessException {
+		return (ZaChang)getSqlMapClientTemplate().queryForObject("zaExtend.getZaChangById", changId);
+	}
+
 	public NewPageModel searchZaChang(ZaChang zaChang, NewPageModel pm)
 	throws DataAccessException {
 		int total = (Integer) getSqlMapClientTemplate().queryForObject("zaExtend.searchZaChang_count", zaChang);
@@ -87,6 +99,10 @@ public class ZaExtendDaoImpl extends BaseDaoiBatis implements ZaExtendDao{
 		return (Integer)getSqlMapClientTemplate().update("zaExtend.updateZaChang", zaChang);
 	}
 
+	public int deleteZaChangById(int changId) throws DataAccessException {
+		return getSqlMapClientTemplate().delete("zaExtend.deleteZaChangById", changId);
+	}
+
 	// 陪侍相关
 	public int addZaPei(ZaPei zaPei) throws DataAccessException {
 		return (Integer)getSqlMapClientTemplate().insert("zaExtend.addZaPei", zaPei);
@@ -94,6 +110,10 @@ public class ZaExtendDaoImpl extends BaseDaoiBatis implements ZaExtendDao{
 
 	public ZaPei getZaPeiByPersonnelid(int personnelid) throws DataAccessException {
 		return (ZaPei)getSqlMapClientTemplate().queryForObject("zaExtend.getZaPeiByPersonnelid", personnelid);
+	}
+
+	public ZaPei getZaPeiById(int peiId) throws DataAccessException {
+		return (ZaPei)getSqlMapClientTemplate().queryForObject("zaExtend.getZaPeiById", peiId);
 	}
 
 	public NewPageModel searchZaPei(ZaPei zaPei, NewPageModel pm) throws DataAccessException {
@@ -106,6 +126,10 @@ public class ZaExtendDaoImpl extends BaseDaoiBatis implements ZaExtendDao{
 
 	public int updateZaPei(ZaPei zaPei) throws DataAccessException {
 		return (Integer)getSqlMapClientTemplate().update("zaExtend.updateZaPei", zaPei);
+	}
+
+	public int deleteZaPeiById(int peiId) throws DataAccessException {
+		return getSqlMapClientTemplate().delete("zaExtend.deleteZaPeiById", peiId);
 	}
 
 	// 涉案地址相关
@@ -158,6 +182,31 @@ public class ZaExtendDaoImpl extends BaseDaoiBatis implements ZaExtendDao{
 		return getSqlMapClientTemplate().update("zaExtend.deleteDuAjByDuId", duId);
 	}
 
+	public int updateDuAjRelValidflag(int duId, int validflag) throws DataAccessException {
+		java.util.Map<String, Object> params = new java.util.HashMap<>();
+		params.put("duId", duId);
+		params.put("validflag", validflag);
+		return getSqlMapClientTemplate().update("zaExtend.updateDuAjRelValidflag", params);
+	}
+
+	public int deleteDuRelByDuId(int duId) throws DataAccessException {
+		// 删除涉赌的所有关联关系（案件+警情）
+		int count = 0;
+		count += getSqlMapClientTemplate().update("zaExtend.deleteDuAjByDuId", duId);
+		count += getSqlMapClientTemplate().update("zaExtend.deleteDuJqByDuId", duId);
+		return count;
+	}
+
+	public int insertDuAjRel(int duId, int personnelid, int ajId, String addtime) throws DataAccessException {
+		ZaDuAjRel rel = new ZaDuAjRel();
+		rel.setDuId(duId);
+		rel.setPersonnelid(personnelid);
+		rel.setAjId(ajId);
+		rel.setValidflag(1);
+		rel.setAddtime(addtime);
+		return (Integer)getSqlMapClientTemplate().insert("zaExtend.insertDuAjRel", rel);
+	}
+
 	@SuppressWarnings("unchecked")
 	public List<Object> findAjByDuId(int duId) throws DataAccessException {
 		return getSqlMapClientTemplate().queryForList("zaExtend.findAjByDuId", duId);
@@ -181,6 +230,23 @@ public class ZaExtendDaoImpl extends BaseDaoiBatis implements ZaExtendDao{
 
 	public int deleteDuJqByDuId(int duId) throws DataAccessException {
 		return getSqlMapClientTemplate().update("zaExtend.deleteDuJqByDuId", duId);
+	}
+
+	public int updateDuJqRelValidflag(int duId, int validflag) throws DataAccessException {
+		java.util.Map<String, Object> params = new java.util.HashMap<>();
+		params.put("duId", duId);
+		params.put("validflag", validflag);
+		return getSqlMapClientTemplate().update("zaExtend.updateDuJqRelValidflag", params);
+	}
+
+	public int insertDuJqRel(int duId, int personnelid, int jqId, String addtime) throws DataAccessException {
+		ZaDuJqRel rel = new ZaDuJqRel();
+		rel.setDuId(duId);
+		rel.setPersonnelid(personnelid);
+		rel.setJqId(jqId);
+		rel.setValidflag(1);
+		rel.setAddtime(addtime);
+		return (Integer)getSqlMapClientTemplate().insert("zaExtend.insertDuJqRel", rel);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -208,6 +274,31 @@ public class ZaExtendDaoImpl extends BaseDaoiBatis implements ZaExtendDao{
 		return getSqlMapClientTemplate().update("zaExtend.deleteChangAjByChangId", changId);
 	}
 
+	public int deleteChangRelByChangId(int changId) throws DataAccessException {
+		// 删除涉娼的所有关联关系（案件+警情）
+		int count = 0;
+		count += getSqlMapClientTemplate().update("zaExtend.deleteChangAjByChangId", changId);
+		count += getSqlMapClientTemplate().update("zaExtend.deleteChangJqByChangId", changId);
+		return count;
+	}
+
+	public int insertChangAjRel(int changId, int personnelid, int ajId, String addtime) throws DataAccessException {
+		ZaChangAjRel rel = new ZaChangAjRel();
+		rel.setChangId(changId);
+		rel.setPersonnelid(personnelid);
+		rel.setAjId(ajId);
+		rel.setValidflag(1);
+		rel.setAddtime(addtime);
+		return (Integer)getSqlMapClientTemplate().insert("zaExtend.insertChangAjRel", rel);
+	}
+
+	public int updateChangAjRelValidflag(int changId, int validflag) throws DataAccessException {
+		java.util.Map<String, Object> params = new java.util.HashMap<>();
+		params.put("changId", changId);
+		params.put("validflag", validflag);
+		return getSqlMapClientTemplate().update("zaExtend.updateChangAjRelValidflag", params);
+	}
+
 	@SuppressWarnings("unchecked")
 	public List<Object> findAjByChangId(int changId) throws DataAccessException {
 		return getSqlMapClientTemplate().queryForList("zaExtend.findAjByChangId", changId);
@@ -233,6 +324,23 @@ public class ZaExtendDaoImpl extends BaseDaoiBatis implements ZaExtendDao{
 		return getSqlMapClientTemplate().update("zaExtend.deleteChangJqByChangId", changId);
 	}
 
+	public int insertChangJqRel(int changId, int personnelid, int jqId, String addtime) throws DataAccessException {
+		ZaChangJqRel rel = new ZaChangJqRel();
+		rel.setChangId(changId);
+		rel.setPersonnelid(personnelid);
+		rel.setJqId(jqId);
+		rel.setValidflag(1);
+		rel.setAddtime(addtime);
+		return (Integer)getSqlMapClientTemplate().insert("zaExtend.insertChangJqRel", rel);
+	}
+
+	public int updateChangJqRelValidflag(int changId, int validflag) throws DataAccessException {
+		java.util.Map<String, Object> params = new java.util.HashMap<>();
+		params.put("changId", changId);
+		params.put("validflag", validflag);
+		return getSqlMapClientTemplate().update("zaExtend.updateChangJqRelValidflag", params);
+	}
+
 	@SuppressWarnings("unchecked")
 	public List<Object> findJqByChangId(int changId) throws DataAccessException {
 		return getSqlMapClientTemplate().queryForList("zaExtend.findJqByChangId", changId);
@@ -254,8 +362,32 @@ public class ZaExtendDaoImpl extends BaseDaoiBatis implements ZaExtendDao{
 		return relList.size();
 	}
 
+	public int insertPeiAjRel(int peiId, int personnelid, int ajId, String addtime) throws DataAccessException {
+		java.util.Map<String, Object> params = new java.util.HashMap<>();
+		params.put("peiId", peiId);
+		params.put("personnelid", personnelid);
+		params.put("ajId", ajId);
+		params.put("addtime", addtime);
+		return getSqlMapClientTemplate().update("zaExtend.insertPeiAjRel", params);
+	}
+
 	public int deleteByPeiId(int peiId) throws DataAccessException {
 		return getSqlMapClientTemplate().update("zaExtend.deletePeiAjByPeiId", peiId);
+	}
+
+	public int deletePeiRelByPeiId(int peiId) throws DataAccessException {
+		// 删除案件关联
+		getSqlMapClientTemplate().update("zaExtend.deletePeiAjByPeiId", peiId);
+		// 删除警情关联
+		getSqlMapClientTemplate().update("zaExtend.deletePeiJqByPeiId", peiId);
+		return 1;
+	}
+
+	public int updatePeiAjRelValidflag(int peiId, int validflag) throws DataAccessException {
+		java.util.Map<String, Object> params = new java.util.HashMap<>();
+		params.put("peiId", peiId);
+		params.put("validflag", validflag);
+		return getSqlMapClientTemplate().update("zaExtend.updatePeiAjRelValidflag", params);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -283,6 +415,23 @@ public class ZaExtendDaoImpl extends BaseDaoiBatis implements ZaExtendDao{
 		return getSqlMapClientTemplate().update("zaExtend.deletePeiJqByPeiId", peiId);
 	}
 
+	public int updatePeiJqRelValidflag(int peiId, int validflag) throws DataAccessException {
+		java.util.Map<String, Object> params = new java.util.HashMap<>();
+		params.put("peiId", peiId);
+		params.put("validflag", validflag);
+		return getSqlMapClientTemplate().update("zaExtend.updatePeiJqRelValidflag", params);
+	}
+
+	public int insertPeiJqRel(int peiId, int personnelid, int jqId, String addtime) throws DataAccessException {
+		java.util.Map<String, Object> params = new java.util.HashMap<>();
+		params.put("peiId", peiId);
+		params.put("personnelid", personnelid);
+		params.put("jqId", jqId);
+		params.put("addtime", addtime);
+		params.put("validflag", 1);
+		return getSqlMapClientTemplate().update("zaExtend.insertPeiJqRel", params);
+	}
+
 	@SuppressWarnings("unchecked")
 	public List<Object> findJqByPeiId(int peiId) throws DataAccessException {
 		return getSqlMapClientTemplate().queryForList("zaExtend.findJqByPeiId", peiId);
@@ -307,5 +456,40 @@ public class ZaExtendDaoImpl extends BaseDaoiBatis implements ZaExtendDao{
 	public boolean existsChangByPersonnelId(int personnelId) throws DataAccessException {
 		Integer count = (Integer) getSqlMapClientTemplate().queryForObject("zaExtend.existsChangByPersonnelId", personnelId);
 		return count != null && count > 0;
+	}
+
+	public boolean existsPeiByPersonnelId(int personnelId) throws DataAccessException {
+		Integer count = (Integer) getSqlMapClientTemplate().queryForObject("zaExtend.existsPeiByPersonnelId", personnelId);
+		return count != null && count > 0;
+	}
+
+	// ========== 导出相关实现 ==========
+	@SuppressWarnings("unchecked")
+	public List<ZaDu> getZaDuListByPersonnelIds(String personnelIds) throws DataAccessException {
+		if (personnelIds == null || personnelIds.trim().isEmpty()) {
+			return new java.util.ArrayList<ZaDu>();
+		}
+		return getSqlMapClientTemplate().queryForList("zaExtend.getZaDuListByPersonnelIds", personnelIds);
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<ZaChang> getZaChangListByPersonnelIds(String personnelIds) throws DataAccessException {
+		if (personnelIds == null || personnelIds.trim().isEmpty()) {
+			return new java.util.ArrayList<ZaChang>();
+		}
+		return getSqlMapClientTemplate().queryForList("zaExtend.getZaChangListByPersonnelIds", personnelIds);
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<ZaPei> getZaPeiListByPersonnelIds(String personnelIds) throws DataAccessException {
+		if (personnelIds == null || personnelIds.trim().isEmpty()) {
+			return new java.util.ArrayList<ZaPei>();
+		}
+		return getSqlMapClientTemplate().queryForList("zaExtend.getZaPeiListByPersonnelIds", personnelIds);
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Integer> getMinorCasePersonnelIds() throws DataAccessException {
+		return getSqlMapClientTemplate().queryForList("zaExtend.getMinorCasePersonnelIds");
 	}
 }

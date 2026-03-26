@@ -75,4 +75,11 @@ public class PersonnelExtendDaoImpl extends BaseDaoiBatis implements PersonnelEx
 		return (Integer)getSqlMapClientTemplate().update("personnelExtend.updateLabelinfoValidflag", labelinfo);
 	}
 
+	@SuppressWarnings("unchecked")
+	public List<PersonnelExtend> exportPersonnelByIds(String personnelIds) throws DataAccessException {
+		if (personnelIds == null || personnelIds.trim().isEmpty()) {
+			return new java.util.ArrayList<PersonnelExtend>();
+		}
+		return getSqlMapClientTemplate().queryForList("personnelExtend.exportPersonnelByIds", personnelIds);
+	}
 }

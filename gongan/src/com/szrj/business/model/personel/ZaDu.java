@@ -36,9 +36,14 @@ public class ZaDu {
 
 	// 其他新增字段
 	private int hasSheduRecord;		//涉赌前科 0-否 1-是
+	private String handleUnitCode;	//打处单位编码
     private String phone;
 	private String caseAddressList;	//涉案地址列表，多个地址用逗号分隔
 	private String collectDate;		//采集日期
+
+	// 关联信息字段（非数据库字段，用于列表展示）
+	private String relAjIds;		//关联的案件ID列表，逗号分隔
+	private String relJqIds;		//关联的警情ID列表，逗号分隔
 
 	/*---------------------------------------非数据库中字段-------------------------------------*/
 	public int getId() {
@@ -211,6 +216,12 @@ public class ZaDu {
 	public void setHasSheduRecord(int hasSheduRecord) {
 		this.hasSheduRecord = hasSheduRecord;
 	}
+	public String getHandleUnitCode() {
+		return handleUnitCode;
+	}
+	public void setHandleUnitCode(String handleUnitCode) {
+		this.handleUnitCode = handleUnitCode;
+	}
 	public String getCaseAddressList() {
 		return caseAddressList;
 	}
@@ -229,6 +240,18 @@ public class ZaDu {
     public void setPhone(String phone) {
         this.phone = phone;
     }
+	public String getRelAjIds() {
+		return relAjIds;
+	}
+	public void setRelAjIds(String relAjIds) {
+		this.relAjIds = relAjIds;
+	}
+	public String getRelJqIds() {
+		return relJqIds;
+	}
+	public void setRelJqIds(String relJqIds) {
+		this.relJqIds = relJqIds;
+	}
 
 	// VO层方法：将逗号分隔的字符串转换为List
 	public java.util.List<String> getCaseAddressArray() {

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="fxPersonnelAdd">
+	<typeAlias alias="fxPersonnelAdd" type="com.szrj.business.model.personel.FxPersonnelAdd"/>
+
+	<!-- 查询未处理的新增数据（增量） -->
+	<select id="selectNotAdded" resultClass="fxPersonnelAdd">
+		SELECT
+			id,
+			cardnumber,
+			personname,
+			houseplace,
+			extra1,
+			extra2,
+			insert_time
+		FROM p_fxpersonnel_add_t
+		WHERE (extra2 IS NULL OR extra2 != 'added' OR extra2 = 'null')
+		ORDER BY id ASC
+	</select>
+
+	<!-- 检查人员是否已存在于 p_personnel_t -->
+	<select id="checkPersonnelExists" parameterClass="string" resultClass="int">
+		SELECT COUNT(*)
+		FROM p_personnel_t
+		WHERE cardnumber = #value# AND validflag > 0
+	</select>
+
+	<!-- 将数据插入 p_personnel_t -->
+	<insert id="insertIntoPersonnel" parameterClass="fxPersonnelAdd">
+		INSERT INTO p_personnel_t
+		(cardnumber, personname, houseplace, zslabel1, validflag, addtime, isrisk)
+		VALUES
+		('$cardnumber$', '$personname$', '$houseplace$', '2046', 1, NOW(), 1)
+	</insert>
+
+	<!-- 更新同步标记为 'added' -->
+	<update id="markAsAdded" parameterClass="string">
+		UPDATE p_fxpersonnel_add_t
+		SET extra2 = 'added'
+		WHERE id = #value#
+	</update>
+</sqlMap>
+

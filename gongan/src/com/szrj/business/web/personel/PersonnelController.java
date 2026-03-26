@@ -8,8 +8,10 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -1169,7 +1171,113 @@ public class PersonnelController {
 			e.printStackTrace();
 		}   
 	}
-	
+
+	/**
+	 * 治安人员子标签更新方法
+	 * 限制：仅针对主标签为治安人员（zslabel1=2046）的条目
+	 * 可操作的子标签类型：2178（涉赌人员）、2219（涉娼人员）、5001（陪侍人员）、5002（未成年）
+	 *
+	 * @param personnelid 人员ID
+	 * @param labelToAdd 要添加的子标签ID（可为null）
+	 * @param labelToRemove 要移除的子标签ID（可为null）
+	 * @return 操作是否成功
+	 */
+	public boolean updateChildrenLabelOnZhian(int personnelid, String labelToAdd, String labelToRemove) {
+		try {
+			// 获取人员信息
+			Personnel personnel = personnelDao.getById(personnelid);
+			if (personnel == null) {
+				System.err.println("人员不存在: " + personnelid);
+				return false;
+			}
+
+			// 检查主标签是否为治安人员（2046）
+			String zslabel1 = personnel.getZslabel1();
+			if (zslabel1 == null || !zslabel1.contains("2046")) {
+				System.err.println("该人员不是治安人员，无法操作子标签。zslabel1=" + zslabel1);
+				return false;
+			}
+
+			// 定义允许操作的子标签
+			Set<String> allowedLabels = new HashSet<>();
+			allowedLabels.add("2178"); // 涉赌人员
+			allowedLabels.add("2219"); // 涉娼人员
+			allowedLabels.add("5001"); // 陪侍人员
+			allowedLabels.add("5002"); // 未成年
+
+			// 验证要操作的标签是否在允许范围内
+			if (labelToAdd != null && !allowedLabels.contains(labelToAdd)) {
+				System.err.println("不允许添加的标签类型: " + labelToAdd);
+				return false;
+			}
+			if (labelToRemove != null && !allowedLabels.contains(labelToRemove)) {
+				System.err.println("不允许移除的标签类型: " + labelToRemove);
+				return false;
+			}
+
+			// 获取当前的zslabel2
+			String currentLabels = personnel.getZslabel2();
+			if (currentLabels == null) {
+				currentLabels = "";
+			}
+
+			// 将标签字符串转换为Set
+			Set<String> labelSet = new HashSet<>();
+			if (!"".equals(currentLabels.trim())) {
+				String[] labelArray = currentLabels.split(",");
+				for (String label : labelArray) {
+					if (label != null && !"".equals(label.trim())) {
+						labelSet.add(label.trim());
+					}
+				}
+			}
+
+			System.out.println("更新子标签 - 人员ID: " + personnelid);
+			System.out.println("当前标签: " + currentLabels);
+			System.out.println("要添加: " + labelToAdd);
+			System.out.println("要移除: " + labelToRemove);
+
+			// 添加标签
+			if (labelToAdd != null && !"".equals(labelToAdd.trim())) {
+				labelSet.add(labelToAdd);
+				System.out.println("已添加标签: " + labelToAdd);
+			}
+
+			// 移除标签
+			if (labelToRemove != null && !"".equals(labelToRemove.trim())) {
+				if (labelSet.remove(labelToRemove)) {
+					System.out.println("已移除标签: " + labelToRemove);
+				}
+			}
+
+			// 将Set转回字符串
+			StringBuilder sb = new StringBuilder();
+			for (String label : labelSet) {
+				if (sb.length() > 0) {
+					sb.append(",");
+				}
+				sb.append(label);
+			}
+			String newLabels = sb.toString();
+
+			// 更新到数据库
+			if (!newLabels.equals(currentLabels)) {
+				personnel.setZslabel2(newLabels);
+				personnelDao.updateSK(personnel);
+				System.out.println("子标签已更新: " + currentLabels + " -> " + newLabels);
+			} else {
+				System.out.println("子标签无变化，无需更新");
+			}
+
+			return true;
+
+		} catch (Exception e) {
+			System.err.println("更新治安人员子标签时发生错误: " + e.getMessage());
+			e.printStackTrace();
+			return false;
+		}
+	}
+
 	@RequestMapping("/applyAttribbuteLabel.do")
 	public @ResponseBody String applyAttribbuteLabel(String addjson,Personnel personnel,ServletRequest request,@ModelAttribute("userSession")UserSession userSession){
 		Message message;

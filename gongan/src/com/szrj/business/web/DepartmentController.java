@@ -172,11 +172,38 @@ public class DepartmentController {
 	
 	//可根据部门类型查询部门树状结果
 	@RequestMapping("/getDepartmentTreeBytype.do")
-	public void getDepartmentTreeBytype(Department department,HttpServletResponse response){
+	public void getDepartmentTreeBytype(Department department, String additionalIds, HttpServletResponse response){
 		try {
 			System.out.println("getDepartmentTreeBytype=====");
 			List<Department> list1=new ArrayList<Department>();
 			list1=departmentDao.getDepartmentList(department);
+
+			// 如果有额外的ID参数，添加这些ID的部门
+			if(additionalIds != null && !additionalIds.trim().isEmpty()){
+				String[] ids = additionalIds.split(",");
+				for(String idStr : ids){
+					try{
+						int deptId = Integer.parseInt(idStr.trim());
+						Department dept = departmentDao.getById(deptId);
+						if(dept != null){
+							// 检查是否已存在
+							boolean exists = false;
+							for(Department d : list1){
+								if(d.getId() == deptId){
+									exists = true;
+									break;
+								}
+							}
+							if(!exists){
+								list1.add(dept);
+							}
+						}
+					}catch(NumberFormatException e){
+						// 忽略非数字ID
+					}
+				}
+			}
+
 			JSONArray json=new JSONArray();
 			json=TreeSelect.listToTreeSelectJSON_New(list1, "departname","departtype", "parentid", true,false);
 			response.setCharacterEncoding("UTF-8");

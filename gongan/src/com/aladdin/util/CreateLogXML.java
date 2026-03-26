@@ -267,41 +267,42 @@ public class CreateLogXML {
 	 * 上传不可删除的用户操作日志
 	 */
 	public static void sendSaveUserActionLogs(){
-		String logType = "1";
-		String sendID = getSendID(logType);
-		String logs = getXML(logXmlPath);
-		
-		if(null!=logs && logs.length()>0){
-			LogService ls = new LogService();
-			LogServicePortType lspt = ls.getLogServiceHttpSoap12Endpoint();
-			String acceptString;
-			acceptString = lspt.acceptLogs(Reg_ID, sendID, logType, logs);
-			
-			if(null!=acceptString && acceptString.length()>0 && acceptString.substring(0, 3).equals("000")){
-				System.out.println("***上传用户操作日志成功,批次号:" + sendID);
-				File startfile = new File(logXmlPath);
-				File newlocation = new File(savePath);
-				if(!newlocation.exists()){
-					newlocation.mkdirs();
-				}
-				File endFile = new File(newlocation + File.separator + sendID + ".xml");
-				startfile.renameTo(endFile);
-				System.out.println("-----日志迁移成功-----");
-			}
-			else {
-				System.out.println("***上传用户操作日志失败,返回码:"+ acceptString);
-				//新建文档
-				sendID = "fail"+getSendID("1");
-				File startfile = new File(logXmlPath);
-				File newlocation = new File(savePath);
-				if(!newlocation.exists()){
-					newlocation.mkdirs();
-				}
-				File endFile = new File(newlocation + File.separator + sendID + ".xml");
-				startfile.renameTo(endFile);
-				System.out.println("-----生成失败日志-----");
-			}
-		}
+        return;
+//		String logType = "1";
+//		String sendID = getSendID(logType);
+//		String logs = getXML(logXmlPath);
+//
+//		if(null!=logs && logs.length()>0){
+//			LogService ls = new LogService();
+//			LogServicePortType lspt = ls.getLogServiceHttpSoap12Endpoint();
+//			String acceptString;
+//			acceptString = lspt.acceptLogs(Reg_ID, sendID, logType, logs);
+//
+//			if(null!=acceptString && acceptString.length()>0 && acceptString.substring(0, 3).equals("000")){
+//				System.out.println("***上传用户操作日志成功,批次号:" + sendID);
+//				File startfile = new File(logXmlPath);
+//				File newlocation = new File(savePath);
+//				if(!newlocation.exists()){
+//					newlocation.mkdirs();
+//				}
+//				File endFile = new File(newlocation + File.separator + sendID + ".xml");
+//				startfile.renameTo(endFile);
+//				System.out.println("-----日志迁移成功-----");
+//			}
+//			else {
+//				System.out.println("***上传用户操作日志失败,返回码:"+ acceptString);
+//				//新建文档
+//				sendID = "fail"+getSendID("1");
+//				File startfile = new File(logXmlPath);
+//				File newlocation = new File(savePath);
+//				if(!newlocation.exists()){
+//					newlocation.mkdirs();
+//				}
+//				File endFile = new File(newlocation + File.separator + sendID + ".xml");
+//				startfile.renameTo(endFile);
+//				System.out.println("-----生成失败日志-----");
+//			}
+//		}
 	}
 	
 	/**

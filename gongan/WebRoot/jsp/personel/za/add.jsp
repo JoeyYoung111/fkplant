@@ -28,12 +28,12 @@ UserSession userSession = (UserSession) session.getAttribute("userSession");
   
   <body>
   	<fieldset class="layui-elem-field layui-field-title" style="margin-top: 20px;">
-  		<legend id="typeName">添加${param.typename }</legend>
+  		<legend id="typeName">添加治安人员 </legend>
 	</fieldset>
 	<form class="layui-form" method="post" id="form1">
-		<input type="hidden"  name="menuid" value=${param.menuid }>
-		<input type="hidden"  name="zslabel1" value=${param.zslabel1 }>
-		<input type="hidden"  name="typename" value=${param.typename }>
+		<input type="hidden"  name="menuid" value="${param.menuid}">
+		<input type="hidden"  name="zslabel1" value="${param.zslabel1}">
+		<input type="hidden"  name="typename" value="${param.typename}">
 		<div class="layui-form-item">
 	    	<label class="layui-form-label"><font color="red" size=2>*</font>身份证号</label>
 	    	<div class="layui-input-inline">
@@ -48,17 +48,16 @@ UserSession userSession = (UserSession) session.getAttribute("userSession");
 	    	<div id="labels">
 	    	</div>
 	  	</div>
-		<div class="layui-form-item">
-	    	<label class="layui-form-label"><font color="red" size=2>*</font>管辖责任单位</label>
-	    	<div class="layui-input-inline">
-				<input type="text" id="jdunit1" name="jdunit1" value="0" lay-filter="jdunit1" lay-verify="jdunit1" class="layui-input" autocomplete="off">
-	    	</div>
-	    	<label class="layui-form-label"><font color="red" size=2>*</font>管辖责任民警</label>
-	    	<div class="layui-input-inline">
-	    		<select id="jdpolice1" name="jdpolice1">
-	    		</select>
-	    	</div>
-	  	</div>
+	<div class="layui-form-item">
+    	<label class="layui-form-label"><font color="red" size=2>*</font>打处单位</label>
+    	<div class="layui-input-inline">
+			<input type="text" id="handleUnitTree" name="handleUnitTreeDisplay" value="0" lay-filter="handleUnitTree" lay-verify="handleUnitRequired" class="layui-input" autocomplete="off">
+			<input type="hidden" id="handleUnitCode" name="handleUnitCode" value="">
+    	</div>
+    	<!-- 管辖责任民警字段已隐藏 -->
+    	<input type="hidden" id="jdunit1" name="jdunit1" value="">
+    	<input type="hidden" id="jdpolice1" name="jdpolice1" value="">
+  	</div>
 	  	<div class="layui-form-item" id="ybssDiv">
 	  	</div>
 		<div class="layui-form-item">
@@ -105,17 +104,11 @@ UserSession userSession = (UserSession) session.getAttribute("userSession");
 		  layer = layui.layer;
 		  
 		  treeSelect.render({
-		        // 选择器
-		        elem: '#jdunit1',
-		        // 数据
-		        data: '<c:url value="/getDepartmentTreeBytype.do"/>?departtype=4',
-		        // 异步加载方式：get/post，默认get
+		        elem: '#handleUnitTree',
+		        data: '<c:url value="/getDepartmentTreeBytype.do"/>?departtype=4&additionalIds=47,48,49,51,53',
 		        type: 'get',
-		        // 占位符
-		        placeholder: '管辖责任单位',
-		        // 是否开启搜索功能：true/false，默认false
+		        placeholder: '打处单位',
 		        search: false,
-		        // 一些可定制的样式
 		        style: {
 		            folder: {
 		                enable: false
@@ -124,20 +117,36 @@ UserSession userSession = (UserSession) session.getAttribute("userSession");
 		                enable: true
 		            }
 		        },
-		        // 点击回调
 		        click: function(d){
-		        	getUsers($('#jdunit1').val());
+		        	var selectedDeptId = $('#handleUnitTree').val();
+		        	// 打处单位需要在240-263范围内才保存到handleUnitCode
+		        	var deptIdNum = parseInt(selectedDeptId);
+		        	if(deptIdNum >= 240 && deptIdNum <= 263){
+		        		$('#handleUnitCode').val(selectedDeptId);
+		        	} else {
+		        		$('#handleUnitCode').val('');
+		        	}
+		        	$('#jdunit1').val(selectedDeptId);
+		        	$('#jdpolice1').val("<%=userSession.getLoginUserID()%>");
 		        	form.render();
 		        },
-		        // 加载完成后的回调函数
 		        success: function (d) {
-		        	treeSelect.checkNode('jdunit1', "<%=userSession.getLoginUserDepartmentid()%>");
-		        	treeSelect.refresh('jdunit1');
-		        	getUsers($('#jdunit1').val());
+		        	treeSelect.checkNode('handleUnitTree', "<%=userSession.getLoginUserDepartmentid()%>");
+		        	treeSelect.refresh('handleUnitTree');
+		        	var initDeptId = $('#handleUnitTree').val();
+		        	// 打处单位需要在240-263范围内才保存到handleUnitCode
+		        	var initDeptIdNum = parseInt(initDeptId);
+		        	if(initDeptIdNum >= 240 && initDeptIdNum <= 263){
+		        		$('#handleUnitCode').val(initDeptId);
+		        	} else {
+		        		$('#handleUnitCode').val('');
+		        	}
+		        	$('#jdunit1').val(initDeptId);
+		        	$('#jdpolice1').val("<%=userSession.getLoginUserID()%>");
 		        	form.render();
 		        }
 		    });
-		  
+
 		  form.verify({
 		  	cardnumber:function(value,item){
 			  		var validator = new IDValidator();
@@ -153,7 +162,8 @@ UserSession userSession = (UserSession) session.getAttribute("userSession");
 								var flaglabel=","+data.personnel.zslabel1+",";
 								var lsflaglabel=","+data.personnel.lslabel1+",";
 								if(flaglabel.indexOf(",${param.zslabel1},")!=-1){
-									msg = "该身份证已存在${param.typename}人员--"+data.personnel.personname+"!!";
+									// 该身份证已存在同类型人员，不阻止提交，允许新增打处单位
+									msg = "";
 								}
 								if(lsflaglabel.indexOf(",${param.zslabel1},")!=-1){
 									msg = "该人员--"+data.personnel.personname+",已处于审核状态!!";
@@ -165,15 +175,9 @@ UserSession userSession = (UserSession) session.getAttribute("userSession");
 					});
 					if(msg!="")return msg;
 			  	},
-			  	jdpolice1: function(value,item){
-		    		if(!$("#jdpolice1").val()||$("#jdpolice1").val()==""){
-		    			$("#jdpolice1").next().find("input").focus();
-			  			return "请选择管辖责任民警";
-		    		}
-		    	},
-			  	jdunit1: function(value,item){
-		    		if(!$("#jdunit1").val()||$("#jdunit1").val()=="0"){
-			  			return "请选择管辖责任单位";
+			  	handleUnitRequired: function(value,item){
+		    		if(!$("#jdunit1").val()||$("#jdunit1").val()==""){
+			  			return "请选择打处单位";
 		    		}
 		    	}
 		  });
@@ -191,26 +195,38 @@ UserSession userSession = (UserSession) session.getAttribute("userSession");
 						dataType:	'json',
 						async:      false,
 						success:	function(data){
-							if(data.flag){
+						if(data.flag){
 								var flaglabel=","+data.personnel.zslabel1+",";
 								if(flaglabel.indexOf(",${param.zslabel1},")!=-1){
+									// 该身份证已存在同类型人员，提示将新增打处单位，允许继续
 									$("#personname").val(data.personnel.personname);
 									$("#personname").attr("readonly","readonly");
 									$("#personname").css("background","#efefef");
-		        					form.render();								
-									layer.alert("该身份证已存在${param.typename}--"+data.personnel.personname+"!!");
-								}else {
-		        					form.render();								
+        							form.render();
+									layer.msg("该身份证号已存在，将新增对应打处单位");
+								} else {
+		        					form.render();
 									$("#personname").val(data.personnel.personname);
 									$("#personname").attr("readonly","readonly");
 									$("#personname").css("background","#efefef");
-									if(data.personnel.jdunit1!=null&&data.personnel.jdunit1!=""){
-										treeSelect.checkNode('jdunit1', data.personnel.jdunit1);
-			        					treeSelect.refresh('jdunit1');
-			        					getUsers($('#jdunit1').val());
+									if(data.personnel.handleUnitCode!=null&&data.personnel.handleUnitCode!=""){
+										// 如果存在handleUnitCode，使用它
+										var deptId = data.personnel.handleUnitCode.split(",")[0]; // 取第一个部门ID
+										treeSelect.checkNode('handleUnitTree', deptId);
+			        					treeSelect.refresh('handleUnitTree');
+			        					$('#handleUnitCode').val(deptId);
+			        					$('#jdunit1').val(deptId);
 	        							form.render();
-			        					if(data.personnel.jdpolice1!=null&&data.personnel.jdpolice1!="")$("#jdpolice1 option[value='"+data.personnel.jdpolice1+"']").select();
+									} else if(data.personnel.jdunit1!=null&&data.personnel.jdunit1!=""){
+										// 兼容旧数据：如果handleUnitCode为空但jdunit1有值
+										treeSelect.checkNode('handleUnitTree', data.personnel.jdunit1);
+			        					treeSelect.refresh('handleUnitTree');
+			        					$('#handleUnitCode').val(data.personnel.jdunit1);
+			        					$('#jdunit1').val(data.personnel.jdunit1);
+	        							form.render();
 									}
+									// 自动选择当前用户作为管辖民警
+		        					<%--$('#jdpolice1').val("<%=userSession.getLoginUserID()%>");--%>
 									if(data.personnel.zslabel1!=null&&data.personnel.zslabel1!=""){
 					               		var zslabel1s=data.personnel.zslabel1.split(",");
 					               		var str1='<label class="layui-form-label">已存在标签</label><div class="layui-input-inline" style="padding-left:5px;padding-top:6px;">';

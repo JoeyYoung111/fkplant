@@ -28,6 +28,16 @@ public interface KaKouDao {
 	
 	public NewPageModel searchXdAjxx(XdAjxx  xdajxx,NewPageModel pm) throws DataAccessException;
 	
+	/**
+	 * 查询涉警信息并附带关联信息（涉赌/涉娼/陪侍记录ID）
+	 */
+	public NewPageModel queryZaJqxxWithRel(XdJqxx xdjqxx, NewPageModel pm) throws DataAccessException;
+
+	/**
+	 * 查询涉案信息并附带关联信息（涉赌/涉娼/陪侍记录ID）
+	 */
+	public NewPageModel queryZaAjxxWithRel(XdAjxx xdajxx, NewPageModel pm) throws DataAccessException;
+
 	public List<String> gettrajectoryKKtypes() throws DataAccessException;
 	
 	public NewPageModel searchAlltrajectoryKK(KaKou  kakou,NewPageModel pm) throws DataAccessException;
@@ -45,4 +55,20 @@ public interface KaKouDao {
 	public int feedbackYujing(Yujing yujing) throws DataAccessException;
 	
 	public Yujing getYujingById(int id) throws DataAccessException;
+
+	/**
+	 * 根据身份证号列表批量查询案件信息
+	 * @param cardnumbers 身份证号列表，逗号分隔
+	 * @return
+	 * @throws DataAccessException
+	 */
+	public List<Object> getAjxxByCardnumbers(String cardnumbers) throws DataAccessException;
+
+	/**
+	 * 根据身份证号列表批量查询警情信息
+	 * @param cardnumbers 身份证号列表，逗号分隔
+	 * @return
+	 * @throws DataAccessException
+	 */
+	public List<Object> getJqxxByCardnumbers(String cardnumbers) throws DataAccessException;
 }

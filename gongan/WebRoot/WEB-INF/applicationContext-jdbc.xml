@@ -66,6 +66,12 @@
         <property name="dataSource" ref="dataSource"/>
 		<property name="mapperLocations" value="classpath:com/szrj/business/ibatismaps/*.xml"></property>
     </bean>
+
+    <!-- JdbcTemplate for direct SQL operations -->
+    <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
     <!--  oracle 链接配置  -->
     <bean id="sqlMapClient1" class="org.springframework.orm.ibatis.SqlMapClientFactoryBean">
         <property name="configLocation" value="WEB-INF/sqloracle-map-config.xml"/>
@@ -170,6 +176,8 @@
 	<bean id="personnelExtendDao" class="com.szrj.business.impl.personel.PersonnelExtendDaoImpl" parent="baseDao"></bean><!-- 风险人员 通用扩展信息 -->
 	<bean id="applylabelDao" class="com.szrj.business.impl.personel.ApplylabelDaoImpl" parent="baseDao"></bean><!-- 风险人员 标签审核 -->
 	<bean id="zaExtendDao" class="com.szrj.business.impl.personel.ZaExtendDaoImpl" parent="baseDao"></bean><!-- 风险人员 标签审核 -->
+	<bean id="fxPersonnelAddDao" class="com.szrj.business.impl.personel.FxPersonnelAddDaoImpl" parent="baseDao"></bean><!-- 风险人员 增量同步 -->
+	<bean id="casePoliceDataSyncDao" class="com.szrj.business.dao.personel.impl.CasePoliceDataSyncDaoImpl" parent="baseDao"></bean><!-- 案件/警情数据同步 -->
 	<!-- 风险事件 -->
     <bean id="contradictionInfoDao" class="com.szrj.business.impl.event.ContradictionInfoDaoImpl" parent="baseDao"></bean><!-- 风险矛盾信息 -->
     <bean id="eventsInfoDao" class="com.szrj.business.impl.event.EventsInfoDaoImpl" parent="baseDao"></bean><!-- 引发涉稳事件 -->

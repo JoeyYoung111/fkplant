@@ -74,6 +74,9 @@ import com.szrj.business.model.personel.PersonnelExtend;
 import com.szrj.business.model.personel.Relation;
 import com.szrj.business.model.personel.RelationTelnumber;
 import com.szrj.business.model.personel.SocialRelations;
+import com.szrj.business.model.personel.ZaDu;
+import com.szrj.business.model.personel.ZaChang;
+import com.szrj.business.model.personel.ZaPei;
 
 @Controller
 @SessionAttributes("userSession")
@@ -96,7 +99,9 @@ public class PersonnelExtendController {
 	private ApplylabelDao applylabelDao;
 	@Autowired
 	private LogDao logDao;
-	
+	@Autowired
+	private com.szrj.business.dao.personel.ZaExtendDao zaExtendDao;
+
 	@RequestMapping("/searchPersonnelExtend.do")
 	@ResponseBody
 	public Map<String,Object> searchPersonnelExtend(PersonnelExtend personnelExtend,NewPageModel pm,ServletRequest request,@ModelAttribute("userSession")UserSession userSession,int page){
@@ -1511,6 +1516,1759 @@ public class PersonnelExtendController {
     	msg+="</table>";
     	return msg;
 	}
+    /**
+     * 将 Integer 列表转为逗号分隔字符串
+     */
+    private String listToString(List<Integer> list) {
+        if (list == null || list.isEmpty()) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < list.size(); i++) {
+            if (i > 0) sb.append(",");
+            sb.append(list.get(i));
+        }
+        return sb.toString();
+    }
+    /**
+     * 将 String 列表转为逗号分隔字符串（用于 SQL IN 查询）
+     */
+    private String listToStringWithQuotes(List<String> list) {
+        if (list == null || list.isEmpty()) {
+            return "''"; // 返回空字符串防止SQL报错
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < list.size(); i++) {
+            if (i > 0) sb.append(",");
+            sb.append("'").append(list.get(i)).append("'"); // 关键：添加单引号
+        }
+        return sb.toString();
+    }
+
+    /**
+     * 按人员ID分组涉赌记录
+     */
+    private Map<Integer, List<ZaDu>> groupDuByPersonnelId(List<ZaDu> duList) {
+        Map<Integer, List<ZaDu>> map = new HashMap<>();
+        if (duList != null) {
+            for (ZaDu du : duList) {
+                int pid = du.getPersonnelid();
+                if (!map.containsKey(pid)) {
+                    map.put(pid, new ArrayList<ZaDu>());
+                }
+                map.get(pid).add(du);
+            }
+        }
+        return map;
+    }
+
+    /**
+     * 按人员ID分组涉娼记录
+     */
+    private Map<Integer, List<ZaChang>> groupChangByPersonnelId(List<ZaChang> changList) {
+        Map<Integer, List<ZaChang>> map = new HashMap<>();
+        if (changList != null) {
+            for (ZaChang chang : changList) {
+                int pid = chang.getPersonnelid();
+                if (!map.containsKey(pid)) {
+                    map.put(pid, new ArrayList<ZaChang>());
+                }
+                map.get(pid).add(chang);
+            }
+        }
+        return map;
+    }
+
+    /**
+     * 按人员ID分组陪侍记录
+     */
+    private Map<Integer, List<ZaPei>> groupPeiByPersonnelId(List<ZaPei> peiList) {
+        Map<Integer, List<ZaPei>> map = new HashMap<>();
+        if (peiList != null) {
+            for (ZaPei pei : peiList) {
+                int pid = pei.getPersonnelid();
+                if (!map.containsKey(pid)) {
+                    map.put(pid, new ArrayList<ZaPei>());
+                }
+                map.get(pid).add(pei);
+            }
+        }
+        return map;
+    }
+
+    /**
+     * 按身份证号分组案件信息
+     */
+    @SuppressWarnings("unchecked")
+    private Map<String, List<Map<String, Object>>> groupAjxxMapByCardnumber(List<Object> ajxxList) {
+        Map<String, List<Map<String, Object>>> map = new HashMap<>();
+        if (ajxxList != null) {
+            for (Object obj : ajxxList) {
+                Map<String, Object> aj = (Map<String, Object>) obj;
+                String cardnumber = aj.get("sfzh") != null ? aj.get("sfzh").toString() : "";
+                if (!map.containsKey(cardnumber)) {
+                    map.put(cardnumber, new ArrayList<Map<String, Object>>());
+                }
+                map.get(cardnumber).add(aj);
+            }
+        }
+        return map;
+    }
+
+    /**
+     * 按身份证号分组警情信息
+     */
+    @SuppressWarnings("unchecked")
+    private Map<String, List<Map<String, Object>>> groupJqxxMapByCardnumber(List<Object> jqxxList) {
+        Map<String, List<Map<String, Object>>> map = new HashMap<>();
+        if (jqxxList != null) {
+            for (Object obj : jqxxList) {
+                Map<String, Object> jq = (Map<String, Object>) obj;
+                String cardnumber = jq.get("sfzh") != null ? jq.get("sfzh").toString() : "";
+                if (!map.containsKey(cardnumber)) {
+                    map.put(cardnumber, new ArrayList<Map<String, Object>>());
+                }
+                map.get(cardnumber).add(jq);
+            }
+        }
+        return map;
+    }
+
+    /**
+     * 涉赌人员导出表头
+     */
+    private List<String> getSheduExportHeaders() {
+        List<String> headers = new ArrayList<String>();
+        headers.add("序号");
+        headers.add("姓名");
+        headers.add("身份证号码");
+        headers.add("户籍地址");
+        headers.add("现住址");
+        headers.add("现住址所属辖区");
+        headers.add("现住址地市");
+        headers.add("涉赌前科");
+        headers.add("手机号码");
+        headers.add("人员类型");
+        headers.add("涉赌方式");
+        headers.add("涉赌部位");
+        headers.add("案件信息（id | 案件编号 | 案件名称）");
+        headers.add("涉案地址");
+        headers.add("处罚结果");
+        headers.add("处罚日期");
+        return headers;
+    }
+
+    /**
+     * 涉娼人员导出表头
+     */
+    private List<String> getShechangExportHeaders() {
+        List<String> headers = new ArrayList<String>();
+        headers.add("序号");
+        headers.add("姓名");
+        headers.add("身份证号码");
+        headers.add("户籍地址");
+        headers.add("现住址");
+        headers.add("现住址所属辖区");
+        headers.add("现住址地市");
+        headers.add("是否未成年");
+        headers.add("涉黄前科");
+        headers.add("手机号码");
+        headers.add("人员类型");
+        headers.add("涉黄方式");
+        headers.add("涉黄类型");
+        headers.add("案件信息（id | 案件编号 | 案件名称）");
+        headers.add("涉案地址");
+        headers.add("处罚结果");
+        headers.add("处罚日期");
+        return headers;
+    }
+
+    /**
+     * 陪侍人员导出表头
+     * todo：标签字段未添加
+     */
+    private List<String> getPeishiExportHeaders() {
+        List<String> headers = new ArrayList<String>();
+        headers.add("序号");
+        headers.add("姓名");
+        headers.add("身份证号码");
+        headers.add("户籍地址");
+        headers.add("现住址");
+        headers.add("现住址所属辖区");
+        headers.add("现住址地市");
+        headers.add("手机号码");
+        headers.add("活动场所");
+        headers.add("角色标签");
+        headers.add("案件信息（id | 案件编号 | 案件名称）");
+        headers.add("采集来源");
+        headers.add("采集时间");
+        return headers;
+    }
+
+    /**
+     * 未成年人基础信息导出表头
+     */
+    private List<String> getMinorExportHeaders() {
+        List<String> headers = new ArrayList<String>();
+        headers.add("序号");
+        headers.add("姓名");
+        headers.add("性别");//新增
+        headers.add("身份证号码");
+        headers.add("户籍地址");
+        headers.add("现住址");
+//        headers.add("现住址所属辖区");
+//        headers.add("现住址地市");
+        headers.add("手机号码");
+//        headers.add("采集来源");
+//        headers.add("采集时间");
+        return headers;
+    }
+
+    /**
+     * 涉娼未成年案件人员导出表头
+     */
+    private List<String> getMinorCaseExportHeaders() {
+        List<String> headers = new ArrayList<String>();
+        headers.add("序号");
+        headers.add("姓名");
+        headers.add("身份证号码");
+        headers.add("户籍地址");
+        headers.add("现住址");
+        headers.add("现住址所属辖区");
+        headers.add("现住址地市");
+        headers.add("手机号码");
+        headers.add("涉赌记录（id | 人员类型 | 涉赌方式 | 涉赌部位 | 处罚结果 | 涉案地址 | 处罚时间）");
+        headers.add("涉娼记录（id | 人员类型 | 涉娼方式 | 涉娼类型 | 处罚结果 | 涉案地址 | 处罚时间）");
+        headers.add("案件信息（id | 案件编号 | 案件名称）");
+        return headers;
+    }
+
+    /**
+     * 根据导出类型获取对应表头
+     */
+    private List<String> getExportHeadersByType(String exportType) {
+        if ("shedu".equals(exportType)) {
+            return getSheduExportHeaders();
+        } else if ("shechang".equals(exportType)) {
+            return getShechangExportHeaders();
+        } else if ("peishi".equals(exportType)) {
+            return getPeishiExportHeaders();
+        } else if ("minor".equals(exportType)) {
+            return getMinorExportHeaders();
+        } else if ("minorCase".equals(exportType)) {
+            return getMinorCaseExportHeaders();
+        }
+        return new ArrayList<String>();
+    }
+
+    /**
+     * 构建涉赌人员导出行数据（每条涉赌记录生成一行）
+     * @param rowIndex 行号（从1开始）
+     * @param person 人员基础信息
+     * @param duList 涉赌记录列表
+     * @param ajxxList 案件信息列表
+     * @return 行数据列表（可能包含多行）
+     */
+    private List<List<String>> buildSheduRowsData(int rowIndex, Personnel person,
+                                           List<ZaDu> duList,
+                                           List<Map<String, Object>> ajxxList) {
+        List<List<String>> rows = new ArrayList<List<String>>();
+
+        // 如果没有涉赌记录，生成一行基础数据
+        if (duList == null || duList.isEmpty()) {
+            List<String> row = new ArrayList<String>();
+            row.add(String.valueOf(rowIndex));
+            row.add(nullToEmpty(person.getPersonname()));
+            row.add(nullToEmpty(person.getCardnumber()));
+            row.add(buildFullHouseAddress(person));
+            row.add(buildFullHomeAddress(person));
+            row.add(nullToEmpty(person.getHomePoliceStationName()));  // 现住址所属辖区
+            row.add(nullToEmpty(person.getHomeCity()));  // 现住址地市
+            row.add(person.getHasSheduRecord() != null && person.getHasSheduRecord() == 1 ? "是" : "否");
+            row.add(nullToEmpty(person.getTelnumber()));
+            row.add("");  // 人员类型
+            row.add("");  // 涉赌方式
+            row.add("");  // 涉赌部位
+            row.add(joinAjxxSimple(ajxxList));  // 案件信息
+            row.add("");  // 涉案地址
+            row.add("");  // 处罚结果
+            row.add("");  // 处罚日期
+            rows.add(row);
+            return rows;
+        }
+
+        // 每条涉赌记录生成一行
+        int currentRowIndex = rowIndex;
+        for (ZaDu du : duList) {
+            List<String> row = new ArrayList<String>();
+
+            // 序号
+            row.add(String.valueOf(currentRowIndex++));
+
+            // 姓名
+            row.add(nullToEmpty(person.getPersonname()));
+
+            // 身份证号码
+            row.add(nullToEmpty(person.getCardnumber()));
+
+            // 户籍地址（完整）
+            row.add(buildFullHouseAddress(person));
+
+            // 现住址（完整+派出所）
+            row.add(buildFullHomeAddress(person));
+
+            // 现住址所属辖区
+            row.add(nullToEmpty(person.getHomePoliceStationName()));
+
+            // 现住址地市
+            row.add(nullToEmpty(person.getHomeCity()));
+
+            // 涉赌前科
+            row.add(person.getHasSheduRecord() != null && person.getHasSheduRecord() == 1 ? "是" : "否");
+
+            // 手机号码
+            row.add(nullToEmpty(person.getTelnumber()));
+
+            // 人员类型（当前涉赌记录的人员属性）
+            row.add(nullToEmpty(du.getPersonAttribute()));
+
+            // 涉赌方式
+            row.add(nullToEmpty(du.getDbfs()));
+
+            // 涉赌部位
+            row.add(nullToEmpty(du.getDbbw()));
+
+            // 案件信息（显示与该涉赌记录关联的所有案件）
+            row.add(buildRelatedAjxxInfo(du.getRelAjIds(), ajxxList));
+
+            // 涉案地址
+            row.add(nullToEmpty(du.getCaseAddressList()));
+
+            // 处罚结果
+            row.add(nullToEmpty(du.getCfjg()));
+
+            // 处罚日期
+            row.add(nullToEmpty(du.getChsj()));
+
+            rows.add(row);
+        }
+
+        return rows;
+    }
+
+    /**
+     * 构建涉娼人员导出行数据（每条涉娼记录生成一行）
+     * @param rowIndex 行号（从1开始）
+     * @param person 人员基础信息
+     * @param changList 涉娼记录列表
+     * @param ajxxList 案件信息列表
+     * @return 行数据列表（可能包含多行）
+     */
+    private List<List<String>> buildShechangRowsData(int rowIndex, Personnel person,
+                                              List<ZaChang> changList,
+                                              List<Map<String, Object>> ajxxList) {
+        List<List<String>> rows = new ArrayList<List<String>>();
+
+        // 如果没有涉娼记录，生成一行基础数据
+        if (changList == null || changList.isEmpty()) {
+            List<String> row = new ArrayList<String>();
+            row.add(String.valueOf(rowIndex));
+            row.add(nullToEmpty(person.getPersonname()));
+            row.add(nullToEmpty(person.getCardnumber()));
+            row.add(buildFullHouseAddress(person));
+            row.add(buildFullHomeAddress(person));
+            // 现住址所属辖区
+            row.add(nullToEmpty(person.getHomePoliceStationName()));
+
+            // 现住址地市
+            row.add(nullToEmpty(person.getHomeCity()));
+            row.add(checkIsMinor(person.getCardnumber()));
+            row.add(person.getHasSechangRecord() != null && person.getHasSechangRecord() == 1 ? "是" : "否");
+            row.add(nullToEmpty(person.getTelnumber()));
+            row.add("");  // 人员类型
+            row.add("");  // 涉黄方式
+            row.add("");  // 涉黄类型
+            row.add(joinAjxxSimple(ajxxList));  // 案件信息
+            row.add("");  // 涉案地址
+            row.add("");  // 处罚结果
+            row.add("");  // 处罚日期
+            rows.add(row);
+            return rows;
+        }
+
+        // 每条涉娼记录生成一行
+        int currentRowIndex = rowIndex;
+        for (ZaChang chang : changList) {
+            List<String> row = new ArrayList<String>();
+
+            // 序号
+            row.add(String.valueOf(currentRowIndex++));
+
+            // 姓名
+            row.add(nullToEmpty(person.getPersonname()));
+
+            // 身份证号码
+            row.add(nullToEmpty(person.getCardnumber()));
+
+            // 户籍地址（完整）
+            row.add(buildFullHouseAddress(person));
+
+            // 现住址（完整+派出所）
+            row.add(buildFullHomeAddress(person));
+
+            // 现住址所属辖区
+            row.add(nullToEmpty(person.getHomePoliceStationName()));
+
+            // 现住址地市
+            row.add(nullToEmpty(person.getHomeCity()));
+
+            // 是否未成年（根据当前时间）
+            row.add(checkIsMinor(person.getCardnumber()));
+
+            // 涉黄前科
+            row.add(person.getHasSechangRecord() != null && person.getHasSechangRecord() == 1 ? "是" : "否");
+
+            // 手机号码
+            row.add(nullToEmpty(person.getTelnumber()));
+
+            // 人员类型（当前涉娼记录的人员属性）
+            row.add(nullToEmpty(chang.getChang_scjs()));
+
+            // 涉黄方式
+            row.add(nullToEmpty(chang.getChang_myfs()));
+
+            // 涉黄类型
+            row.add(nullToEmpty(chang.getChangType()));
+
+            // 案件信息（显示与该涉娼记录关联的所有案件）
+            row.add(buildRelatedAjxxInfo(chang.getRelAjIds(), ajxxList));
+
+            // 涉案地址
+            row.add(nullToEmpty(chang.getCaseAddressList()));
+
+            // 处罚结果
+            row.add(nullToEmpty(chang.getChang_cfjg()));
+
+            // 处罚日期
+            row.add(nullToEmpty(chang.getChang_chsj()));
+
+            rows.add(row);
+        }
+
+        return rows;
+    }
+
+    /**
+     * 构建陪侍人员导出行数据（每条陪侍记录生成一行）
+     * @param rowIndex 行号（从1开始）
+     * @param person 人员基础信息
+     * @param peiList 陪侍记录列表
+     * @param ajxxList 案件信息列表
+     * @return 行数据列表（可能包含多行）
+     */
+    private List<List<String>> buildPeishiRowsData(int rowIndex, Personnel person,
+                                            List<ZaPei> peiList,
+                                            List<Map<String, Object>> ajxxList) {
+        List<List<String>> rows = new ArrayList<List<String>>();
+
+        // 如果没有陪侍记录，生成一行基础数据
+        if (peiList == null || peiList.isEmpty()) {
+            List<String> row = new ArrayList<String>();
+            row.add(String.valueOf(rowIndex));
+            row.add(nullToEmpty(person.getPersonname()));
+            row.add(nullToEmpty(person.getCardnumber()));
+            row.add(buildFullHouseAddress(person));
+            row.add(buildFullHomeAddress(person));
+            row.add(nullToEmpty(person.getHomePoliceStationName()));
+            row.add(nullToEmpty(person.getHomeCity()));
+            row.add(nullToEmpty(person.getTelnumber()));
+            row.add("");  // 活动场所
+            row.add("");  // 角色标签
+            row.add(joinAjxxSimple(ajxxList));  // 案件信息
+            row.add("");  // 采集来源
+            row.add("");  // 采集时间
+            rows.add(row);
+            return rows;
+        }
+
+        // 每条陪侍记录生成一行
+        int currentRowIndex = rowIndex;
+        for (ZaPei pei : peiList) {
+            List<String> row = new ArrayList<String>();
+
+            // 序号
+            row.add(String.valueOf(currentRowIndex++));
+
+            // 姓名
+            row.add(nullToEmpty(person.getPersonname()));
+
+            // 身份证号码
+            row.add(nullToEmpty(person.getCardnumber()));
+
+            // 户籍地址（完整）
+            row.add(buildFullHouseAddress(person));
+
+            // 现住址（完整+派出所）
+            row.add(buildFullHomeAddress(person));
+
+            // 现住址所属辖区
+            row.add(nullToEmpty(person.getHomePoliceStationName()));
+
+            // 现住址地市
+            row.add(nullToEmpty(person.getHomeCity()));
+
+            // 手机号码
+            row.add(nullToEmpty(person.getTelnumber()));
+
+            // 活动场所（当前陪侍记录）
+            row.add(nullToEmpty(pei.getActivityVenue()));
+
+            // 角色标签（从ZaPei的memo字段获取）
+            row.add(nullToEmpty(pei.getMemo()));
+
+            // 案件信息（显示与该陪侍记录关联的所有案件）
+            row.add(buildRelatedAjxxInfo(pei.getRelAjIds(), ajxxList));
+
+            // 采集来源
+            row.add(nullToEmpty(pei.getCollectSource()));
+
+            // 采集时间
+            row.add(nullToEmpty(pei.getCollectDate()));
+
+            rows.add(row);
+        }
+
+        return rows;
+    }
+
+    /**
+     * 构建未成年人基础信息导出行数据
+     * @param rowIndex 行号（从1开始）
+     * @param person 人员基础信息
+     */
+    private List<String> buildMinorRowData(int rowIndex, Personnel person) {
+        List<String> row = new ArrayList<String>();
+
+        // 序号
+        row.add(String.valueOf(rowIndex));
+
+        // 姓名
+        row.add(nullToEmpty(person.getPersonname()));
+
+        // 性别
+        row.add(nullToEmpty(person.getSexes()));
+
+        // 身份证号码
+        row.add(nullToEmpty(person.getCardnumber()));
+
+        // 户籍地址（完整）
+        row.add(buildFullHouseAddress(person));
+
+        // 现住址（完整+派出所）
+        row.add(buildFullHomeAddress(person));
+
+        // 现住址所属辖区
+//        row.add(nullToEmpty(person.getHomePoliceStationName()));
+
+        // 现住址地市
+//        row.add(nullToEmpty(person.getHomeCity()));
+
+        // 手机号码
+        row.add(nullToEmpty(person.getTelnumber()));
+
+        // 采集来源
+//        row.add(nullToEmpty(person.getAddoperator()));
+
+        // 采集时间
+//        row.add(nullToEmpty(person.getAddtime()));
+
+        return row;
+    }
+
+    /**
+     * 构建涉娼未成年案件人员导出行数据
+     * @param rowIndex 行号（从1开始）
+     * @param person 人员基础信息
+     * @param duList 涉赌记录列表
+     * @param changList 涉娼记录列表
+     * @param ajxxList 案件信息列表
+     */
+    private List<String> buildMinorCaseRowData(int rowIndex, Personnel person,
+                                               List<ZaDu> duList,
+                                               List<ZaChang> changList,
+                                               List<Map<String, Object>> ajxxList) {
+        List<String> row = new ArrayList<String>();
+
+        // 序号
+        row.add(String.valueOf(rowIndex));
+
+        // 姓名
+        row.add(nullToEmpty(person.getPersonname()));
+
+        // 身份证号码
+        row.add(nullToEmpty(person.getCardnumber()));
+
+        // 户籍地址（完整）
+        row.add(buildFullHouseAddress(person));
+
+        // 现住址（完整+派出所）
+        row.add(buildFullHomeAddress(person));
+
+        // 现住址所属辖区
+        row.add(nullToEmpty(person.getHomePoliceStationName()));
+
+        // 现住址地市
+        row.add(nullToEmpty(person.getHomeCity()));
+
+        // 手机号码
+        row.add(nullToEmpty(person.getTelnumber()));
+
+        // 涉赌记录（id | 人员类型 | 涉赌方式 | 涉赌部位 | 处罚结果 | 涉案地址 | 处罚时间）
+        row.add(joinDuRecordsForMinorCase(duList));
+
+        // 涉娼记录（id | 人员类型 | 涉娼方式 | 涉娼类型 | 处罚结果 | 涉案地址 | 处罚时间）
+        row.add(joinChangRecordsForMinorCase(changList));
+
+        // 案件信息（id | 案件编号 | 案件名称）
+        row.add(joinAjxxSimple(ajxxList));
+
+        return row;
+    }
+
+    /**
+     * 根据身份证号计算年龄
+     */
+    private String calculateAge(String cardnumber) {
+        if (cardnumber == null || cardnumber.length() < 14) {
+            return "";
+        }
+        try {
+            String birthYear = cardnumber.substring(6, 10);
+            int year = Integer.parseInt(birthYear);
+            int currentYear = java.util.Calendar.getInstance().get(java.util.Calendar.YEAR);
+            return String.valueOf(currentYear - year);
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+    /**
+     * 空值转空字符串
+     */
+    private String nullToEmpty(Object value) {
+        return value == null ? "" : value.toString();
+    }
+
+    /**
+     * 获取打处单位显示名称
+     * 优先使用handleUnit字段，如果为空则根据handleUnitCode查询部门名称
+     */
+    private String getHandleUnitDisplayName(Personnel person) {
+        // 优先使用handleUnit
+        String handleUnit = person.getHandleUnit();
+        if (handleUnit != null && !handleUnit.trim().isEmpty()) {
+            return handleUnit;
+        }
+
+        // 如果handleUnit为空，尝试根据handleUnitCode查询部门名称
+        String handleUnitCode = person.getHandleUnitCode();
+        if (handleUnitCode == null || handleUnitCode.trim().isEmpty()) {
+            return "";
+        }
+
+        StringBuilder names = new StringBuilder();
+        String[] codes = handleUnitCode.split(",");
+        for (String code : codes) {
+            if (code != null && !code.trim().isEmpty()) {
+                try {
+                    int deptId = Integer.parseInt(code.trim());
+                    Department dept = departmentDao.getById(deptId);
+                    if (dept != null && dept.getDepartname() != null) {
+                        if (names.length() > 0) {
+                            names.append(",");
+                        }
+                        names.append(dept.getDepartname());
+                    }
+                } catch (Exception e) {
+                    // 忽略无效的部门ID
+                }
+            }
+        }
+        return names.toString();
+    }
+
+    /**
+     * 获取人员类型标签名称（zslabel1+zslabel2）
+     * @param zslabel1 一级标签ID（逗号分隔）
+     * @param zslabel2 二级标签ID（逗号分隔）
+     * @return 标签名称字符串
+     */
+    private String getPersonTypeLabel(String zslabel1, String zslabel2) {
+        StringBuilder labelNames = new StringBuilder();
+
+        // 处理一级标签
+        if (zslabel1 != null && !zslabel1.trim().isEmpty()) {
+            String[] label1Array = zslabel1.split(",");
+            for (String labelId : label1Array) {
+                if (labelId != null && !labelId.trim().isEmpty()) {
+                    try {
+                        AttributeLabel label = personnelDao.getAttributeLabelByid(Integer.parseInt(labelId.trim()));
+                        if (label != null && label.getAttributelabel() != null) {
+                            if (labelNames.length() > 0) {
+                                labelNames.append(",");
+                            }
+                            labelNames.append(label.getAttributelabel());
+                        }
+                    } catch (Exception e) {
+                        // 忽略无效的标签ID
+                    }
+                }
+            }
+        }
+
+        // 处理二级标签
+        if (zslabel2 != null && !zslabel2.trim().isEmpty()) {
+            String[] label2Array = zslabel2.split(",");
+            for (String labelId : label2Array) {
+                if (labelId != null && !labelId.trim().isEmpty()) {
+                    try {
+                        AttributeLabel label = personnelDao.getAttributeLabelByid(Integer.parseInt(labelId.trim()));
+                        if (label != null && label.getAttributelabel() != null) {
+                            if (labelNames.length() > 0) {
+                                labelNames.append(",");
+                            }
+                            labelNames.append(label.getAttributelabel());
+                        }
+                    } catch (Exception e) {
+                        // 忽略无效的标签ID
+                    }
+                }
+            }
+        }
+
+        return labelNames.toString();
+    }
+
+    /**
+     * 拼接涉赌记录，多条记录用换行符分隔
+     * 单条格式：详细地址 | 派出所 | 联系电话 | 涉赌情况综述 | 采集来源 | 采集日期 | 人员属性 | 赌博方式 | 赌博部位 | 查获经过 | 处罚结果 | 处理详情 | 涉案地址 | 处罚时间
+     */
+    private String joinDuRecords(List<ZaDu> list) {
+        if (list == null || list.isEmpty()) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < list.size(); i++) {
+            if (i > 0) {
+                sb.append("\n");
+            }
+            ZaDu du = list.get(i);
+            sb.append( i+1 );  // id
+            sb.append(" | ");
+            sb.append(nullToEmpty(du.getHomeDetail()));  // 详细地址
+            sb.append(" | ");
+            sb.append(nullToEmpty(du.getHomePoliceStationName()));  // 派出所
+            sb.append(" | ");
+            sb.append(nullToEmpty(du.getPhone()));  // 联系电话
+            sb.append(" | ");
+            sb.append(nullToEmpty(du.getLssdqk()));  // 涉赌情况综述
+            sb.append(" | ");
+            sb.append(nullToEmpty(du.getCollectSource()));  // 采集来源
+            sb.append(" | ");
+            sb.append(nullToEmpty(du.getCollectDate()));  // 采集日期
+            sb.append(" | ");
+            sb.append(nullToEmpty(du.getPersonAttribute()));  // 人员属性
+            sb.append(" | ");
+            sb.append(nullToEmpty(du.getDbfs()));  // 赌博方式
+            sb.append(" | ");
+            sb.append(nullToEmpty(du.getDbbw()));  // 赌博部位
+            sb.append(" | ");
+            sb.append(nullToEmpty(du.getChjg()));  // 查获经过
+            sb.append(" | ");
+            sb.append(nullToEmpty(du.getCfjg()));  // 处罚结果
+            sb.append(" | ");
+            sb.append(nullToEmpty(du.getClxq()));  // 处理详情
+            sb.append(" | ");
+            sb.append(nullToEmpty(du.getCaseAddressList()));  // 涉案地址
+            sb.append(" | ");
+            sb.append(nullToEmpty(du.getChsj()));  // 处罚时间
+        }
+        return sb.toString();
+    }
+
+    /**
+     * 拼接涉娼记录，多条记录用换行符分隔
+     * 单条格式：详细地址 | 派出所 | 联系电话 | 涉娼情况综述 | 采集来源 | 采集日期 | 人员属性 | 涉娼方式 | 涉娼类型 | 是否未成年案件 | 查获经过 | 处罚结果 | 处理详情 | 涉案地址 | 处罚时间
+     */
+    private String joinChangRecords(List<ZaChang> list) {
+        if (list == null || list.isEmpty()) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < list.size(); i++) {
+            if (i > 0) {
+                sb.append("\n");
+            }
+            ZaChang chang = list.get(i);
+            sb.append( i+1 );  // id
+            sb.append(" | ");
+            sb.append(nullToEmpty(chang.getHomeDetail()));  // 详细地址
+            sb.append(" | ");
+            sb.append(nullToEmpty(chang.getHomePoliceStationName()));  // 派出所
+            sb.append(" | ");
+            sb.append(nullToEmpty(chang.getPhone()));  // 联系电话
+            sb.append(" | ");
+            sb.append(nullToEmpty(chang.getChang_lsscqk()));  // 涉娼情况综述
+            sb.append(" | ");
+            sb.append(nullToEmpty(chang.getCollectSource()));  // 采集来源
+            sb.append(" | ");
+            sb.append(nullToEmpty(chang.getCollectDate()));  // 采集日期
+            sb.append(" | ");
+            sb.append(nullToEmpty(chang.getChang_scjs()));  // 人员属性（涉黄角色）
+            sb.append(" | ");
+            sb.append(nullToEmpty(chang.getChang_myfs()));  // 涉娼方式（卖淫方式）
+            sb.append(" | ");
+            sb.append(nullToEmpty(chang.getChangType()));  // 涉娼类型
+            sb.append(" | ");
+            sb.append(chang.getIsMinorCase() == 1 ? "是" : "否");  // 是否未成年案件
+            sb.append(" | ");
+            sb.append(nullToEmpty(chang.getChang_chjg()));  // 查获经过
+            sb.append(" | ");
+            sb.append(nullToEmpty(chang.getChang_cfjg()));  // 处罚结果
+            sb.append(" | ");
+            sb.append(nullToEmpty(chang.getChang_clxq()));  // 处理详情
+            sb.append(" | ");
+            sb.append(nullToEmpty(chang.getCaseAddressList()));  // 涉案地址
+            sb.append(" | ");
+            sb.append(nullToEmpty(chang.getChang_chsj()));  // 处罚时间
+        }
+        return sb.toString();
+    }
+
+    /**
+     * 拼接陪侍记录，多条记录用换行符分隔
+     * 单条格式：陪侍情况综述 | 采集来源 | 采集日期 | 活动场所
+     */
+    private String joinPeiRecords(List<ZaPei> list) {
+        if (list == null || list.isEmpty()) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < list.size(); i++) {
+            if (i > 0) {
+                sb.append("\n");
+            }
+            ZaPei pei = list.get(i);
+            sb.append( i+1 );  // id
+            sb.append(" | ");
+            sb.append(nullToEmpty(pei.getOtherMemo()));  // 陪侍情况综述（其他备注）
+            sb.append(" | ");
+            sb.append(nullToEmpty(pei.getCollectSource()));  // 采集来源
+            sb.append(" | ");
+            sb.append(nullToEmpty(pei.getCollectDate()));  // 采集日期
+            sb.append(" | ");
+            sb.append(nullToEmpty(pei.getActivityVenue()));  // 活动场所
+        }
+        return sb.toString();
+    }
+
+    /**
+     * 拼接案件信息，多条记录用换行符分隔
+     * 单条格式：案件编号 | 受理时间 | 案件类别 | 案件名称 | 受理单位 | 简要案情
+     */
+    private String joinAjxxRecords(List<Map<String, Object>> list) {
+        if (list == null || list.isEmpty()) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < list.size(); i++) {
+            if (i > 0) {
+                sb.append("\n");
+            }
+            Map<String, Object> aj = list.get(i);
+            sb.append( i+1 );  // id
+            sb.append(" | ");
+            sb.append(nullToEmpty(getMapValueIgnoreCase(aj, "jjbh")));  // 案件编号
+            sb.append(" | ");
+            sb.append(nullToEmpty(getMapValueIgnoreCase(aj, "slsj")));  // 受理时间
+            sb.append(" | ");
+            sb.append(nullToEmpty(getMapValueIgnoreCase(aj, "ajlb")));  // 案件类别
+            sb.append(" | ");
+            sb.append(nullToEmpty(getMapValueIgnoreCase(aj, "ajmc")));  // 案件名称
+            sb.append(" | ");
+            sb.append(nullToEmpty(getMapValueIgnoreCase(aj, "sldwmc")));  // 受理单位名称
+            sb.append(" | ");
+            sb.append(nullToEmpty(getMapValueIgnoreCase(aj, "jyaq")));  // 简要案情
+        }
+        return sb.toString();
+    }
+
+    /**
+     * 拼接警情信息，多条记录用换行符分隔
+     * 单条格式：接警时间 | 报警内容 | 报警类型 | 事发地点 | 处理结果内容 | 处警单位名称
+     */
+    private String joinJqxxRecords(List<Map<String, Object>> list) {
+        if (list == null || list.isEmpty()) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < list.size(); i++) {
+            if (i > 0) {
+                sb.append("\n");
+            }
+            Map<String, Object> jq = list.get(i);
+            sb.append( i+1 );  // id
+            sb.append(" | ");
+            sb.append(nullToEmpty(getMapValueIgnoreCase(jq, "jjrqsj")));  // 接警时间
+            sb.append(" | ");
+            sb.append(nullToEmpty(getMapValueIgnoreCase(jq, "bjnr")));  // 报警内容
+            sb.append(" | ");
+            sb.append(nullToEmpty(getMapValueIgnoreCase(jq, "bjlx")));  // 报警类型
+            sb.append(" | ");
+            sb.append(nullToEmpty(getMapValueIgnoreCase(jq, "sfdd")));  // 事发地点
+            sb.append(" | ");
+            sb.append(nullToEmpty(getMapValueIgnoreCase(jq, "cljgnr")));  // 处理结果内容
+            sb.append(" | ");
+            sb.append(nullToEmpty(getMapValueIgnoreCase(jq, "cjdwmc")));  // 处警单位名称
+        }
+        return sb.toString();
+    }
+
+    /**
+     * 构建完整的户籍地址（省+市+县+镇街+详细地址）
+     */
+    private String buildFullHouseAddress(Personnel person) {
+        StringBuilder addr = new StringBuilder();
+        if (person.getHouseProvince() != null && !person.getHouseProvince().trim().isEmpty()) {
+            addr.append(person.getHouseProvince());
+        }
+        if (person.getHouseCity() != null && !person.getHouseCity().trim().isEmpty()) {
+            addr.append(person.getHouseCity());
+        }
+        if (person.getHouseCounty() != null && !person.getHouseCounty().trim().isEmpty()) {
+            addr.append(person.getHouseCounty());
+        }
+        if (person.getHouseTown() != null && !person.getHouseTown().trim().isEmpty()) {
+            addr.append(person.getHouseTown());
+        }
+        if (person.getHouseplace() != null && !person.getHouseplace().trim().isEmpty()) {
+            addr.append(person.getHouseplace());
+        }
+        return addr.toString();
+    }
+
+    /**
+     * 构建完整的现住址（省+市+县+镇街+详细地址+现住地派出所）
+     */
+    private String buildFullHomeAddress(Personnel person) {
+        StringBuilder addr = new StringBuilder();
+        if (person.getHomeProvince() != null && !person.getHomeProvince().trim().isEmpty()) {
+            addr.append(person.getHomeProvince());
+        }
+        if (person.getHomeCity() != null && !person.getHomeCity().trim().isEmpty()) {
+            addr.append(person.getHomeCity());
+        }
+        if (person.getHomeCounty() != null && !person.getHomeCounty().trim().isEmpty()) {
+            addr.append(person.getHomeCounty());
+        }
+        if (person.getHomeTown() != null && !person.getHomeTown().trim().isEmpty()) {
+            addr.append(person.getHomeTown());
+        }
+        if (person.getHomeplace() != null && !person.getHomeplace().trim().isEmpty()) {
+            addr.append(person.getHomeplace());
+        }
+        if (person.getHomePoliceStationName() != null && !person.getHomePoliceStationName().trim().isEmpty()) {
+            addr.append("（").append(person.getHomePoliceStationName()).append("）");
+        }
+        return addr.toString();
+    }
+
+    /**
+     * 判断是否未成年（根据当前时间和身份证号计算）
+     */
+    private String checkIsMinor(String cardnumber) {
+        if (cardnumber == null || cardnumber.length() < 14) {
+            return "";
+        }
+        try {
+            String birthYear = cardnumber.substring(6, 10);
+            String birthMonth = cardnumber.substring(10, 12);
+            String birthDay = cardnumber.substring(12, 14);
+
+            int year = Integer.parseInt(birthYear);
+            int month = Integer.parseInt(birthMonth);
+            int day = Integer.parseInt(birthDay);
+
+            java.util.Calendar birthDate = java.util.Calendar.getInstance();
+            birthDate.set(year, month - 1, day);
+
+            java.util.Calendar now = java.util.Calendar.getInstance();
+
+            int age = now.get(java.util.Calendar.YEAR) - birthDate.get(java.util.Calendar.YEAR);
+            if (now.get(java.util.Calendar.MONTH) < birthDate.get(java.util.Calendar.MONTH) ||
+                (now.get(java.util.Calendar.MONTH) == birthDate.get(java.util.Calendar.MONTH) &&
+                 now.get(java.util.Calendar.DAY_OF_MONTH) < birthDate.get(java.util.Calendar.DAY_OF_MONTH))) {
+                age--;
+            }
+
+            return age < 18 ? "是" : "否";
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+    /**
+     * 从Map中获取值，忽略key的大小写
+     * 解决MySQL在不同配置下可能返回大写或小写列名的问题
+     */
+    private Object getMapValueIgnoreCase(Map<String, Object> map, String key) {
+        if (map == null || key == null) {
+            return null;
+        }
+        // 先尝试原始key
+        Object value = map.get(key);
+        if (value != null) {
+            return value;
+        }
+        // 尝试大写key
+        value = map.get(key.toUpperCase());
+        if (value != null) {
+            return value;
+        }
+        // 尝试小写key
+        value = map.get(key.toLowerCase());
+        if (value != null) {
+            return value;
+        }
+        // 遍历所有key进行不区分大小写匹配
+        for (String k : map.keySet()) {
+            if (k.equalsIgnoreCase(key)) {
+                return map.get(k);
+            }
+        }
+        return null;
+    }
+
+    // ========== 新增的join方法，用于新格式的导出 ==========
+
+    /**
+     * 拼接涉赌人员属性（多条记录用逗号分隔）
+     */
+    private String joinDuPersonAttribute(List<ZaDu> list) {
+        if (list == null || list.isEmpty()) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < list.size(); i++) {
+            if (i > 0) sb.append(",");
+            sb.append(nullToEmpty(list.get(i).getPersonAttribute()));
+        }
+        return sb.toString();
+    }
+
+    /**
+     * 拼接涉赌方式（多条记录用逗号分隔）
+     */
+    private String joinDuDbfs(List<ZaDu> list) {
+        if (list == null || list.isEmpty()) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < list.size(); i++) {
+            if (i > 0) sb.append(",");
+            sb.append(nullToEmpty(list.get(i).getDbfs()));
+        }
+        return sb.toString();
+    }
+
+    /**
+     * 拼接涉赌部位（多条记录用逗号分隔）
+     */
+    private String joinDuDbbw(List<ZaDu> list) {
+        if (list == null || list.isEmpty()) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < list.size(); i++) {
+            if (i > 0) sb.append(",");
+            sb.append(nullToEmpty(list.get(i).getDbbw()));
+        }
+        return sb.toString();
+    }
+
+    /**
+     * 拼接涉赌涉案地址（多条记录用逗号分隔）
+     */
+    private String joinDuCaseAddress(List<ZaDu> list) {
+        if (list == null || list.isEmpty()) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < list.size(); i++) {
+            if (i > 0) sb.append(",");
+            sb.append(nullToEmpty(list.get(i).getCaseAddressList()));
+        }
+        return sb.toString();
+    }
+
+    /**
+     * 拼接涉赌处罚结果（多条记录用逗号分隔）
+     */
+    private String joinDuCfjg(List<ZaDu> list) {
+        if (list == null || list.isEmpty()) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < list.size(); i++) {
+            if (i > 0) sb.append(",");
+            sb.append(nullToEmpty(list.get(i).getCfjg()));
+        }
+        return sb.toString();
+    }
+
+    /**
+     * 拼接涉赌处罚时间（多条记录用逗号分隔）
+     */
+    private String joinDuChsj(List<ZaDu> list) {
+        if (list == null || list.isEmpty()) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < list.size(); i++) {
+            if (i > 0) sb.append(",");
+            sb.append(nullToEmpty(list.get(i).getChsj()));
+        }
+        return sb.toString();
+    }
+
+    /**
+     * 拼接涉娼人员属性（多条记录用逗号分隔）
+     */
+    private String joinChangPersonAttribute(List<ZaChang> list) {
+        if (list == null || list.isEmpty()) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < list.size(); i++) {
+            if (i > 0) sb.append(",");
+            sb.append(nullToEmpty(list.get(i).getChang_scjs()));
+        }
+        return sb.toString();
+    }
+
+    /**
+     * 拼接涉娼方式（多条记录用逗号分隔）
+     */
+    private String joinChangMyfs(List<ZaChang> list) {
+        if (list == null || list.isEmpty()) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < list.size(); i++) {
+            if (i > 0) sb.append(",");
+            sb.append(nullToEmpty(list.get(i).getChang_myfs()));
+        }
+        return sb.toString();
+    }
+
+    /**
+     * 拼接涉娼类型（多条记录用逗号分隔）
+     */
+    private String joinChangType(List<ZaChang> list) {
+        if (list == null || list.isEmpty()) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < list.size(); i++) {
+            if (i > 0) sb.append(",");
+            sb.append(nullToEmpty(list.get(i).getChangType()));
+        }
+        return sb.toString();
+    }
+
+    /**
+     * 拼接涉娼涉案地址（多条记录用逗号分隔）
+     */
+    private String joinChangCaseAddress(List<ZaChang> list) {
+        if (list == null || list.isEmpty()) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < list.size(); i++) {
+            if (i > 0) sb.append(",");
+            sb.append(nullToEmpty(list.get(i).getCaseAddressList()));
+        }
+        return sb.toString();
+    }
+
+    /**
+     * 拼接涉娼处罚结果（多条记录用逗号分隔）
+     */
+    private String joinChangCfjg(List<ZaChang> list) {
+        if (list == null || list.isEmpty()) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < list.size(); i++) {
+            if (i > 0) sb.append(",");
+            sb.append(nullToEmpty(list.get(i).getChang_cfjg()));
+        }
+        return sb.toString();
+    }
+
+    /**
+     * 拼接涉娼处罚时间（多条记录用逗号分隔）
+     */
+    private String joinChangChsj(List<ZaChang> list) {
+        if (list == null || list.isEmpty()) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < list.size(); i++) {
+            if (i > 0) sb.append(",");
+            sb.append(nullToEmpty(list.get(i).getChang_chsj()));
+        }
+        return sb.toString();
+    }
+
+    /**
+     * 拼接陪侍活动场所（多条记录用逗号分隔）
+     */
+    private String joinPeiActivityVenue(List<ZaPei> list) {
+        if (list == null || list.isEmpty()) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < list.size(); i++) {
+            if (i > 0) sb.append(",");
+            sb.append(nullToEmpty(list.get(i).getActivityVenue()));
+        }
+        return sb.toString();
+    }
+
+    /**
+     * 拼接陪侍采集来源（多条记录用逗号分隔）
+     */
+    private String joinPeiCollectSource(List<ZaPei> list) {
+        if (list == null || list.isEmpty()) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < list.size(); i++) {
+            if (i > 0) sb.append(",");
+            sb.append(nullToEmpty(list.get(i).getCollectSource()));
+        }
+        return sb.toString();
+    }
+
+    /**
+     * 拼接陪侍采集时间（多条记录用逗号分隔）
+     */
+    private String joinPeiCollectDate(List<ZaPei> list) {
+        if (list == null || list.isEmpty()) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < list.size(); i++) {
+            if (i > 0) sb.append(",");
+            sb.append(nullToEmpty(list.get(i).getCollectDate()));
+        }
+        return sb.toString();
+    }
+
+    /**
+     * 拼接陪侍角色标签（多条记录用逗号分隔）
+     */
+    private String joinPeiMemo(List<ZaPei> list) {
+        if (list == null || list.isEmpty()) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < list.size(); i++) {
+            if (i > 0) sb.append(",");
+            sb.append(nullToEmpty(list.get(i).getMemo()));
+        }
+        return sb.toString();
+    }
+
+    /**
+     * 构建陪侍记录关联的案件信息
+     * @param peiList 陪侍记录列表
+     * @param ajxxList 案件信息列表
+     * @return 格式化的案件信息字符串
+     */
+    private String buildPeiRelatedAjxxInfo(List<ZaPei> peiList, List<Map<String, Object>> ajxxList) {
+        if (peiList == null || peiList.isEmpty() || ajxxList == null || ajxxList.isEmpty()) {
+            return "";
+        }
+
+        // 收集所有陪侍记录关联的案件ID
+        java.util.Set<String> allAjIdSet = new java.util.HashSet<String>();
+        for (ZaPei pei : peiList) {
+            String relAjIds = pei.getRelAjIds();
+            if (relAjIds != null && !relAjIds.trim().isEmpty()) {
+                String[] ajIdArray = relAjIds.split(",");
+                for (String ajId : ajIdArray) {
+                    if (ajId != null && !ajId.trim().isEmpty()) {
+                        allAjIdSet.add(ajId.trim());
+                    }
+                }
+            }
+        }
+
+        if (allAjIdSet.isEmpty()) {
+            return "";
+        }
+
+        // 构建案件信息字符串
+        StringBuilder sb = new StringBuilder();
+        boolean isFirst = true;
+        for (Map<String, Object> aj : ajxxList) {
+            Object ajId = getMapValueIgnoreCase(aj, "id");
+            if (ajId != null && allAjIdSet.contains(ajId.toString())) {
+                if (!isFirst) {
+                    sb.append("\n");  // 多个案件用换行分隔
+                }
+                isFirst = false;
+
+                sb.append(ajId);  // 案件ID
+                sb.append(" | ");
+                sb.append(nullToEmpty(getMapValueIgnoreCase(aj, "jjbh")));  // 案件编号
+                sb.append(" | ");
+                sb.append(nullToEmpty(getMapValueIgnoreCase(aj, "ajmc")));  // 案件名称
+            }
+        }
+
+        return sb.toString();
+    }
+
+    /**
+     * 拼接案件信息（简化版）- 格式：id | 案件编号 | 案件名称
+     * 多条记录用换行符分隔
+     */
+    private String joinAjxxSimple(List<Map<String, Object>> list) {
+        if (list == null || list.isEmpty()) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < list.size(); i++) {
+            if (i > 0) {
+                sb.append("\n");
+            }
+            Map<String, Object> aj = list.get(i);
+            sb.append(i + 1);  // id（序号）
+            sb.append(" | ");
+            sb.append(nullToEmpty(getMapValueIgnoreCase(aj, "jjbh")));  // 案件编号
+            sb.append(" | ");
+            sb.append(nullToEmpty(getMapValueIgnoreCase(aj, "ajmc")));  // 案件名称
+        }
+        return sb.toString();
+    }
+
+    /**
+     * 拼接涉赌记录（未成年案件专用）
+     * 格式：id | 人员类型 | 涉赌方式 | 涉赌部位 | 处罚结果 | 涉案地址 | 处罚时间
+     * 多条记录用换行符分隔
+     */
+    private String joinDuRecordsForMinorCase(List<ZaDu> list) {
+        if (list == null || list.isEmpty()) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < list.size(); i++) {
+            if (i > 0) {
+                sb.append("\n");
+            }
+            ZaDu du = list.get(i);
+            sb.append(i + 1);  // id（序号）
+            sb.append(" | ");
+            sb.append(nullToEmpty(du.getPersonAttribute()));  // 人员类型
+            sb.append(" | ");
+            sb.append(nullToEmpty(du.getDbfs()));  // 涉赌方式
+            sb.append(" | ");
+            sb.append(nullToEmpty(du.getDbbw()));  // 涉赌部位
+            sb.append(" | ");
+            sb.append(nullToEmpty(du.getCfjg()));  // 处罚结果
+            sb.append(" | ");
+            sb.append(nullToEmpty(du.getCaseAddressList()));  // 涉案地址
+            sb.append(" | ");
+            sb.append(nullToEmpty(du.getChsj()));  // 处罚时间
+        }
+        return sb.toString();
+    }
+
+    /**
+     * 拼接涉娼记录（未成年案件专用）
+     * 格式：id | 人员类型 | 涉娼方式 | 涉娼类型 | 处罚结果 | 涉案地址 | 处罚时间
+     * 多条记录用换行符分隔
+     */
+    private String joinChangRecordsForMinorCase(List<ZaChang> list) {
+        if (list == null || list.isEmpty()) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < list.size(); i++) {
+            if (i > 0) {
+                sb.append("\n");
+            }
+            ZaChang chang = list.get(i);
+            sb.append(i + 1);  // id（序号）
+            sb.append(" | ");
+            sb.append(nullToEmpty(chang.getChang_scjs()));  // 人员类型
+            sb.append(" | ");
+            sb.append(nullToEmpty(chang.getChang_myfs()));  // 涉娼方式
+            sb.append(" | ");
+            sb.append(nullToEmpty(chang.getChangType()));  // 涉娼类型
+            sb.append(" | ");
+            sb.append(nullToEmpty(chang.getChang_cfjg()));  // 处罚结果
+            sb.append(" | ");
+            sb.append(nullToEmpty(chang.getCaseAddressList()));  // 涉案地址
+            sb.append(" | ");
+            sb.append(nullToEmpty(chang.getChang_chsj()));  // 处罚时间
+        }
+        return sb.toString();
+    }
+
+
+    /**
+     * 根据关联案件ID列表构建案件信息字符串
+     * @param relAjIds 关联案件ID列表，逗号分隔（例如："1,2,3"）
+     * @param ajxxList 案件信息列表
+     * @return 格式化的案件信息字符串，格式：id | 案件编号 | 案件名称，多个案件用换行分隔
+     */
+    private String buildRelatedAjxxInfo(String relAjIds, List<Map<String, Object>> ajxxList) {
+        // 如果没有关联案件ID或案件列表为空，返回空字符串
+        if (relAjIds == null || relAjIds.trim().isEmpty() || ajxxList == null || ajxxList.isEmpty()) {
+            return "";
+        }
+
+        // 将逗号分隔的ID字符串转换为ID集合
+        String[] ajIdArray = relAjIds.split(",");
+        java.util.Set<String> ajIdSet = new java.util.HashSet<String>();
+        for (String ajId : ajIdArray) {
+            if (ajId != null && !ajId.trim().isEmpty()) {
+                ajIdSet.add(ajId.trim());
+            }
+        }
+
+        // 如果没有有效的案件ID，返回空字符串
+        if (ajIdSet.isEmpty()) {
+            return "";
+        }
+
+        // 构建案件信息字符串
+        StringBuilder sb = new StringBuilder();
+        boolean isFirst = true;
+        for (Map<String, Object> aj : ajxxList) {
+            Object ajId = getMapValueIgnoreCase(aj, "id");
+            if (ajId != null && ajIdSet.contains(ajId.toString())) {
+                if (!isFirst) {
+                    sb.append("\n");  // 多个案件用换行分隔
+                }
+                isFirst = false;
+
+                sb.append(ajId);  // 案件ID
+                sb.append(" | ");
+                sb.append(nullToEmpty(getMapValueIgnoreCase(aj, "jjbh")));  // 案件编号
+                sb.append(" | ");
+                sb.append(nullToEmpty(getMapValueIgnoreCase(aj, "ajmc")));  // 案件名称
+            }
+        }
+
+        return sb.toString();
+    }
+
+
+    @RequestMapping("/exportZaPersonnelSpecial.do")
+    public void exportZaPersonnelSpecial(HttpServletResponse response,
+                                         PersonnelExtend personnelExtend,
+                                         ServletRequest request,
+                                         @ModelAttribute("userSession") UserSession userSession,
+                                         String exportType,
+                                         int menuid){
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String addtime = dateFormat.format(new Date());
+        int maxExportCount = 5000;
+
+        try {
+// ========== 1. 清空前端传来的搜索条件，实现全量导出 ==========
+            personnelExtend.setCardnumber(null);
+            personnelExtend.setPersonname(null);
+            personnelExtend.setHomeplace(null);
+            personnelExtend.setPersontype(null);
+            personnelExtend.setAttributelabels(null);
+            personnelExtend.setIsMinor(null);
+            // 注意：对于minor导出，isMinor会在后续根据导出类型重新设置
+
+// ========== 2. 根据 exportType 分支获取人员ID列表 ==========
+            List<Integer> personnelIds = null;
+            String labelsql = "";
+
+            if ("shedu".equals(exportType)) {
+                // 涉赌人员：zslabel2=2178
+                labelsql = "FIND_IN_SET(2178, pt.zslabel2)";
+                personnelExtend.setLabelsql(labelsql);
+                personnelIds = personnelDao.getPersonnelIdsByCondition(personnelExtend);
+
+            } else if ("shechang".equals(exportType)) {
+                // 涉娼人员：zslabel2=2219
+                labelsql = "FIND_IN_SET(2219, pt.zslabel2)";
+                personnelExtend.setLabelsql(labelsql);
+                personnelIds = personnelDao.getPersonnelIdsByCondition(personnelExtend);
+
+            } else if ("peishi".equals(exportType)) {
+                // 陪侍人员：zslabel2=5001
+                labelsql = "FIND_IN_SET(5001, pt.zslabel2)";
+                personnelExtend.setLabelsql(labelsql);
+                personnelIds = personnelDao.getPersonnelIdsByCondition(personnelExtend);
+
+            } else if ("minor".equals(exportType)) {
+                // 未成年人基础信息导出
+                // 筛选条件：zslabel1=2046（治安分类）+ zslabel2包含5002（未成年人标签）
+                labelsql = "FIND_IN_SET(2046, pt.zslabel1) AND FIND_IN_SET(5002, pt.zslabel2)";
+                personnelExtend.setLabelsql(labelsql);
+                personnelIds = personnelDao.getPersonnelIdsByCondition(personnelExtend);
+
+            } else if ("minorCase".equals(exportType)) {
+                // 涉娼未成年案件人员
+                List<Integer> minorCaseIds = zaExtendDao.getMinorCasePersonnelIds();
+                if (minorCaseIds != null && !minorCaseIds.isEmpty()) {
+                    personnelExtend.setPersonnelIdList(minorCaseIds);
+                    personnelIds = personnelDao.getPersonnelIdsByConditionWithIdLimit(personnelExtend);
+                }
+
+            } else {
+                // 无效类型处理
+                response.setContentType("application/json;charset=UTF-8");
+                response.getWriter().write("{\"success\":false,\"message\":\"无效的导出类型\"}");
+                return;
+            }
+
+// ========== 3. 阈值校验 ==========
+            if (personnelIds == null || personnelIds.isEmpty()) {
+                response.setContentType("application/json;charset=UTF-8");
+                response.getWriter().write("{\"success\":false,\"message\":\"没有符合条件的数据\"}");
+                return;
+            }
+            if (personnelIds.size() > maxExportCount) {
+                response.setContentType("application/json;charset=UTF-8");
+                response.getWriter().write("{\"success\":false,\"message\":\"导出数据量超过" + maxExportCount + "条，请缩小查询范围\"}");
+                return;
+            }
+
+// ========== 4. 批量查询人员基础信息 ==========
+            String personnelIdStr = listToString(personnelIds);
+            List<Personnel> personnelList = personnelDao.getPersonnelByIds(personnelIdStr);
+
+// 提取身份证号列表，用于关联案件/警情
+            List<String> cardnumbers = new ArrayList<String>();
+            for (Personnel p : personnelList) {
+                if (p.getCardnumber() != null && !"".equals(p.getCardnumber())) {
+                    cardnumbers.add(p.getCardnumber());
+                }
+            }
+            String cardnumberStr = listToStringWithQuotes(cardnumbers);
+
+// ========== 5. 根据导出类型查询业务数据 ==========
+            Map<Integer, List<ZaDu>> duRecordMap = null;
+            Map<Integer, List<ZaChang>> changRecordMap = null;
+            Map<Integer, List<ZaPei>> peiRecordMap = null;
+            Map<String, List<Map<String, Object>>> ajxxMap = null;
+
+            if ("shedu".equals(exportType)) {
+                List<ZaDu> duList = zaExtendDao.getZaDuListByPersonnelIds(personnelIdStr);
+                duRecordMap = groupDuByPersonnelId(duList);
+                ajxxMap = groupAjxxMapByCardnumber(kaKouDao.getAjxxByCardnumbers(cardnumberStr));
+
+            } else if ("shechang".equals(exportType)) {
+                List<ZaChang> changList = zaExtendDao.getZaChangListByPersonnelIds(personnelIdStr);
+                changRecordMap = groupChangByPersonnelId(changList);
+                ajxxMap = groupAjxxMapByCardnumber(kaKouDao.getAjxxByCardnumbers(cardnumberStr));
+
+            } else if ("peishi".equals(exportType)) {
+                List<ZaPei> peiList = zaExtendDao.getZaPeiListByPersonnelIds(personnelIdStr);
+                peiRecordMap = groupPeiByPersonnelId(peiList);
+                // 陪侍人员需要案件信息
+                ajxxMap = groupAjxxMapByCardnumber(kaKouDao.getAjxxByCardnumbers(cardnumberStr));
+
+            } else if ("minor".equals(exportType)) {
+                // 未成年人仅导出基础信息，无需查询业务数据
+
+            } else if ("minorCase".equals(exportType)) {
+                List<ZaDu> duList = zaExtendDao.getZaDuListByPersonnelIds(personnelIdStr);
+                duRecordMap = groupDuByPersonnelId(duList);
+                List<ZaChang> changList = zaExtendDao.getZaChangListByPersonnelIds(personnelIdStr);
+                changRecordMap = groupChangByPersonnelId(changList);
+                ajxxMap = groupAjxxMapByCardnumber(kaKouDao.getAjxxByCardnumbers(cardnumberStr));
+            }
+
+// ========== 6. 组装导出数据行 ==========
+            List<List<String>> allRows = new ArrayList<List<String>>();
+            int rowIndex = 1;  // 序号从1开始
+            for (Personnel person : personnelList) {
+                if ("shedu".equals(exportType)) {
+                    List<ZaDu> duList = duRecordMap != null ? duRecordMap.get(person.getId()) : null;
+                    List<Map<String, Object>> ajList = ajxxMap != null ? ajxxMap.get(person.getCardnumber()) : null;
+                    List<List<String>> rows = buildSheduRowsData(rowIndex, person, duList, ajList);
+                    allRows.addAll(rows);
+                    rowIndex += rows.size();
+
+                } else if ("shechang".equals(exportType)) {
+                    List<ZaChang> changList = changRecordMap != null ? changRecordMap.get(person.getId()) : null;
+                    List<Map<String, Object>> ajList = ajxxMap != null ? ajxxMap.get(person.getCardnumber()) : null;
+                    List<List<String>> rows = buildShechangRowsData(rowIndex, person, changList, ajList);
+                    allRows.addAll(rows);
+                    rowIndex += rows.size();
+
+                } else if ("peishi".equals(exportType)) {
+                    List<ZaPei> peiList = peiRecordMap != null ? peiRecordMap.get(person.getId()) : null;
+                    List<Map<String, Object>> ajList = ajxxMap != null ? ajxxMap.get(person.getCardnumber()) : null;
+                    List<List<String>> rows = buildPeishiRowsData(rowIndex, person, peiList, ajList);
+                    allRows.addAll(rows);
+                    rowIndex += rows.size();
+
+                } else if ("minor".equals(exportType)) {
+                    List<String> rowData = buildMinorRowData(rowIndex, person);
+                    allRows.add(rowData);
+                    rowIndex++;
+
+                } else if ("minorCase".equals(exportType)) {
+                    List<ZaDu> duList = duRecordMap != null ? duRecordMap.get(person.getId()) : null;
+                    List<ZaChang> changList = changRecordMap != null ? changRecordMap.get(person.getId()) : null;
+                    List<Map<String, Object>> ajList = ajxxMap != null ? ajxxMap.get(person.getCardnumber()) : null;
+                    List<String> rowData = buildMinorCaseRowData(rowIndex, person, duList, changList, ajList);
+                    allRows.add(rowData);
+                    rowIndex++;
+                }
+            }
+
+// ========== 7. 生成 Excel ==========
+            // 获取表头
+            List<String> headers = getExportHeadersByType(exportType);
+            // 获取文件名
+            String fileName = getExportFileNameByType(exportType);
+
+            // 【修复点1】重置响应，防止之前的输出干扰
+            response.reset();
+
+            // 【修复点2】移除 charset=UTF-8 和 setCharacterEncoding，二进制流不需要字符编码
+            response.setContentType("application/vnd.ms-excel");
+
+            // 使用标准格式设置Content-Disposition，确保中文文件名正确
+            String encodedFileName = URLEncoder.encode(fileName, "UTF-8").replaceAll("\\+", "%20");
+            response.setHeader("Content-Disposition", "attachment; filename=\"" + encodedFileName + ".xls\"");
+            // 禁用缓存
+            response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+            response.setHeader("Pragma", "no-cache");
+            response.setDateHeader("Expires", 0);
+
+            // 创建工作簿
+            HSSFWorkbook wb = new HSSFWorkbook();
+            HSSFSheet sheet = wb.createSheet(fileName);
+
+            // 表头样式
+            HSSFCellStyle headerStyle = wb.createCellStyle();
+            headerStyle.setAlignment(HSSFCellStyle.ALIGN_CENTER);
+            headerStyle.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);
+            headerStyle.setBorderLeft(HSSFCellStyle.BORDER_THIN);
+            headerStyle.setBorderRight(HSSFCellStyle.BORDER_THIN);
+            headerStyle.setBorderTop(HSSFCellStyle.BORDER_THIN);
+            headerStyle.setBorderBottom(HSSFCellStyle.BORDER_THIN);
+            HSSFFont headerFont = wb.createFont();
+            headerFont.setFontName("宋体");
+            headerFont.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
+            headerFont.setFontHeightInPoints((short) 10);
+            headerStyle.setFont(headerFont);
+
+            // 数据样式
+            HSSFCellStyle dataStyle = wb.createCellStyle();
+            dataStyle.setWrapText(true);
+            dataStyle.setBorderLeft(HSSFCellStyle.BORDER_THIN);
+            dataStyle.setBorderRight(HSSFCellStyle.BORDER_THIN);
+            dataStyle.setBorderTop(HSSFCellStyle.BORDER_THIN);
+            dataStyle.setBorderBottom(HSSFCellStyle.BORDER_THIN);
+            dataStyle.setAlignment(HSSFCellStyle.ALIGN_LEFT);
+            dataStyle.setVerticalAlignment(HSSFCellStyle.VERTICAL_TOP);
+            HSSFFont dataFont = wb.createFont();
+            dataFont.setFontName("宋体");
+            dataFont.setFontHeightInPoints((short) 10);
+            dataStyle.setFont(dataFont);
+
+            // 创建表头行
+            HSSFRow headerRow = sheet.createRow(0);
+            headerRow.setHeightInPoints(25);
+            for (int i = 0; i < headers.size(); i++) {
+                HSSFCell cell = headerRow.createCell(i);
+                cell.setCellValue(new HSSFRichTextString(headers.get(i)));
+                cell.setCellStyle(headerStyle);
+                sheet.setColumnWidth(i, 5000);
+            }
+
+            // 创建数据行
+            for (int excelRowIndex = 0; excelRowIndex < allRows.size(); excelRowIndex++) {
+                List<String> rowData = allRows.get(excelRowIndex);
+                HSSFRow dataRow = sheet.createRow(excelRowIndex + 1);
+                // 根据内容中换行符数量动态调整行高
+                int maxLines = 1;
+                for (String cellValue : rowData) {
+                    if (cellValue != null) {
+                        int lines = cellValue.split("\n").length;
+                        if (lines > maxLines) {
+                            maxLines = lines;
+                        }
+                    }
+                }
+                dataRow.setHeightInPoints(Math.max(20, maxLines * 15));
+
+                for (int colIndex = 0; colIndex < rowData.size(); colIndex++) {
+                    HSSFCell cell = dataRow.createCell(colIndex);
+                    String value = rowData.get(colIndex);
+                    cell.setCellValue(new HSSFRichTextString(value != null ? value : ""));
+                    cell.setCellStyle(dataStyle);
+                }
+            }
+
+            // 【修复点3】确保输出流在写入前没有被 getWriter() 占用
+            OutputStream out = response.getOutputStream();
+            wb.write(out);
+            out.flush();
+            // 注意：在 Spring 环境下，通常不需要手动 close response 的 outputStream
+            // 但 wb 必须 close
+            wb.close();
+
+            // 记录日志
+            logDao.recordLog(menuid, "导出" + fileName, userSession.getLoginUserName(), addtime, "成功", "导出" + allRows.size() + "条");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            try {
+                response.reset();  // 重置响应，清除之前可能设置的内容
+                response.setContentType("application/json;charset=UTF-8");
+                response.getWriter().write("{\"success\":false,\"message\":\"导出失败：" + e.getMessage().replaceAll("\"", "'") + "\"}");
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * 根据导出类型获取文件名
+     */
+    private String getExportFileNameByType(String exportType) {
+        if ("shedu".equals(exportType)) {
+            return "涉赌人员信息";
+        } else if ("shechang".equals(exportType)) {
+            return "涉娼人员信息";
+        } else if ("peishi".equals(exportType)) {
+            return "陪侍人员信息";
+        } else if ("minor".equals(exportType)) {
+            return "未成年人基础信息";
+        } else if ("minorCase".equals(exportType)) {
+            return "涉娼未成年案件人员信息";
+        }
+        return "人员信息导出";
+    }
+
 	@RequestMapping("/exportPersonnelExtend.do")
 	public void exportPersonnelExtend(HttpServletResponse response,PersonnelExtend personnelExtend,ServletRequest request,@ModelAttribute("userSession")UserSession userSession,
 											String personnelfield,String personneltext,

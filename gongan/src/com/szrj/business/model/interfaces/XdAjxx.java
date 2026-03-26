@@ -1,6 +1,7 @@
 package com.szrj.business.model.interfaces;
 //修改
 public class XdAjxx {
+	private String id;
 	private String sfzh;
 	private String xm;	
 	private String jjbh;	
@@ -10,8 +11,16 @@ public class XdAjxx {
 	private String sldw;	
 	private String sldwmc;
 	private String jyaq;
+	private String cfqk; // 处罚情况
+	private String cfrq; // 处罚日期（格式：20260120134727）
 	private String flag;
 	private String insert_time;
+	public String getId() {
+		return id;
+	}
+	public void setId(String id) {
+		this.id = id;
+	}
 	public String getSfzh() {
 		return sfzh;
 	}
@@ -65,6 +74,18 @@ public class XdAjxx {
 	}
 	public void setJyaq(String jyaq) {
 		this.jyaq = jyaq;
+	}
+	public String getCfqk() {
+		return cfqk;
+	}
+	public void setCfqk(String cfqk) {
+		this.cfqk = cfqk;
+	}
+	public String getCfrq() {
+		return cfrq;
+	}
+	public void setCfrq(String cfrq) {
+		this.cfrq = cfrq;
 	}
 	public String getFlag() {
 		return flag;

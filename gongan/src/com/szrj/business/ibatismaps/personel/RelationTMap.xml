@@ -44,10 +44,34 @@
 		WHERE id = $id$
 	</update>
     <select id="searchrelation"  resultClass="relation">
-		SELECT	 t2.*	FROM	p_personnel_t t1,	p_relation_t t2
-		WHERE	t1.validflag > 0 	AND t2.validflag>0 AND  t1.id = t2.personnelid
-		AND t2.personnelid=$personnelid$
-		ORDER BY t2.id
+		SELECT
+			COALESCE(t2.id, 0) as id,
+			t1.id as personnelid,
+			/* 手机号码：只取validflag>0且addtime最新的一条 */
+			(SELECT telnumber FROM p_relation_telnumber_t
+			 WHERE personnelid = t1.id AND validflag > 0
+			 ORDER BY addtime DESC LIMIT 1) as telnumber,
+			COALESCE(t2.telephone, '') as telephone,
+			COALESCE(t2.relatedwifi, '') as relatedwifi,
+			COALESCE(t2.relatedvehicle, '') as relatedvehicle,
+			COALESCE(t2.bankaccount, '') as bankaccount,
+			COALESCE(t2.netidentity, '') as netidentity,
+			COALESCE(t2.netpayment, '') as netpayment,
+			COALESCE(t2.relatedhouse, '') as relatedhouse,
+			COALESCE(t2.relatedlegal, '') as relatedlegal,
+			COALESCE(t2.relateddriver, '') as relateddriver,
+			COALESCE(t2.relatedpassport, '') as relatedpassport,
+			COALESCE(t2.validflag, 1) as validflag,
+			COALESCE(t2.addoperator, '') as addoperator,
+			COALESCE(t2.addtime, '') as addtime,
+			COALESCE(t2.updateoperator, '') as updateoperator,
+			COALESCE(t2.updatetime, '') as updatetime,
+			COALESCE(t2.memo, '') as memo
+		FROM p_personnel_t t1
+		LEFT JOIN p_relation_t t2 ON t1.id = t2.personnelid AND t2.validflag > 0
+		WHERE t1.validflag > 0
+		AND t1.id=$personnelid$
+		ORDER BY t1.id
 	</select>
 	<select id="getrelationcount"  resultClass="Integer">
 		SELECT	count(1)	FROM	p_personnel_t t1,	p_relation_t t2
@@ -618,8 +642,11 @@
 		AND t2.id=$id$
 	</select>
 	<select id="gettelnumber"  resultClass="String">
-		SELECT   GROUP_CONCAT( t.telnumber ) as telnumber
-        FROM   p_relation_telnumber_t t   WHERE  t.validflag > 0 AND t.personnelid=$personnelid$ AND t.isactivate=0
+		SELECT t.telnumber
+        FROM p_relation_telnumber_t t
+        WHERE t.validflag > 0 AND t.personnelid=$personnelid$ AND t.isactivate=0
+        ORDER BY t.addtime DESC
+        LIMIT 1
 	</select>
 	<select id="getRelationTelnumberByImsi" parameterClass="String" resultClass="relationtelnumber">
 		SELECT * FROM p_relation_telnumber_t where validflag>0 and imsi like '%$imsi$%'

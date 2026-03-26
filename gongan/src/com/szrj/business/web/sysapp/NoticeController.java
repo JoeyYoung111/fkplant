@@ -1,14 +1,20 @@
 package com.szrj.business.web.sysapp;
 
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletRequest;
+import javax.servlet.http.HttpSession;
 
 import net.sf.json.JSONObject;
 
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -32,13 +38,17 @@ import com.szrj.business.model.sysapp.Notice;
 @Controller
 @SessionAttributes("userSession")
 public class NoticeController {
+	private static final Logger logger = Logger.getLogger(NoticeController.class);
+
 	@Autowired
 	private NoticeDao noticeDao;
 	@Autowired 
 	private LogDao logDao;
 	@Autowired 
 	private RoleMenuDao roleMenuDao;
-	
+	@Autowired
+	private JdbcTemplate jdbcTemplate;
+
 	@RequestMapping("/searchNotice.do")
 	@ResponseBody
 	public Map<String,Object> searchNotice(Notice notice,NewPageModel pm,ServletRequest request,@ModelAttribute("userSession")UserSession userSession,int page){
@@ -236,24 +246,73 @@ public class NoticeController {
 		return JSONObject.fromObject(message).toString();
 	}
 	
+	/**
+	 * 获取新消息提醒（包括案件警情提醒）
+	 * 轮询接口，返回JSON格式数据
+	 */
 	@RequestMapping("/getNewMessageRemind.do")
 	@ResponseBody
-	public Map<String,Object> getNewMessageRemind(@ModelAttribute("userSession")UserSession userSession){
-		System.out.println("-----消息框消息查询-----");
+	public Map<String,Object> getNewMessageRemind(@ModelAttribute("userSession")UserSession userSession, HttpSession session){
 		Map<String, Object> result = new HashMap<String, Object>();
-		MessageRemind messageRemind = new MessageRemind();
-		RoleMenu roleMenu = new RoleMenu();
-		roleMenu.setRoleid(userSession.getLoginUserRoleid());
-		roleMenu.setMenuid(173);
-		roleMenu = roleMenuDao.findMenuButtons(roleMenu);
-		if(roleMenu.getButtons().indexOf("审核")>-1){
-			messageRemind.setIsCheck(1);
+
+		try {
+			// 检查用户会话是否有效
+			if (userSession == null || userSession.getLoginUserDepartmentid() == 0) {
+				logger.warn("用户会话无效或已过期，返回空消息列表");
+				result.put("messageRemindList", new ArrayList<MessageRemind>());
+				result.put("error", "会话已过期");
+				return result;
+			}
+
+			// 查询当前消息表中有哪些未读消息（调试用）
+			try {
+				String debugSql = "SELECT id, department_id, message_type, xm, read_flag FROM p_case_police_message_t WHERE validflag > 0 AND read_flag = 0 ORDER BY id DESC LIMIT 5";
+				List<java.util.Map<String, Object>> debugList = jdbcTemplate.queryForList(debugSql);
+				//logger.info("【调试】消息表中未读消息: " + debugList.size() + " 条");
+				for (java.util.Map<String, Object> row : debugList) {
+					//logger.info("【调试】消息: id=" + row.get("id") + ", department_id=" + row.get("department_id") + ", type=" + row.get("message_type") + ", xm=" + row.get("xm"));
+				}
+			} catch (Exception e) {
+				//logger.error("调试查询失败", e);
+			}
+
+			MessageRemind messageRemind = new MessageRemind();
+			RoleMenu roleMenu = new RoleMenu();
+			roleMenu.setRoleid(userSession.getLoginUserRoleid());
+			roleMenu.setMenuid(173);
+			roleMenu = roleMenuDao.findMenuButtons(roleMenu);
+			if(roleMenu.getButtons().indexOf("审核")>-1){
+				messageRemind.setIsCheck(1);
+				//logger.info("用户具有审核权限");
+			}
+
+			messageRemind.setDepartmentid(userSession.getLoginUserDepartmentid());
+			messageRemind.setAddoperatorid(userSession.getLoginUserID());
+
+			//logger.info("【部门ID映射调试】传入SQL查询的departmentid: " + userSession.getLoginUserDepartmentid());
+			//logger.info("开始执行getNewMessageRemind SQL查询...");
+			List<MessageRemind> messageRemindList = noticeDao.getNewMessageRemind(messageRemind);
+			//logger.info("查询完成，返回消息数量: " + (messageRemindList != null ? messageRemindList.size() : 0));
+
+			if (messageRemindList != null && messageRemindList.size() > 0) {
+				for (int i = 0; i < messageRemindList.size(); i++) {
+					MessageRemind msg = messageRemindList.get(i);
+					//logger.info("消息[" + (i+1) + "]: " + msg.getMessagecontent());
+				}
+			} else {
+				//logger.info("未查询到任何消息");
+			}
+
+			result.put("messageRemindList", messageRemindList);
+			//logger.info("========== 消息提醒查询结束 ==========");
+
+		} catch (Exception e) {
+			//logger.error("获取消息提醒失败", e);
+			result.put("messageRemindList", new ArrayList<MessageRemind>());
+			result.put("error", "查询失败: " + e.getMessage());
 		}
-		messageRemind.setDepartmentid(userSession.getLoginUserDepartmentid());
-		messageRemind.setAddoperatorid(userSession.getLoginUserID());
-		List<MessageRemind> messageRemindList = noticeDao.getNewMessageRemind(messageRemind);
-        result.put("messageRemindList", messageRemindList);
-        return result;
+
+		return result;
 	}
 	
 	@RequestMapping("/showNotice.do")
@@ -261,5 +320,90 @@ public class NoticeController {
 		Notice notice = noticeDao.getById(id);
 		model.addAttribute("notice",notice);
 		return "/jsp/sysapp/notice/showinfo";
+	}
+
+	/**
+	 * 标记案件警情消息为已读
+	 */
+	@RequestMapping("/markCasePoliceMessageRead.do")
+	@ResponseBody
+	public Map<String, Object> markCasePoliceMessageRead(
+			@ModelAttribute("userSession") UserSession userSession,
+			Integer personnelid) {
+
+		Map<String, Object> result = new HashMap<String, Object>();
+
+		try {
+			if (personnelid == null || personnelid <= 0) {
+				result.put("success", false);
+				result.put("error", "人员ID不能为空");
+				return result;
+			}
+
+			// 更新 p_case_police_message_t 表，将该人员相关的未读消息标记为已读
+			String sql = "UPDATE p_case_police_message_t " +
+					"SET read_flag = 1 " +
+					"WHERE personnelid = ? " +
+					"AND read_flag = 0 " +
+					"AND validflag > 0";
+
+			int updateCount = jdbcTemplate.update(sql, personnelid);
+
+			logger.info("User " + userSession.getLoginUserName() +
+					" marked " + updateCount + " case/police messages as read for personnel " + personnelid);
+
+			result.put("success", true);
+			result.put("count", updateCount);
+			result.put("personnelid", personnelid);
+
+		} catch (Exception e) {
+			logger.error("Failed to mark messages as read for personnel " + personnelid, e);
+			result.put("success", false);
+			result.put("error", e.getMessage());
+		}
+
+		return result;
+	}
+
+	/**
+	 * 删除单条案件/警情消息（设置read_flag=1）
+	 */
+	@RequestMapping("/deleteCasePoliceMessage.do")
+	@ResponseBody
+	public Map<String, Object> deleteCasePoliceMessage(
+			@ModelAttribute("userSession") UserSession userSession,
+			Integer messageId) {
+
+		Map<String, Object> result = new HashMap<String, Object>();
+
+		try {
+			if (messageId == null || messageId <= 0) {
+				result.put("success", false);
+				result.put("error", "消息ID不能为空");
+				return result;
+			}
+
+			// 更新 p_case_police_message_t 表，将该条消息标记为已读
+			String sql = "UPDATE p_case_police_message_t " +
+					"SET read_flag = 1 " +
+					"WHERE id = ? " +
+					"AND validflag > 0";
+
+			int updateCount = jdbcTemplate.update(sql, messageId);
+
+			logger.info("User " + userSession.getLoginUserName() +
+					" marked message " + messageId + " as read, affected rows: " + updateCount);
+
+			result.put("success", true);
+			result.put("count", updateCount);
+			result.put("messageId", messageId);
+
+		} catch (Exception e) {
+			logger.error("Failed to mark message " + messageId + " as read", e);
+			result.put("success", false);
+			result.put("error", e.getMessage());
+		}
+
+		return result;
 	}
 }

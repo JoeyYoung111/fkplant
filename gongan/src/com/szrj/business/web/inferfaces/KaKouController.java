@@ -200,7 +200,47 @@ public class KaKouController {
 		return result;
 	}
 	
-	
+	/**
+	 * 查询涉警信息并附带关联信息（涉赌/涉娼/陪侍记录ID）
+	 * @param xdjqxx
+	 * @param page
+	 * @param pm
+	 * @return
+	 */
+	@RequestMapping("/queryZaJqxxWithRel.do")
+	@ResponseBody
+	public Map<String, Object> queryZaJqxxWithRel(XdJqxx xdjqxx, int page, NewPageModel pm){
+		System.out.println("/queryZaJqxxWithRel.do........="+xdjqxx.getSfzh()+"  ");
+		pm.setPageNumber(page);
+		NewPageModel listTemp = kaKouDao.queryZaJqxxWithRel(xdjqxx, pm);
+		Map<String, Object> result = new HashMap<String, Object>();
+		result.put("code", 0);
+		result.put("count", listTemp.getTotal());
+		result.put("data", listTemp.getRows().toArray());
+		return result;
+	}
+
+	/**
+	 * 查询涉案信息并附带关联信息（涉赌/涉娼/陪侍记录ID）
+	 * @param xdajxx
+	 * @param page
+	 * @param pm
+	 * @return
+	 */
+	@RequestMapping("/queryZaAjxxWithRel.do")
+	@ResponseBody
+	public Map<String, Object> queryZaAjxxWithRel(XdAjxx xdajxx, int page, NewPageModel pm){
+		System.out.println("/queryZaAjxxWithRel.do........="+xdajxx.getSfzh()+"  ");
+		pm.setPageNumber(page);
+		NewPageModel listTemp = kaKouDao.queryZaAjxxWithRel(xdajxx, pm);
+		Map<String, Object> result = new HashMap<String, Object>();
+		result.put("code", 0);
+		result.put("count", listTemp.getTotal());
+		result.put("data", listTemp.getRows().toArray());
+		return result;
+	}
+
+
 	@RequestMapping("/findYbssRkByCardnumber.do")
 	@ResponseBody
 	public Map<String, Object> findYbssRkByCardnumber(String cardnumber){

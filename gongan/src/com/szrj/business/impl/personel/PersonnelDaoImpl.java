@@ -363,6 +363,17 @@ public class PersonnelDaoImpl extends BaseDaoiBatis implements PersonnelDao {
 		return (Integer)getSqlMapClientTemplate().update("personnel.updateHasSechangRecord", personnel);
 	}
 
+	public int updateIsPeishi(Personnel personnel) throws DataAccessException {
+		return (Integer)getSqlMapClientTemplate().update("personnel.updateIsPeishi", personnel);
+	}
+
+	public int updateHandleUnitCode(int id, String handleUnitCode) throws DataAccessException {
+		java.util.HashMap<String, Object> params = new java.util.HashMap<String, Object>();
+		params.put("id", id);
+		params.put("handleUnitCode", handleUnitCode);
+		return (Integer)getSqlMapClientTemplate().update("personnel.updateHandleUnitCode", params);
+	}
+
 	@SuppressWarnings("unchecked")
 	public NewPageModel getHomeplaceHistory(int personnelid, NewPageModel pm) throws DataAccessException {
 		int total = (Integer) getSqlMapClientTemplate().queryForObject("personnel.getHomeplaceHistory_count", personnelid);
@@ -379,5 +390,47 @@ public class PersonnelDaoImpl extends BaseDaoiBatis implements PersonnelDao {
 		pm.setup();
 		pm.setRows(getSqlMapClientTemplate().queryForList("personnel.getPhoneHistory", personnelid, pm.getStart(), pm.getTruepagesize()));
 		return pm;
+	}
+
+	// ========== 导出相关方法实现 ==========
+	@SuppressWarnings("unchecked")
+	public List<Integer> getPersonnelIdsByCondition(com.szrj.business.model.personel.PersonnelExtend personnelExtend) throws DataAccessException {
+		return getSqlMapClientTemplate().queryForList("personnel.getPersonnelIdsByCondition", personnelExtend);
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Integer> getMinorPersonnelIdsByCondition(com.szrj.business.model.personel.PersonnelExtend personnelExtend) throws DataAccessException {
+		return getSqlMapClientTemplate().queryForList("personnel.getMinorPersonnelIdsByCondition", personnelExtend);
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Integer> getPersonnelIdsByConditionWithIdLimit(com.szrj.business.model.personel.PersonnelExtend personnelExtend) throws DataAccessException {
+		return getSqlMapClientTemplate().queryForList("personnel.getPersonnelIdsByConditionWithIdLimit", personnelExtend);
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<Personnel> getPersonnelByIds(String personnelIds) throws DataAccessException {
+		if (personnelIds == null || personnelIds.trim().isEmpty()) {
+			return new java.util.ArrayList<Personnel>();
+		}
+		return getSqlMapClientTemplate().queryForList("personnel.getPersonnelByIds", personnelIds);
+	}
+
+	/**
+	 * 为未成年人（<18岁）添加zslabel2标签5002
+	 * @return 更新的记录数
+	 * @throws DataAccessException
+	 */
+	public int addMinorLabel() throws DataAccessException {
+		return (Integer) getSqlMapClientTemplate().update("personnel.addMinorLabel");
+	}
+
+	/**
+	 * 为已成年人（>=18岁）删除zslabel2标签5002
+	 * @return 更新的记录数
+	 * @throws DataAccessException
+	 */
+	public int removeMinorLabel() throws DataAccessException {
+		return (Integer) getSqlMapClientTemplate().update("personnel.removeMinorLabel");
 	}
 }

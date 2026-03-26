@@ -6,7 +6,7 @@ package com.szrj.business.model.personel;
  */
 public class Personnel {
 	/*---------------------------------------数据库中字段------------------------------------------------------------------------*/
-	private int id;
+	private Integer id;
 	private String personlabel;//人员标签
 	private String attributelabels;//属性标签id
 	private String cardnumber;//身份证号
@@ -44,13 +44,13 @@ public class Personnel {
 	private String speciality;//技能专长
 	private String records;//前科劣迹
 	private String checkmethod;//信息核查方式
-	private int maintainrate1;//维护率1
-	private int maintainrate2;//维护率2
-	private int maintainrate3;//维护率3
-	private int maintainrate4;//维护率4
-	private int validflag;//状态标识
+	private Integer maintainrate1;//维护率1
+	private Integer maintainrate2;//维护率2
+	private Integer maintainrate3;//维护率3
+	private Integer maintainrate4;//维护率4
+	private Integer validflag;//状态标识
 	private String addoperator;//添加人
-	private int addoperatorid;//添加人id
+	private Integer addoperatorid;//添加人id
 	private String addtime;//添加时间
 	private String updateoperator;//最新修改人
 	private String updatetime;//最新修改时间
@@ -65,7 +65,7 @@ public class Personnel {
 	private String lslabel2;//临时标签子级
 	private String zslabel1;//正式标签1级
 	private String zslabel2;//正式标签子级
-	private int isrisk;		//是否是风险人员（1-是 2-不是）
+	private Integer isrisk;		//是否是风险人员（1-是 2-不是）
 	private String cytype;	//从业人员类型
 	private String control_power;	//管控力量-人员
 	private String control_plan;	//管控方案-附件
@@ -91,6 +91,7 @@ public class Personnel {
 	// 新增：前科标识
 	private Integer hasSheduRecord;		//是否有涉赌前科 0-无 1-有
 	private Integer hasSechangRecord;	//是否有涉黄前科 0-无 1-有
+	private Integer isPeishi;			//是否陪侍人员 0-否 1-是
 	private Integer isMinor;			//是否未成年 0-否 1-是
 
 	// 新增：打处单位
@@ -109,25 +110,25 @@ public class Personnel {
 	private String jointcontrollevel;//联控级别  数据字典汉字
 	private String personlabelname;//人员标签名称
 	private String attributelabelname;//自定义人员标签名称
-	private int personcount;//人员计数
+	private Integer personcount;//人员计数
 	private String appellation;//人员关系
-	private int relationid;//relation表Id
-	private int riskpersonnel;//是否是危险人物
+	private Integer relationid;//relation表Id
+	private Integer riskpersonnel;//是否是危险人物
 	//显示权限 0-全部 1-派出所 2-民警 3-责任警种
-	private int personFilter;//民警过滤
-	private int unitFilter;//派出所字段 
+	private Integer personFilter;//民警过滤
+	private Integer unitFilter;//派出所字段
 	private String telnumber;//名下手机号
 	private String personneltype;//新增风险人员时人员类别
 	private Integer personnelid;
-	private int ajcount;	//涉案信息数量
-	private int jqcount;	//涉警信息数量
+	private Integer ajcount;	//涉案信息数量
+	private Integer jqcount;	//涉警信息数量
 	//排序
 	private String sortsql;
 	/*-----------------------------------------get/set方法---------------------------------------------------------------------*/
-	public int getId() {
+	public Integer getId() {
 		return id;
 	}
-	public void setId(int id) {
+	public void setId(Integer id) {
 		this.id = id;
 	}
 	public String getCardnumber() {
@@ -280,34 +281,34 @@ public class Personnel {
 	public void setPersonlabel(String personlabel) {
 		this.personlabel = personlabel;
 	}
-	public int getMaintainrate1() {
+	public Integer getMaintainrate1() {
 		return maintainrate1;
 	}
-	public void setMaintainrate1(int maintainrate1) {
+	public void setMaintainrate1(Integer maintainrate1) {
 		this.maintainrate1 = maintainrate1;
 	}
-	public int getMaintainrate2() {
+	public Integer getMaintainrate2() {
 		return maintainrate2;
 	}
-	public void setMaintainrate2(int maintainrate2) {
+	public void setMaintainrate2(Integer maintainrate2) {
 		this.maintainrate2 = maintainrate2;
 	}
-	public int getMaintainrate3() {
+	public Integer getMaintainrate3() {
 		return maintainrate3;
 	}
-	public void setMaintainrate3(int maintainrate3) {
+	public void setMaintainrate3(Integer maintainrate3) {
 		this.maintainrate3 = maintainrate3;
 	}
-	public int getMaintainrate4() {
+	public Integer getMaintainrate4() {
 		return maintainrate4;
 	}
-	public void setMaintainrate4(int maintainrate4) {
+	public void setMaintainrate4(Integer maintainrate4) {
 		this.maintainrate4 = maintainrate4;
 	}
-	public int getValidflag() {
+	public Integer getValidflag() {
 		return validflag;
 	}
-	public void setValidflag(int validflag) {
+	public void setValidflag(Integer validflag) {
 		this.validflag = validflag;
 	}
 	public String getAddoperator() {
@@ -316,10 +317,10 @@ public class Personnel {
 	public void setAddoperator(String addoperator) {
 		this.addoperator = addoperator;
 	}
-	public int getAddoperatorid() {
+	public Integer getAddoperatorid() {
 		return addoperatorid;
 	}
-	public void setAddoperatorid(int addoperatorid) {
+	public void setAddoperatorid(Integer addoperatorid) {
 		this.addoperatorid = addoperatorid;
 	}
 	public String getAddtime() {
@@ -430,10 +431,10 @@ public class Personnel {
 	public void setPersonlabelname(String personlabelname) {
 		this.personlabelname = personlabelname;
 	}
-	public int getPersoncount() {
+	public Integer getPersoncount() {
 		return personcount;
 	}
-	public void setPersoncount(int personcount) {
+	public void setPersoncount(Integer personcount) {
 		this.personcount = personcount;
 	}
 	public String getAppellation() {
@@ -442,16 +443,16 @@ public class Personnel {
 	public void setAppellation(String appellation) {
 		this.appellation = appellation;
 	}
-	public int getRelationid() {
+	public Integer getRelationid() {
 		return relationid;
 	}
-	public void setRelationid(int relationid) {
+	public void setRelationid(Integer relationid) {
 		this.relationid = relationid;
 	}
-	public int getRiskpersonnel() {
+	public Integer getRiskpersonnel() {
 		return riskpersonnel;
 	}
-	public void setRiskpersonnel(int riskpersonnel) {
+	public void setRiskpersonnel(Integer riskpersonnel) {
 		this.riskpersonnel = riskpersonnel;
 	}
 	public String getAttributelabels() {
@@ -526,16 +527,16 @@ public class Personnel {
 	public void setZslabel2(String zslabel2) {
 		this.zslabel2 = zslabel2;
 	}
-	public int getPersonFilter() {
+	public Integer getPersonFilter() {
 		return personFilter;
 	}
-	public void setPersonFilter(int personFilter) {
+	public void setPersonFilter(Integer personFilter) {
 		this.personFilter = personFilter;
 	}
-	public int getUnitFilter() {
+	public Integer getUnitFilter() {
 		return unitFilter;
 	}
-	public void setUnitFilter(int unitFilter) {
+	public void setUnitFilter(Integer unitFilter) {
 		this.unitFilter = unitFilter;
 	}
 	public String getTelnumber() {
@@ -556,22 +557,22 @@ public class Personnel {
 	public void setPersonnelid(Integer personnelid) {
 		this.personnelid = personnelid;
 	}
-	public int getIsrisk() {
+	public Integer getIsrisk() {
 		return isrisk;
 	}
-	public void setIsrisk(int isrisk) {
+	public void setIsrisk(Integer isrisk) {
 		this.isrisk = isrisk;
 	}
-	public int getAjcount() {
+	public Integer getAjcount() {
 		return ajcount;
 	}
-	public void setAjcount(int ajcount) {
+	public void setAjcount(Integer ajcount) {
 		this.ajcount = ajcount;
 	}
-	public int getJqcount() {
+	public Integer getJqcount() {
 		return jqcount;
 	}
-	public void setJqcount(int jqcount) {
+	public void setJqcount(Integer jqcount) {
 		this.jqcount = jqcount;
 	}
 	public String getHousex() {
@@ -714,6 +715,12 @@ public class Personnel {
 	public void setHasSechangRecord(Integer hasSechangRecord) {
 		this.hasSechangRecord = hasSechangRecord;
 	}
+	public Integer getIsPeishi() {
+		return isPeishi;
+	}
+	public void setIsPeishi(Integer isPeishi) {
+		this.isPeishi = isPeishi;
+	}
 	public Integer getIsMinor() {
 		return isMinor;
 	}
@@ -752,14 +759,28 @@ public class Personnel {
 	}
 
 	// ==================== 搜索条件字段（非数据库字段） ====================
-	private String duPersonAttribute;	// 涉赌人员属性
-	private String duMethod;			// 涉赌方式
-	private String duPart;				// 涉赌部位
-	private String changPersonAttribute;	// 涉娼人员属性
-	private String changMethod;			// 涉黄方式
-	private String changType;			// 涉黄类型
-	private String punishDateStart;		// 处罚日期起
-	private String punishDateEnd;		// 处罚日期止
+	// 涉赌查询条件（与前端参数名一致）
+	private String duPersonAttribute;	// 涉赌人员属性（对应表字段 person_attribute）
+	private String duMethod;			// 涉赌方式（对应表字段 dbfs）
+	private String duPart;				// 涉赌部位（对应表字段 dbbw）
+
+	// 涉娼查询条件（与前端参数名一致）
+	private String changPersonAttribute;	// 涉娼人员属性（对应表字段 chang_scjs）
+	private String changMethod;			// 涉娼方式（对应表字段 chang_myfs）
+	private String changType;			// 涉娼类型（对应表字段 chang_type）
+
+	// 处罚时间区间（统一参数，��时作用于涉赌和涉娼）
+	private String punishDateStart;		// 处罚日期起（涉赌表：chsj，涉娼表：chang_chsj）
+	private String punishDateEnd;		// 处罚日期止（涉赌表：chsj，涉��表：chang_chsj）
+
+	// 未成年案件标识
+	private String isMinorCase;			// 是否未成年案件(涉娼记录查询条件，对应表字段 is_minor_case)
+
+	// 涉案处罚时间搜索（从t_xjw_aj_clcs_jgzxb.JDSJ字段查询，8位yyyyMMdd格式）
+	private String caseDate;			// 涉案处罚时间（格式：yyyyMMdd，对应t_xjw_aj_clcs_jgzxb.JDSJ）
+
+	// 陪侍人员角色标签搜索
+	private String peiMemo;				// 陪侍角色标签（对应ZaPei.memo字段）
 
 	public String getDuPersonAttribute() {
 		return duPersonAttribute;
@@ -808,5 +829,23 @@ public class Personnel {
 	}
 	public void setPunishDateEnd(String punishDateEnd) {
 		this.punishDateEnd = punishDateEnd;
+	}
+	public String getIsMinorCase() {
+		return isMinorCase;
+	}
+	public void setIsMinorCase(String isMinorCase) {
+		this.isMinorCase = isMinorCase;
+	}
+	public String getCaseDate() {
+		return caseDate;
+	}
+	public void setCaseDate(String caseDate) {
+		this.caseDate = caseDate;
+	}
+	public String getPeiMemo() {
+		return peiMemo;
+	}
+	public void setPeiMemo(String peiMemo) {
+		this.peiMemo = peiMemo;
 	}
 }

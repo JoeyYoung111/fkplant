@@ -378,4 +378,33 @@
 		updateoperator='$updateoperator$',updatetime='$updatetime$'
 		WHERE id = $id$
 	</update>
+
+	<!-- 根据人员ID列表查询人员基础信息（用于专项导出） -->
+	<select id="exportPersonnelByIds" parameterClass="string" resultMap="personnelExtend.exportPersonnelExtend">
+		SELECT gt.*,
+		pt.personname,pt.cardnumber,
+		pt.sexes,pt.usedname,pt.nickname,
+		pt.marrystatus,pt.nation,pt.soldierstatus,
+		pt.heathstatus,pt.politicalposition,pt.faith,
+		pt.education,pt.persontype,pt.houseplace,
+		pt.housepolice,pt.homeplace,pt.homepolice,
+		pt.workplace,pt.workpolice,pt.feature,
+		pt.speciality,pt.records,
+		pt.personheight,pt.netskillhabit,
+		rt.telnumber,rt.telephone,rt.relatedwifi,
+		rt.relatedvehicle,rt.bankaccount,rt.netidentity,
+		rt.netpayment,rt.relatedhouse,rt.relatedlegal,
+		rt.relateddriver,rt.relatedpassport,
+		dt1.departname AS unitname1,ut1.staffName AS policename1,
+		dt2.departname AS unitname2,ut2.staffName AS policename2
+		FROM p_personnel_t pt
+		LEFT JOIN p_personnel_extend_t gt ON gt.personnelid=pt.id
+		LEFT JOIN p_relation_t rt ON gt.personnelid=rt.personnelid
+		LEFT JOIN sys_department_t dt1 ON pt.jdunit1=dt1.id
+		LEFT JOIN sys_user_t ut1 ON pt.jdpolice1=ut1.id
+		LEFT JOIN sys_department_t dt2 ON pt.jdunit2=dt2.id
+		LEFT JOIN sys_user_t ut2 ON pt.jdpolice2=ut2.id
+		WHERE pt.validflag > 0 AND FIND_IN_SET(pt.id, '$value$')
+		GROUP BY pt.id
+	</select>
 </sqlMap>

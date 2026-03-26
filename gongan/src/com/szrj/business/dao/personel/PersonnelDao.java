@@ -3,17 +3,13 @@ package com.szrj.business.dao.personel;
 import java.util.HashMap;
 import java.util.List;
 
+import com.szrj.business.model.personel.*;
 import org.springframework.dao.DataAccessException;
 
 import com.aladdin.model.MapModel;
 import com.aladdin.model.NewPageModel;
 import com.aladdin.model.PieModel;
 import com.aladdin.model.SelectModel;
-import com.szrj.business.model.personel.AttributeLabel;
-import com.szrj.business.model.personel.CustomLabel;
-import com.szrj.business.model.personel.CustomText;
-import com.szrj.business.model.personel.PersonLabel;
-import com.szrj.business.model.personel.Personnel;
 
 public interface PersonnelDao {
 	/**
@@ -230,6 +226,16 @@ public interface PersonnelDao {
 	public int updateHasSechangRecord(Personnel personnel) throws DataAccessException;
 
 	/**
+	 * 更新陪侍人员标记
+	 */
+	public int updateIsPeishi(Personnel personnel) throws DataAccessException;
+
+	/**
+	 * 单独更新打处单位编码（用于已存在人员追加打处单位）
+	 */
+	public int updateHandleUnitCode(int id, String handleUnitCode) throws DataAccessException;
+
+	/**
 	 * 获取住址历史记录
 	 */
 	public NewPageModel getHomeplaceHistory(int personnelid, NewPageModel pm) throws DataAccessException;
@@ -238,4 +244,53 @@ public interface PersonnelDao {
 	 * 获取电话历史记录
 	 */
 	public NewPageModel getPhoneHistory(int personnelid, NewPageModel pm) throws DataAccessException;
+
+    /**
+     * 根据查询条件获取人员ID列表（用于专项导出）
+     * @param personnelExtend 查询条件
+     * @return 人员ID列表
+     * @throws DataAccessException
+     */
+    public List<Integer> getPersonnelIdsByCondition(PersonnelExtend personnelExtend) throws DataAccessException;
+
+
+    /**
+     * 根据查询条件获取未成年人员ID列表
+     * 查询逻辑与列表页保持一致
+     * @param personnelExtend 查询条件
+     * @return 人员ID列表
+     * @throws DataAccessException
+     */
+    public List<Integer> getMinorPersonnelIdsByCondition(PersonnelExtend personnelExtend) throws DataAccessException;
+
+    /**
+     * 根据查询条件 + 人员ID范围限制获取人员ID列表
+     * @param personnelExtend 查询条件，其中 personnelIdList 为限定范围
+     * @return 人员ID列表
+     * @throws DataAccessException
+     */
+    public List<Integer> getPersonnelIdsByConditionWithIdLimit(PersonnelExtend personnelExtend) throws DataAccessException;
+
+    /**
+     * 根据人员ID列表批量查询人员基础信息
+     * @param personnelIds 人员ID列表，逗号分隔
+     * @return 人员列表
+     * @throws DataAccessException
+     */
+    public List<Personnel> getPersonnelByIds(String personnelIds) throws DataAccessException;
+
+    /**
+     * 为未成年人（<18岁）添加zslabel2标签5002
+     * @return 更新的记录数
+     * @throws DataAccessException
+     */
+    public int addMinorLabel() throws DataAccessException;
+
+    /**
+     * 为已成年人（>=18岁）删除zslabel2标签5002
+     * @return 更新的记录数
+     * @throws DataAccessException
+     */
+    public int removeMinorLabel() throws DataAccessException;
+
 }

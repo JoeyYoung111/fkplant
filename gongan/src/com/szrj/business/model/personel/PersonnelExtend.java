@@ -1,4 +1,7 @@
 package com.szrj.business.model.personel;
+
+import java.util.List;
+
 /**
  * @author szrj_huaxia
  *风险人员-通用扩展表 p_personnel_extend_t
@@ -30,12 +33,25 @@ public class PersonnelExtend {
 	private String memo;//备注信息
 	/*---------------------------------------非数据库中字段-------------------------------------*/
 	//查询条件
+    private List<Integer> personnelIdList;
 	private String cardnumber;//身份证号
 	private String personname;//姓名
 	private String homeplace;//现居住地详址
 	private String persontype;//户籍类别（人员类别）
 	private String telnumber;//名下手机号
 	private String labelsql;
+    private String phone;
+	private Integer isMinor; // 是否未成年 0-否 1-是（查询条件）
+	private String zslabel1; // 治安分类标签（查询条件）例如：2046-治安分类
+	// 新增：管辖单位和民警查询条件
+	private String jdunit1; // 管辖责任单位（查询条件）
+	private String jdunit2; // 双管辖责任单位（查询条件）
+	// 新增：籍贯相关查询条件
+	private String homeProvince; // 籍贯-省
+	private String homeCity; // 籍贯-市
+	private String homeCounty; // 籍贯-区县
+	private String homeTown; // 籍贯-乡镇
+	private Integer homePoliceStationId; // 籍贯-派出所ID
 	//补充显示字段
 	private String sexes;//性别
 	//关联字段
@@ -52,8 +68,34 @@ public class PersonnelExtend {
 	//导出类
 	private Personnel exportPersonnel=new Personnel();
 	private Relation exportRelation=new Relation();
+	private String personnelIdListStr; // 人员ID列表字符串，逗号分隔
 	/*-----------------------------------------get/set方法---------------------------------------------------------------------*/
-	public int getId() {
+    public List<Integer> getPersonnelIdList() {
+        return personnelIdList;
+    }
+
+    public void setPersonnelIdList(List<Integer> personnelIdList) {
+        this.personnelIdList = personnelIdList;
+        // 同时生成逗号分隔的字符串
+        if (personnelIdList != null && !personnelIdList.isEmpty()) {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < personnelIdList.size(); i++) {
+                if (i > 0) sb.append(",");
+                sb.append(personnelIdList.get(i));
+            }
+            this.personnelIdListStr = sb.toString();
+        }
+    }
+
+    public String getPersonnelIdListStr() {
+        return personnelIdListStr;
+    }
+
+    public void setPersonnelIdListStr(String personnelIdListStr) {
+        this.personnelIdListStr = personnelIdListStr;
+    }
+
+    public int getId() {
 		return id;
 	}
 	public void setId(int id) {
@@ -256,6 +298,66 @@ public class PersonnelExtend {
 	}
 	public void setLabelsql(String labelsql) {
 		this.labelsql = labelsql;
+	}
+	public Integer getIsMinor() {
+		return isMinor;
+	}
+	public void setIsMinor(Integer isMinor) {
+		this.isMinor = isMinor;
+	}
+	public String getZslabel1() {
+		return zslabel1;
+	}
+	public void setZslabel1(String zslabel1) {
+		this.zslabel1 = zslabel1;
+	}
+    public String getphone() {
+        return phone;
+    }
+    public void setphone(String phone) {
+        this.phone = phone;
+    }
+	public String getJdunit1() {
+		return jdunit1;
+	}
+	public void setJdunit1(String jdunit1) {
+		this.jdunit1 = jdunit1;
+	}
+	public String getJdunit2() {
+		return jdunit2;
+	}
+	public void setJdunit2(String jdunit2) {
+		this.jdunit2 = jdunit2;
+	}
+	public String getHomeProvince() {
+		return homeProvince;
+	}
+	public void setHomeProvince(String homeProvince) {
+		this.homeProvince = homeProvince;
+	}
+	public String getHomeCity() {
+		return homeCity;
+	}
+	public void setHomeCity(String homeCity) {
+		this.homeCity = homeCity;
+	}
+	public String getHomeCounty() {
+		return homeCounty;
+	}
+	public void setHomeCounty(String homeCounty) {
+		this.homeCounty = homeCounty;
+	}
+	public String getHomeTown() {
+		return homeTown;
+	}
+	public void setHomeTown(String homeTown) {
+		this.homeTown = homeTown;
+	}
+	public Integer getHomePoliceStationId() {
+		return homePoliceStationId;
+	}
+	public void setHomePoliceStationId(Integer homePoliceStationId) {
+		this.homePoliceStationId = homePoliceStationId;
 	}
 	public String getPphone1() {
 		return pphone1;

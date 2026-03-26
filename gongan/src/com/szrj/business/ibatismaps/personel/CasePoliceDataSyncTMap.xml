@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN"
+        "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="casePoliceDataSync">
+	<typeAlias alias="xdajxx" type="com.szrj.business.model.interfaces.XdAjxx"/>
+	<typeAlias alias="xdjqxx" type="com.szrj.business.model.interfaces.XdJqxx"/>
+	<typeAlias alias="department" type="com.szrj.business.model.Department"/>
+
+	<!-- 查询当日新增的案件数据 -->
+	<select id="queryDailyNewCases" resultClass="xdajxx">
+		SELECT
+			t.id,
+			t.sfzh,
+			t.xm,
+			t.jjbh,
+			t.ajlb,
+			t.ajmc,
+			t.slsj,
+			t.sldw,
+			t.sldwmc,
+			t.jyaq,
+			t.flag,
+			t.insert_time,
+			clcs.JDSJ AS cfrq,
+			dic.item   AS cfqk
+		FROM f_xt_xd_ajxx_new t
+		LEFT JOIN (
+		    SELECT GMSFHM, AJBH, JDSJ, JDJG
+		    FROM t_xjw_aj_clcs_jgzxb t1
+		    WHERE JDSJ = (
+		        SELECT MAX(JDSJ)
+		        FROM t_xjw_aj_clcs_jgzxb t2
+		        WHERE t2.GMSFHM = t1.GMSFHM
+		          AND t2.AJBH = t1.AJBH
+		    )
+		) clcs ON clcs.GMSFHM = t.sfzh AND clcs.AJBH = t.jjbh
+		LEFT JOIN f_xt_ajxx_dic dic ON dic.code = clcs.JDJG
+		WHERE t.insert_time IS NOT NULL
+		  AND t.insert_time != ''
+		  AND (
+		      LEFT(t.insert_time, 8) = DATE_FORMAT(NOW(), '%Y%m%d')
+		  )
+		  AND t.sfzh IS NOT NULL
+		  AND t.sfzh != ''
+		  AND (t.flag IS NULL OR t.flag = '0' OR t.flag = '' OR t.flag = 'null')
+		ORDER BY t.insert_time ASC
+	</select>
+
+	<!-- 查询当日新增的警情数据 -->
+	<select id="queryDailyNewPoliceIncidents" resultClass="xdjqxx">
+		SELECT
+			id,
+			sfzh,
+			xm,
+			jjbh,
+			jjrqsj,
+			bjnr,
+			bjlx,
+			sfdd,
+			cljgnr,
+			cjdw,
+			cjdwmc,
+			cjlb,
+			flag,
+			insert_time
+		FROM f_xt_xd_jqxx_new
+		WHERE insert_time IS NOT NULL
+		  AND insert_time != ''
+		  AND (
+		      LEFT(insert_time, 8) = DATE_FORMAT(NOW(), '%Y%m%d')
+		  )
+		  AND sfzh IS NOT NULL
+		  AND sfzh != ''
+		  AND (flag IS NULL OR flag = '0' OR flag = '' OR flag = 'null')
+		ORDER BY insert_time ASC
+	</select>
+
+	<!-- 根据部门编码查询部门信息 -->
+	<select id="getDepartmentByDepartcode" parameterClass="String" resultClass="department">
+		SELECT
+			id,
+			departname,
+			departcode,
+			departtype,
+			parentid,
+			lingwuid,
+			validflag,
+			updateoperator,
+			updatetime,
+			addoperator,
+			addtime,
+			memo
+		FROM sys_department_t_new
+		WHERE departcode = #departcode#
+		  AND validflag > 0
+		LIMIT 1
+	</select>
+
+	<!-- 查询人员当前的handle_unit_code字段值（实时查询，避免缓存） -->
+	<select id="getCurrentHandleUnitCode" parameterClass="int" resultClass="String">
+		SELECT handle_unit_code
+		FROM p_personnel_t
+		WHERE id = #personnelId#
+		  AND validflag > 0
+	</select>
+
+	<!-- 更新人员的handle_unit_code字段 -->
+	<update id="updateHandleUnitCode" parameterClass="java.util.HashMap">
+		UPDATE p_personnel_t
+		SET handle_unit_code = #handleUnitCode#
+		WHERE id = #personnelId#
+	</update>
+
+	<!-- 根据部门ID获取该部门下所有用户的usercode（逗号分隔） -->
+	<select id="getUserCodesByDepartmentId" parameterClass="int" resultClass="String">
+		SELECT GROUP_CONCAT(usercode)
+		FROM sys_user_t
+		WHERE departmentid = #departmentId#
+		  AND validflag > 0
+	</select>
+
+	<!-- 更新案件数据flag标志为已处理 -->
+	<update id="updateCaseFlag" parameterClass="java.util.HashMap">
+		UPDATE f_xt_xd_ajxx_new
+		SET flag = '1'
+		WHERE id = #id#
+	</update>
+
+	<!-- 更新警情数据flag标志为已处理 -->
+	<update id="updatePoliceIncidentFlag" parameterClass="java.util.HashMap">
+		UPDATE f_xt_xd_jqxx_new
+		SET flag = '1'
+		WHERE id = #id#
+	</update>
+
+	<!-- 查询人员当前的zslabel2字段值 -->
+	<select id="getCurrentZslabel2" parameterClass="int" resultClass="String">
+		SELECT zslabel2
+		FROM p_personnel_t
+		WHERE id = #personnelId#
+		  AND validflag > 0
+	</select>
+
+	<!-- 更新人员的zslabel2字段 -->
+	<update id="updateZslabel2" parameterClass="java.util.HashMap">
+		UPDATE p_personnel_t
+		SET zslabel2 = #zslabel2#
+		WHERE id = #personnelId#
+	</update>
+</sqlMap>
+

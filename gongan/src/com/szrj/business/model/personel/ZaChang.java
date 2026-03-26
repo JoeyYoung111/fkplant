@@ -37,10 +37,15 @@ public class ZaChang {
 	private String homeLat;			//现住-纬度
 
 	// 其他新增字段
-	private int hasSechangRecord;	//涉黄前科 0-否 1-是
+	private int hasShechangRecord;	//涉黄前科 0-否 1-是
+	private String handleUnitCode;	//打处单位编码
 	private String phone;			//手机号码
 	private String caseAddressList;	//涉案地址列表，多个地址用逗号分隔
 	private String collectDate;		//采集日期
+
+	// 关联信息字段（非数据库字段，用于列表展示）
+	private String relAjIds;		//关联的案件ID列表，逗号分隔
+	private String relJqIds;		//关联的警情ID列表，逗号分隔
 
 	/*---------------------------------------非数据库中字段-------------------------------------*/
 	public int getId() {
@@ -219,11 +224,17 @@ public class ZaChang {
 	public void setHomeLat(String homeLat) {
 		this.homeLat = homeLat;
 	}
-	public int getHasSechangRecord() {
-		return hasSechangRecord;
+	public int getHasShechangRecord() {
+		return hasShechangRecord;
 	}
-	public void setHasSechangRecord(int hasSechangRecord) {
-		this.hasSechangRecord = hasSechangRecord;
+	public void setHasShechangRecord(int hasShechangRecord) {
+		this.hasShechangRecord = hasShechangRecord;
+	}
+	public String getHandleUnitCode() {
+		return handleUnitCode;
+	}
+	public void setHandleUnitCode(String handleUnitCode) {
+		this.handleUnitCode = handleUnitCode;
 	}
 	public String getPhone() {
 		return phone;
@@ -242,6 +253,18 @@ public class ZaChang {
 	}
 	public void setCollectDate(String collectDate) {
 		this.collectDate = collectDate;
+	}
+	public String getRelAjIds() {
+		return relAjIds;
+	}
+	public void setRelAjIds(String relAjIds) {
+		this.relAjIds = relAjIds;
+	}
+	public String getRelJqIds() {
+		return relJqIds;
+	}
+	public void setRelJqIds(String relJqIds) {
+		this.relJqIds = relJqIds;
 	}
 
 	// VO层方法：将逗号分隔的字符串转换为List

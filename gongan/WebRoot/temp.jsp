@@ -32,9 +32,9 @@
   	   </script>
   </head>
   <body onload="sfxxForm.submit();">
-	  <form action="http://50.64.130.123:9088/JYRiskManage/shuzhi.jsp" id="sfxxForm" name="sfxxForm" method="post" style="display: none">
-			<input type="hidden" id="cardnumber" name="cardnumber" value="<%= value %>"/>
-	  </form>
+  <form action="<c:url value='/shuzhi.jsp'/>" id="sfxxForm" name="sfxxForm" method="post" style="display: none">
+      <input type="hidden" id="cardnumber" name="cardnumber" value="<%= value %>"/>
+  </form>
   </body>
   </html>
   

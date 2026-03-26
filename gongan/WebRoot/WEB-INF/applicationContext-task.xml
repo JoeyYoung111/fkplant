@@ -79,6 +79,63 @@
             <value>0 0 16 * * ?</value>
         </property>
     </bean>
+    <!-- 每天02：30人员增量同步  0 15 0 * * ? TODO: 后续可能修改定时任务执行时间-->
+    <bean id="fxPersonnelAddSyncTask" class="com.szrj.business.web.personel.FxPersonnelAddSyncJob"/>
+    <bean id="fxPersonnelAddSyncJobDetail"
+          class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject">
+            <ref bean="fxPersonnelAddSyncTask"/>
+        </property>
+        <property name="targetMethod">
+            <value>executeSyncTask</value>
+        </property>
+        <property name="concurrent" value="false"/>
+    </bean>
+    <bean id="fxPersonnelAddSyncTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+        <property name="jobDetail" ref="fxPersonnelAddSyncJobDetail"/>
+        <property name="cronExpression">
+            <value>0 30 2 * * ?</value>
+<!--            <value>0 */1 * * * ?</value>-->
+        </property>
+    </bean>
+    <!-- 每天03:30执行案件/警情数据定时处理  0 30 1 * * ?-->
+    <bean id="casePoliceDataSyncTask" class="com.szrj.business.web.personel.CasePoliceDataSyncJob"/>
+    <bean id="casePoliceDataSyncJobDetail"
+          class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject">
+            <ref bean="casePoliceDataSyncTask"/>
+        </property>
+        <property name="targetMethod">
+            <value>executeSyncTask</value>
+        </property>
+        <property name="concurrent" value="false"/>
+    </bean>
+    <bean id="casePoliceDataSyncTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+        <property name="jobDetail" ref="casePoliceDataSyncJobDetail"/>
+        <property name="cronExpression">
+            <value>0 30 3 * * ?</value>
+<!--            <value>0 */1 * * * ?</value>-->
+        </property>
+    </bean>
+    <!-- 每天00:15执行未成年人标签同步任务  0 15 0 * * ?-->
+    <bean id="minorLabelSyncTask" class="com.szrj.business.web.personel.MinorLabelSyncJob"/>
+    <bean id="minorLabelSyncJobDetail"
+          class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject">
+            <ref bean="minorLabelSyncTask"/>
+        </property>
+        <property name="targetMethod">
+            <value>executeSyncTask</value>
+        </property>
+        <property name="concurrent" value="false"/>
+    </bean>
+    <bean id="minorLabelSyncTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+        <property name="jobDetail" ref="minorLabelSyncJobDetail"/>
+        <property name="cronExpression">
+            <value>0 15 0 * * ?</value>
+<!--            <value>0 0/2 * * * ?</value>-->
+        </property>
+    </bean>
     <!--配置执行任务-->
     <bean id="timerFactory"
           class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
@@ -88,6 +145,9 @@
                 <ref bean="checkSFYLRTrigger"/>
                 <ref bean="checkMYPGTrigger"/>
                 <ref bean="checkSRYZFTrigger"/>
+                <ref bean="fxPersonnelAddSyncTrigger"/>
+                <ref bean="casePoliceDataSyncTrigger"/>
+                <ref bean="minorLabelSyncTrigger"/>
             </list>
         </property>
     </bean>

@@ -76,50 +76,86 @@
 	<select id="getNewMessageRemind" parameterClass="messageRemind" resultClass="messageRemind">
 		select A.* from(
 		<isEqual  prepend="" property="isCheck" compareValue="1">
-		select CONCAT('【级别调整-申请】',jc.applicant,'申请将',p.personname,'的联控级别从',jc.jointcontrollevel_old,'调整到',jc.jointcontrollevel_new,',待审核') as messagecontent,jc.applicanttime
+		select NULL as id, NULL as personnelid, NULL as messageType, CONCAT('【级别调整-申请】',jc.applicant,'申请将',p.personname,'的联控级别从',jc.jointcontrollevel_old,'调整到',jc.jointcontrollevel_new,',待审核') as messagecontent, jc.applicanttime
 		from p_wen_jointcontrollevel_t jc
 		LEFT JOIN p_personnel_t p
 		ON jc.personnelid=p.id
 		where jc.examinestatus=1
 		UNION
 		</isEqual>
-		select CONCAT('【通知公告-',noticetype,'】',noticetitle) as messagecontent,updatetime as applicanttime
+		<isGreaterThan prepend="" property="departmentid" compareValue="0">
+		select NULL as id, NULL as personnelid, NULL as messageType, CONCAT('【通知公告-',noticetype,'】',noticetitle) as messagecontent, updatetime as applicanttime
 		from s_notice_t
 		where validflag>0 and FIND_IN_SET($departmentid$,departids)
 		union 
-		select
+		select NULL as id, NULL as personnelid, NULL as messageType,
 		CONCAT('【二级标签-新增】',addoperator,'新申请人员属性标签：',
-		(select  t.attributelabel from p_attributelabel_t t where  t.id=a.rootid),'-',attributelabel,',待审核') as messagecontent,addtime
+		(select  t.attributelabel from p_attributelabel_t t where  t.id=a.rootid),'-',attributelabel,',待审核') as messagecontent, addtime as applicanttime
 		from p_attributelabel_t a
 		where a.validflag>0 and a.examineflag=0
         and  FIND_IN_SET($departmentid$,(select  t.departmentid from p_attributelabel_t t where  t.id=a.rootid))
 		union
-		select concat('【人员标签-新增】',e.addoperator,'申请给风险人员:',p.personname,',增加一级标签-',e.applylabel1name,',待审核')as messagecontent,e.addtime
+		select NULL as id, NULL as personnelid, NULL as messageType, concat('【人员标签-新增】',e.addoperator,'申请给风险人员:',p.personname,',增加一级标签-',e.applylabel1name,',待审核') as messagecontent, e.addtime as applicanttime
 		from p_personnel_applylabel_t e
 		LEFT JOIN p_personnel_t p  ON e.personnelid=p.id
 		LEFT JOIN p_attributelabel_t a  	on a.id=e.applylabel1
 		where e.examineflag=0 and e.validflag>0
 		and  FIND_IN_SET($departmentid$,a.departmentid)
 		union 
-		select concat('【人员标签-审核】',e.addoperator,'申请给风险人员:',p.personname,',增加一级标签,已审核完成')as messagecontent,e.examinetime
+		</isGreaterThan>
+		<isLessEqual prepend="" property="departmentid" compareValue="0">
+		select NULL as id, NULL as personnelid, NULL as messageType, '无效的部门ID' as messagecontent, now() as applicanttime from dual where 1=0
+		union
+		</isLessEqual>
+		select NULL as id, NULL as personnelid, NULL as messageType, concat('【人员标签-审核】',e.addoperator,'申请给风险人员:',p.personname,',增加一级标签,已审核完成') as messagecontent, e.examinetime as applicanttime
 		from p_personnel_applylabel_t e
 		LEFT JOIN p_personnel_t p
 		ON e.personnelid=p.id
 		where e.examineflag>0 and e.validflag>0
 		and e.addoperatorid=$addoperatorid$
+		<isGreaterThan prepend="" property="departmentid" compareValue="0">
 		union
-		select concat('【情报线索-已到预计发生时间】【标题】',ltitle) as messagecontent,ldate from(
+		select NULL as id, NULL as personnelid, NULL as messageType, concat('【情报线索-已到预计发生时间】【标题】',ltitle) as messagecontent, ldate as applicanttime from(
 		select *
 		from e_leadsinfo_t
 		where validflag>0 and ldate>DATE_FORMAT(DATE_SUB(now(),INTERVAL 3 day),'%Y-%m-%d') and DATE_FORMAT(now(),'%Y-%m-%d')>=ldate)A
 		left join e_contradictioninfo_t ct on ct.id=A.cdtid
 		where ct.validflag>0 and ct.sponsor=$departmentid$
 		union
-		select concat('【稳控化解情况-已到预计落实时间】【风险名称】',ct.cdtname) as messagecontent,lsdate from(   
-		select * from e_defuseinfo_t   
+		select NULL as id, NULL as personnelid, NULL as messageType, concat('【稳控化解情况-已到预计落实时间】【风险名称】',ct.cdtname) as messagecontent, lsdate as applicanttime from(
+		select * from e_defuseinfo_t
 		where validflag>0 and lsdate>DATE_FORMAT(DATE_SUB(now(),INTERVAL 3 day),'%Y-%m-%d') and DATE_FORMAT(now(),'%Y-%m-%d')>=lsdate)A   
 		left join e_contradictioninfo_t ct on ct.id=A.cdtid   
-		where ct.validflag>0 and ct.sponsor=$departmentid$) as A
+		where ct.validflag>0 and ct.sponsor=$departmentid$
+		union
+		/* 新增案件提醒（从p_case_police_message_t表查询） */
+		SELECT
+		    m.id as id,
+		    m.personnelid as personnelid,
+		    m.message_type as messageType,
+		    m.message_content as messagecontent,
+		    m.addtime as applicanttime
+		FROM p_case_police_message_t m
+		WHERE m.validflag > 0
+		  AND m.read_flag = 0
+		  AND m.message_type = 'aj'
+		  AND m.department_id = $departmentid$
+		  AND m.addtime >= DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 7 DAY), '%Y-%m-%d 00:00:00')
+		union
+		/* 新增警情提醒（从p_case_police_message_t表查询） */
+		SELECT
+		    m.id as id,
+		    m.personnelid as personnelid,
+		    m.message_type as messageType,
+		    m.message_content as messagecontent,
+		    m.addtime as applicanttime
+		FROM p_case_police_message_t m
+		WHERE m.validflag > 0
+		  AND m.read_flag = 0
+		  AND m.message_type = 'jj'
+		  AND m.department_id = $departmentid$
+		  AND m.addtime >= DATE_FORMAT(DATE_SUB(NOW(), INTERVAL 7 DAY), '%Y-%m-%d 00:00:00')
+		</isGreaterThan>) as A
 		order by A.applicanttime desc
 	</select>
 </sqlMap>

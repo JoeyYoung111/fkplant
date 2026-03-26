@@ -226,12 +226,13 @@
 		getNewjointcontrollevel();
 		var jointcontrolleveltimer = setInterval(function () {
 			getNewjointcontrollevel();
-		}, 6000000);
+		}, 600000);
 	});
 
 	function waterprint(){
 		var wm='<%=userSession.getLoginUserName()%>'+'\n';
-		var number=<%=userSession.getLoginContactnumber()%>!=null?'<%=userSession.getLoginContactnumber()%>':'';
+		var contactNum = '<%=userSession.getLoginContactnumber() != null ? userSession.getLoginContactnumber() : ""%>';
+		var number = contactNum != null && contactNum != '' && contactNum != 'null' ? contactNum : '';
 		if(number.length==11)wm+=number.substring(0,3)+"****"+number.substring(7);
 		else wm+=number;
 		watermark({ watermark_txt: wm })//传入动态水印内容  可以从Session中拿出你需要的用户信息
@@ -331,15 +332,110 @@
 	 5、完成审核二级标签：根据申请人过滤
 
 	 **/
+	// 存储已读消息ID的localStorage key
+	var READ_MESSAGES_KEY = 'jy_read_message_ids';
+
+	// 获取已读消息ID列表
+	function getReadMessageIds() {
+		var stored = window.localStorage.getItem(READ_MESSAGES_KEY);
+		if (stored) {
+			try {
+				return JSON.parse(stored);
+			} catch (e) {
+				return [];
+			}
+		}
+		return [];
+	}
+
+	// 保存已读消息ID
+	function saveReadMessageId(messageId) {
+		var readIds = getReadMessageIds();
+		if (readIds.indexOf(messageId) === -1) {
+			readIds.push(messageId);
+			// 只保留最近500条已读记录，防止localStorage过大
+			if (readIds.length > 500) {
+				readIds = readIds.slice(-500);
+			}
+			window.localStorage.setItem(READ_MESSAGES_KEY, JSON.stringify(readIds));
+		}
+	}
+
+	// 标记消息为已读并从列表中移除
+	function markMessageAsRead(messageId, messageType, element) {
+		// 先保存到本地存储
+		saveReadMessageId(messageId);
+
+		// 如果消息类型是案件或警情，调用后端接口更新数据库
+		if (messageType === 'aj' || messageType === 'jj') {
+			// 从messageId中提取实际的数字ID（格式可能是 "123" 或 "content_timestamp"）
+			var actualId = messageId;
+			// 如果messageId包含下划线，说明是自动生成的，尝试从数据属性获取真实ID
+			if (messageId.indexOf('_') !== -1) {
+				// 从元素的data属性获取真实ID
+				actualId = $(element).closest('tr').data('message-id');
+			}
+
+			// 调用后端接口标记为已读
+			$.ajax({
+				type: 'POST',
+				url: '<c:url value="/deleteCasePoliceMessage.do"/>',
+				data: { messageId: actualId },
+				dataType: 'json',
+				success: function(response) {
+					if (response.success) {
+						console.log('[调试] 消息已在数据库中标记为已读: ' + actualId);
+					} else {
+						console.error('[错误] 标记消息已读失败: ' + (response.error || '未知错误'));
+					}
+				},
+				error: function(xhr, status, error) {
+					console.error('[错误] 调用deleteCasePoliceMessage接口失败: ' + error);
+				}
+			});
+		}
+
+		// 移除该行
+		$(element).closest('tr').fadeOut(300, function() {
+			$(this).remove();
+			// 检查是否还有消息，如果没有则最小化弹窗
+			var remainingCount = $('#ad_context tbody tr').length;
+			if (remainingCount === 0) {
+				var oBtnMin = document.getElementById('btn_min');
+				oBtnMin.click();
+			}
+		});
+	}
+
 	function getNewjointcontrollevel(){
+		console.log("[调试] 开始执行 getNewjointcontrollevel 轮询...");
 		$.ajax({
 			type:		'POST',
 			url:		'<c:url value="/getNewMessageRemind.do"/>',
 			dataType:	'json',
 			success:	function(data){
+				console.log("[调试] 轮询成功，返回消息数量: " + (data.messageRemindList ? data.messageRemindList.length : 0));
 				var str="";
+				var readIds = getReadMessageIds();
 				$.each(data.messageRemindList, function(num, item) {
-					str+= "<tr style='text-align:left;border-bottom:1px #333 dotted;height:30px;'><td onclick=''> •"+item.messagecontent+"</td></tr>";
+					// 生成唯一消息ID（使用消息内容的hash或时间戳）
+					var messageId = item.id || (item.messagecontent + '_' + (item.createtime || num));
+					var messageType = item.messageType || ''; // 获取消息类型
+					var actualId = item.id || ''; // 保存真实的数据库ID
+
+					// 检查是否已读
+					if (readIds.indexOf(messageId) !== -1) {
+						console.log("[调试] 消息已读，跳过: " + item.messagecontent);
+						return true; // continue
+					}
+					console.log("[调试] 消息内容: " + item.messagecontent + ", 类型: " + messageType + ", ID: " + actualId);
+					str+= "<tr data-message-id='" + actualId + "' style='text-align:left;border-bottom:1px #333 dotted;height:30px;'>" +
+						"<td style='position:relative;padding-right:25px;'>" +
+						" •" + item.messagecontent +
+						"<span onclick=\"markMessageAsRead('" + messageId + "', '" + messageType + "', this)\" " +
+						"style='position:absolute;right:5px;top:50%;transform:translateY(-50%);cursor:pointer;color:#999;font-size:16px;font-weight:bold;' " +
+						"title='标记为已读'>×</span>" +
+						"</td></tr>";
 				});
 				if(str!=""){
 					add_context(str);
@@ -347,6 +443,9 @@
 					var oBtnMin = document.getElementById('btn_min');
 					oBtnMin.click();
 				}
+			},
+			error: function(xhr, status, error) {
+				console.log("[调试] 轮询失败: " + status + " - " + error);
 			}
 		});
 	}

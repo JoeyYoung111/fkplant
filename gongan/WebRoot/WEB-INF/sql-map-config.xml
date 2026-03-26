@@ -38,6 +38,8 @@
    <sqlMap resource="com/szrj/business/ibatismaps/personel/ZaExtendTMap.xml"></sqlMap> <!-- 风险人员-治安扩展 -->
    <sqlMap resource="com/szrj/business/ibatismaps/personel/ControlPowerTMap.xml"></sqlMap> <!-- 风险人员-管控力量 -->
    <sqlMap resource="com/szrj/business/ibatismaps/personel/ControlFilesTMap.xml"></sqlMap> <!-- 风险人员-管控方案 -->
+   <sqlMap resource="com/szrj/business/ibatismaps/personel/FxPersonnelAddTMap.xml"></sqlMap> <!-- 风险人员-增量同步 -->
+   <sqlMap resource="com/szrj/business/ibatismaps/personel/CasePoliceDataSyncTMap.xml"></sqlMap> <!-- 案件/警情数据同步 -->
    <!-- 风险事件 -->
    <sqlMap resource="com/szrj/business/ibatismaps/event/ContradictionInfoTMap.xml"></sqlMap>  <!-- 风险矛盾信息 -->
    <sqlMap resource="com/szrj/business/ibatismaps/event/EventsInfoTMap.xml"></sqlMap>  <!-- 引发涉稳事件 -->

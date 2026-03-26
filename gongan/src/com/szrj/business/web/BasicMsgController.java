@@ -108,6 +108,51 @@ public class BasicMsgController {
 	}
 
 	/**
+	 * 根据父节点ID和字典类型查询基础数据 - 用于省市县级联下拉框
+	 * 返回 [{basicname: "xxx", id: xxx, parentid: xxx}, ...]格式
+	 * @param basicType 数据字典类型
+	 * @param parentid 父节点ID（0表示查询省份，即根节点的子节点）
+	 * @return
+	 */
+	@RequestMapping("/getBasicMsgByParentId.do")
+	@ResponseBody
+	public List<Map<String, Object>> getBasicMsgByParentId(int basicType, int parentid){
+		List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
+		try {
+			// 注意：不能使用 getBMByParentIdToJSON 方法，因为其SQL中有 parentid>0 的限制
+			// 改为查询所有指定类型的数据，然后自行过滤
+			List<BasicMsg> allList = basicMsgDao.getByType(basicType);
+
+			// 特殊处理：对于行政区划(basicType=500)，如果传入parentid=0，
+			// 表示查询省份数据，需要查找根节点的子节点
+			int actualParentid = parentid;
+			if (basicType == 500 && parentid == 0) {
+				// 找到根节点(parentid=0的节点)的ID
+				for (BasicMsg bm : allList) {
+					if (bm.getParentid() == 0) {
+						actualParentid = bm.getId();
+						break;
+					}
+				}
+			}
+
+			// 过滤出指定parentid的数据
+			for(BasicMsg bm : allList){
+				if(bm.getParentid() == actualParentid){
+					Map<String, Object> map = new HashMap<String, Object>();
+					map.put("basicname", bm.getBasicName());
+					map.put("id", bm.getId());
+					map.put("parentid", bm.getParentid());
+					result.add(map);
+				}
+			}
+		} catch(Exception e){
+			e.printStackTrace();
+		}
+		return result;
+	}
+
+	/**
 	 * 根据字典类型查询基础数据 
 	 * 返回给select使用value=id text=name
 	 * @param basicType

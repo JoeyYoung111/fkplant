@@ -47,6 +47,14 @@ public interface PersonnelExtendDao {
 	
 	public List<PersonnelExtend> exportPersonnelExtend(PersonnelExtend personnelExtend) throws DataAccessException;
 	
+	/**
+	 * 根据人员ID列表查询人员基础信息（用于专项导出）
+	 * @param personnelIds 人员ID列表，逗号分隔
+	 * @return
+	 * @throws DataAccessException
+	 */
+	public List<PersonnelExtend> exportPersonnelByIds(String personnelIds) throws DataAccessException;
+
 	public int updateWorkExtend(PersonnelExtend personnelExtend) throws DataAccessException;
 	
 	/***************************人员标签信息******************************************/

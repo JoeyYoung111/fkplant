@@ -111,7 +111,19 @@ public class CardnumberInfo {
 		cardnumber = cardnumber.trim();
 		int length=cardnumber.length();
 		if(length==15){
-			birthday = "19"+cardnumber.substring(6,8)+"-"+cardnumber.substring(8,10)+"-"+cardnumber.substring(10,12);
+			// 世纪推断：关键修复点
+			int yy = Integer.parseInt(cardnumber.substring(6, 8));
+			Date now = new Date();
+			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy");
+			int currentYear = Integer.parseInt(dateFormat.format(now));
+			int currentYY = currentYear % 100;
+
+			// 如果身份证年份大于当前年份的后两位，则认为是1900年代，否则是2000年代
+			int year = yy > currentYY ? 1900 + yy : 2000 + yy;
+
+			String month = cardnumber.substring(8,10);
+			String day = cardnumber.substring(10,12);
+			birthday = year + "-" + month + "-" + day;
 		}else if(length==18){
 			birthday = cardnumber.substring(6,10)+"-"+cardnumber.substring(10,12)+"-"+cardnumber.substring(12,14);
 		}

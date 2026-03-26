@@ -9,7 +9,7 @@ public class ZaPei {
 	private String collectSource;	//采集来源(案件/警情/日常工作发现)
 	private String collectDate;		//采集日期
 	private String activityVenue;	//活动场所
-	private String otherMemo;		//其他备注(选择其他时必填)
+	private String otherMemo;		//其他备注(陪侍情况)
 
 	// 现住地结构化字段
 	private String homeProvince;	//现住-省
@@ -27,8 +27,12 @@ public class ZaPei {
 	private String addtime;			//添加时间
 	private String updateoperator;	//最新修改人
 	private String updatetime;		//最新修改时间
-	private String memo;			//备注信息
+	private String memo;			//角色标签
 	private int validflag;			//状态标识   1：正常 0:作废
+	private int hasShechangRecord;	//涉黄前科 0-否 1-是
+    // 关联信息字段（非数据库字段，用于列表展示）
+    private String relAjIds;		//关联的案件ID列表，逗号分隔
+    private String relJqIds;		//关联的警情ID列表，逗号分隔
 
 	/*---------------------------------------非数据库中字段-------------------------------------*/
 
@@ -157,6 +161,24 @@ public class ZaPei {
 	}
 	public void setValidflag(int validflag) {
 		this.validflag = validflag;
+	}
+	public int getHasShechangRecord() {
+		return hasShechangRecord;
+	}
+	public void setHasShechangRecord(int hasShechangRecord) {
+		this.hasShechangRecord = hasShechangRecord;
+	}
+	public String getRelAjIds() {
+		return relAjIds;
+	}
+	public void setRelAjIds(String relAjIds) {
+		this.relAjIds = relAjIds;
+	}
+	public String getRelJqIds() {
+		return relJqIds;
+	}
+	public void setRelJqIds(String relJqIds) {
+		this.relJqIds = relJqIds;
 	}
 }
 
